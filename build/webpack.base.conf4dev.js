@@ -43,24 +43,7 @@ module.exports = {
       },
       {
         test: /\.(js|jsx)$/,
-        loader: 'babel-loader',
-        options: {
-          babelrc: false, // 确保 modules: false生效，tree sharking 必须
-          presets: [
-            [
-              'env',
-              {
-                modules: false,
-                targets: {
-                  browsers: ['> 1%', 'last 2 versions', 'not ie <= 8']
-                }
-              }
-            ],
-            'stage-2',
-            'react'
-          ],
-          plugins: ['transform-object-assign']
-        }
+        loader: 'babel-loader'
         // exclude: /node_modules/
       },
       {
