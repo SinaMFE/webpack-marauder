@@ -22,7 +22,7 @@ marauderConfig.resourcePath &&
   marauderConfig.resourcePath.forEach(function(item) {
     CopyResourceList.push({
       from: utils.rootPath(item),
-      to: 'dist/resource'
+      to: 'resource'
     })
   })
 
