@@ -81,7 +81,8 @@ const webpackConfig = merge(baseWebpackConfig, {
       cssProcessor: require('cssnano'),
       // cssnano 中自带 autoprefixer，在压缩时会根据配置去除无用前缀
       // 为保持统一，将其禁用，在 4.0 版本后将会默认禁用
-      cssProcessorOptions: { autoprefixer: false },
+      // safe: true 禁止计算 z-index
+      cssProcessorOptions: { autoprefixer: false, safe: true },
       canPrint: false // 不显示通知
     }),
     new CopyWebpackPlugin(CopyResourceList)
