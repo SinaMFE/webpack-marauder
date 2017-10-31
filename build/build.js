@@ -31,6 +31,7 @@ const ftpUpload = require('./ftp.js')
 const config = require('./config.js')
 const webpackConfig = require('./webpack.prod.conf')
 const maraConf = require(rootPath('marauder.config.js'))
+const VERSION = process.env.npm_package_version
 
 const spinner = ora('building for production...')
 spinner.start()
