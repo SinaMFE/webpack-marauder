@@ -30,7 +30,7 @@ const webpack = require('webpack')
 const ftpUpload = require('./ftp.js')
 const config = require('./config.js')
 const webpackConfig = require('./webpack.prod.conf')
-const marauderConfig = require(rootPath('marauder.config.js'))
+const maraConf = require(rootPath('marauder.config.js'))
 
 const spinner = ora('building for production...')
 spinner.start()
@@ -47,7 +47,7 @@ shell.cp('-R', 'static/*', assetsPath)
 shell.config.silent = false
 
 const buildPromise = new Promise((resolve, reject) => {
-  webpack(webpackConfig, function(err, stats) {
+  const compiler = webpack(webpackConfig, function(err, stats) {
     spinner.stop()
 
     if (err) {
@@ -65,7 +65,7 @@ const buildPromise = new Promise((resolve, reject) => {
       }) + '\n\n'
     )
 
-    if (marauderConfig.minpic !== false) {
+    if (maraConf.minpic !== false) {
       var minpic = require('./minpic.js')
     }
 
@@ -79,6 +79,22 @@ const buildPromise = new Promise((resolve, reject) => {
     )
 
     resolve()
+  })
+
+  compiler.plugin('compilation', compilation => {
+    if (!maraConf.hybrid) return
+
+    const hyConf = Object.assign({}, config, maraConf.hybrid)
+    const hyVersionFile = ''
+
+    compilation.assets[VERSION] = {
+      source() {
+        return hyVersionFile
+      },
+      size() {
+        return hyVersionFile.length
+      }
+    }
   })
 })
 
