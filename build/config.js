@@ -1,24 +1,40 @@
-// see http://vuejs-templates.github.io/webpack for documentation.
-const path = require('path')
-
-const cwd = process.cwd()
+const { rootPath } = require('./utils/utils')
 
 module.exports = {
+  hash: {
+    main: true,
+    chunk: true,
+    assets: true
+  },
+  // 压缩配置
+  compress: {
+    // 移除 console
+    drop_console: false
+  },
   entry: 'src/view/*/index.js',
+  // 通知 babel 编译 node_module 里额外的模块
+  esm: ['@mfelibs'],
+  // 打包 dll
+  vendor: [],
+  paths: {
+    app: rootPath('.'),
+    entries: 'src/view/*/index.js',
+    src: rootPath('src'),
+    page: rootPath('src/view'),
+    public: rootPath('public'),
+    dist: rootPath('dist'),
+    test: rootPath('test'),
+    nodeModules: rootPath('node_modules'),
+    packageJson: rootPath('package.json'),
+    marauder: rootPath('marauder.config.js'),
+    dll: rootPath('dll')
+  },
   build: {
     env: {
-      NODE_ENV: '"production"'
+      // stringify env for DefinePlugin
+      NODE_ENV: JSON.stringify('production')
     },
-    index: path.resolve(cwd, 'dist'),
-    assetsRoot: path.resolve(cwd, 'dist'),
-    assetsSubDirectory: '',
-    assetsPublicPath: './',
-    productionSourceMap: true,
-    // Gzip off by default as many popular static hosts such as
-    // Surge or Netlify already gzip all static assets for you.
-    // Before setting to `true`, make sure to:
-    // npm install --save-dev compression-webpack-plugin
-    productionGzip: false,
+    assetsPublicPath: '/',
     productionGzipExtensions: ['js', 'css'],
     // Run the build command with an extra argument to
     // View the bundle analyzer report after build finishes:
@@ -32,11 +48,10 @@ module.exports = {
   },
   dev: {
     env: {
-      NODE_ENV: '"development"'
+      // stringify env for DefinePlugin
+      NODE_ENV: JSON.stringify('development')
     },
     port: 3022,
-    autoOpenBrowser: true,
-    assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {},
     // CSS Sourcemaps off by default because relative paths are "buggy"
@@ -47,22 +62,26 @@ module.exports = {
     cssSourceMap: false
   },
   ftp: {
-    host: '172.16.142.74', // 主机
-    port: 2121,
-    user: 'www',
-    password: '0ecd15a9fee9dea3',
-    reload: true,
+    host: '', // 主机
+    port: 0,
+    user: '',
+    password: '',
+    reload: true, // 刷新缓存
+    openBrowser: true, // 上传完毕后自动打开浏览器
     remotePath: {
-      version: true
+      version: true // 添加 version 路径
     }
   },
+  // hybrid 项目配置，存在此属性时，将会生成 zip 包
+  hybrid: {},
   browserslist: {
     browsers: [
       '> 1%',
-      'last 3 versions',
+      'last 4 versions',
       'ios >= 8',
       'android >= 4.1',
-      'not ie <= 8'
-    ]
+      'not ie < 9'
+    ],
+    flexbox: 'no-2009'
   }
 }

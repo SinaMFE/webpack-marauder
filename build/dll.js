@@ -2,38 +2,43 @@
 process.env.BABEL_ENV = 'production'
 process.env.NODE_ENV = 'production'
 
-const fs = require('fs-extra')
 const chalk = require('chalk')
-const { entry, ftpBranch } = require('./utils/entry')
+const config = require('./config.js')
+const { isObject, isNotEmptyArray } = require('./utils/utils')
+const paths = config.paths
+const vendorConf = require(paths.marauder).vendor || []
 
+// 在 webpack.dll.conf 引入之前优先执行异常检查
+if (!Object.keys(vendorConf).length) {
+  console.log(
+    chalk.yellow(
+      'Build skip, vendor options is empty. Please check marauder.config.js'
+    )
+  )
+  process.exit(0)
+} else if (isObject(vendorConf) && !isNotEmptyArray(vendorConf.libs)) {
+  console.log(
+    chalk.yellow(
+      'Build skip, vendor.libs is empty. Please check marauder.config.js'
+    )
+  )
+  process.exit(0)
+}
+
+const fs = require('fs-extra')
+const input = require('yargs').argv._
 const ora = require('ora')
 const webpack = require('webpack')
-const ftpUpload = require('./utils/ftp.js')
-const config = require('./config.js')
-const paths = config.paths
-const webpackConfig = require('./webpack/webpack.prod.conf')
-const maraConf = require(paths.marauder)
+const ftpUpload = require('./utils/ftp')
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const VERSION = process.env.npm_package_version
+const webpackDllConfig = require('./webpack/webpack.dll.conf')
 
-const spinner = ora('building for production...')
+const spinner = ora('building dll...')
 spinner.start()
 
 function build() {
-  const compiler = webpack(webpackConfig)
-
-  compiler.plugin('compilation', compilation => {
-    if (!maraConf.hybrid) return
-
-    const hyConf = Object.assign({}, config, maraConf.hybrid)
-    const hyVersionFile = ''
-
-    compilation.assets[VERSION] = {
-      source: () => hyVersionFile,
-      size: () => hyVersionFile.length
-    }
-  })
+  const compiler = webpack(webpackDllConfig)
 
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
@@ -59,7 +64,15 @@ function build() {
   })
 }
 
-fs.emptyDirSync(paths.dist + '/' + entry)
+// 清空 dll 文件夹
+fs.emptyDirSync(paths.dll)
+
+// 为多页面准备，生成 xxx_vender 文件夹
+const namespace = vendorConf.name ? `${vendorConf.name}_` : ''
+const vendorDir = namespace + 'vendor'
+
+// 清空 vendor 文件
+fs.emptyDirSync(`${paths.dist}/${vendorDir}`)
 
 build()
   .then(output => {
@@ -74,18 +87,16 @@ build()
       }) + '\n\n'
     )
 
-    console.log(chalk.cyan('  Build complete.\n'))
+    console.log(chalk.cyan('  DLL Build complete.\n'))
 
     console.log(
-      chalk.yellow(
-        `  Tip: built files are meant to be served over an HTTP server.\n  Opening index.html over file:// won't work.\n`
-      )
+      chalk.yellow(`  Tip: DLL bundle is change, please rebuild your app.\n`)
     )
   })
   .then(() => {
     // ftp upload
     if (config.build.uploadFtp) {
-      ftpUpload(entry, ftpBranch)
+      ftpUpload(vendorDir, input[0])
     }
   })
   .catch(err => {

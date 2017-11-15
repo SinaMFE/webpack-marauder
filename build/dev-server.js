@@ -1,150 +1,152 @@
+process.env.BABEL_ENV = 'development'
+process.env.NODE_ENV = 'development'
+
 const config = require('./config.js')
-const { getFreePort, localIp, getPageList } = require('./utils.js')
-const argv = require('yargs').argv
+const chalk = require('chalk')
+const { getFreePort, localIp, rootPath } = require('./utils/utils')
+const { entry } = require('./utils/entry')
 
-if (!process.env.NODE_ENV) {
-  process.env.NODE_ENV = JSON.parse(config.dev.env.NODE_ENV)
-}
+// 是否为交互模式
+const isInteractive = process.stdout.isTTY
 
-process.argus = process.argv.splice(2)
-
-const opn = require('opn')
 const path = require('path')
-const express = require('express')
 const webpack = require('webpack')
-const proxyMiddleware = require('http-proxy-middleware')
-const webpackConfig = require('./webpack.dev.conf')
-// default port where dev server listens for incoming traffic
-const port = process.env.PORT || config.dev.port
-// automatically open browser, if not set will be false
-const autoOpenBrowser = !!config.dev.autoOpenBrowser
+const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
+const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMiddleware')
+const clearConsole = require('react-dev-utils/clearConsole')
+const openBrowser = require('react-dev-utils/openBrowser')
+const DevServer = require('webpack-dev-server')
+const webpackConfig = require('./webpack/webpack.dev.conf')
+const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
+const HOST = localIp()
+
 // Define HTTP proxies to your custom API backend
 // https://github.com/chimurai/http-proxy-middleware
 const proxyTable = config.dev.proxyTable
 
-const app = express()
-const compiler = webpack(webpackConfig)
+async function createCompiler(port) {
+  const uri = `http://${HOST || 'localhost'}:${port}`
+  const compiler = webpack(webpackConfig)
+  let isFirstCompile = true
 
-const devMiddleware = require('webpack-dev-middleware')(compiler, {
-  publicPath: webpackConfig.output.publicPath,
-  quiet: true
-})
+  compiler.plugin('done', stats => {
+    const messages = stats.toJson({}, true)
 
-const hotMiddleware = require('webpack-hot-middleware')(compiler, {
-  log: () => {}
-})
-
-// force page reload when html-webpack-plugin template changes
-compiler.plugin('compilation', function(compilation) {
-  compilation.plugin('html-webpack-plugin-after-emit', function(data, cb) {
-    console.log('full load')
-    hotMiddleware.publish({ action: 'reload' })
-    cb()
-  })
-})
-
-// proxy api requests
-Object.keys(proxyTable).forEach(function(context) {
-  var options = proxyTable[context]
-  if (typeof options === 'string') {
-    options = { target: options }
-  }
-  app.use(proxyMiddleware(options.filter || context, options))
-})
-
-// handle fallback for HTML5 history API
-app.use(require('connect-history-api-fallback')())
-
-// serve webpack bundle output
-app.use(devMiddleware)
-
-// enable hot-reload and state-preserving
-// compilation error display
-app.use(hotMiddleware)
-
-// serve pure static assets
-// var staticPath = path.posix.join(
-//   config.dev.assetsPublicPath,
-//   config.dev.assetsSubDirectory
-// )
-
-// app.use('/static', exp ress.static(__dirname + '/public'));
-
-// var iplist = []
-// var os = require('os')
-// var ifaces = os.networkInterfaces()
-// for (var dev in ifaces) {
-//   var alias = 0
-
-//   ifaces[dev].forEach(function(details) {
-//     if (details.family == 'IPv4') {
-//       iplist.push(details.address)
-//       ++alias
-//     }
-//   })
-// }
-
-// // app.use('/static', exp ress.static(__dirname + '/public'));
-// app.use(express.static(process.cwd() + '/src'))
-// var uri
-// if (iplist[0] == '127.0.0.1') {
-//   uri = 'http://' + (iplist[1] || 'localhost') + ':' + port
-// } else {
-//   uri = 'http://' + (iplist[0] || 'localhost') + ':' + port
-// }
-
-// 路由
-// app.get('/:viewname?', function(req, res, next) {
-//  var viewname = req.params.viewname ? req.params.viewname + '.html' : 'index.html';
-//  var filepath = path.join(compiler.outputPath, viewname);
-//  console.log(filepath)
-//  // 使用webpack提供的outputFileSystem
-//  compiler.outputFileSystem.readFile(filepath, function(err, result) {
-//      if (err) {
-//          // something error
-//          return next(err);
-//      }
-//      res.set('content-type', 'text/html');
-//      res.send(result);
-//      res.end();
-//  });
-// });
-
-let _resolve
-const readyPromise = new Promise(resolve => {
-  _resolve = resolve
-})
-
-async function start() {
-  const port = await getFreePort()
-  const uri = `http://${localIp() || 'localhost'}:${port}`
-  const pages = getPageList()
-  const entry =
-    process.argus[0] || (pages.includes('index') ? 'index' : pages[0])
-
-  console.log('> Starting dev server...')
-  devMiddleware.waitUntilValid(function() {
-    console.log(`> Listening at ${uri}\n`)
-  })
-
-  return app.listen(port, function(err) {
-    if (err) return console.log(err)
-
-    // when env is testing, don't need open it
-    if (autoOpenBrowser && process.env.NODE_ENV !== 'testing') {
-      // 指定 option.wait，退出进程
-      opn(`${uri}/${entry}.html`, { wait: false })
+    if (isFirstCompile) {
+      console.log(`> Listening at ${uri}\n`)
+      isFirstCompile = false
     }
 
-    _resolve()
+    // If errors exist, only show errors.
+    if (messages.errors.length) return
+  })
+
+  // 为每一个入口文件添加 webpack-dev-server 客户端
+  Object.keys(webpackConfig.entry).forEach(key => {
+    // client 在业务模块之前引入，以捕获初始化错误
+    ;[].unshift.apply(webpackConfig.entry[key], [
+      require.resolve('react-dev-utils/webpackHotDevClient')
+      // require.resolve('webpack-dev-server/client') + '?/',
+      // require.resolve('webpack/hot/dev-server')
+    ])
+  })
+
+  return compiler
+}
+
+async function createDevServer(port) {
+  const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
+  const compiler = await createCompiler(port)
+
+  return new DevServer(compiler, {
+    disableHostCheck: !proxyTable,
+    // 开启 gzip 压缩
+    compress: true,
+    // 屏蔽 WebpackDevServer 自身的日志输出
+    // 此设置不影响警告与错误信息
+    clientLogLevel: 'none',
+    // By default WebpackDevServer serves physical files from current directory
+    // in addition to all the virtual build products that it serves from memory.
+    // This is confusing because those files won’t automatically be available in
+    // production build folder unless we copy them. However, copying the whole
+    // project directory is dangerous because we may expose sensitive files.
+    // Instead, we establish a convention that only files in `public` directory
+    // get served. Our build script will copy `public` into the `build` folder.
+    // In `index.html`, you can get URL of `public` folder with %PUBLIC_URL%:
+    // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    // In JavaScript code, you can access it with `process.env.PUBLIC_URL`.
+    // Note that we only recommend to use `public` folder as an escape hatch
+    // for files like `favicon.ico`, `manifest.json`, and libraries that are
+    // for some reason broken when imported through Webpack. If you just want to
+    // use an image, put it in `src` and `import` it from JavaScript instead.
+    contentBase: [config.paths.public, pagePublicDir],
+    // 监听 public 文件夹内容变化
+    watchContentBase: true,
+    // 开启服务器热更新. 它将为 WebpackDevServer 客户端注入 /sockjs-node/ 节点
+    // 从而能够感知文件何时被更新。WebpackDevServer 客户端将会被添加到 Webpack 开发配置
+    // 的入口中。 注意，目前只有 css 能够热更新，js 的改动依然会触发浏览器刷新
+    hot: true,
+    // 指定资源根路径，开发环境默认为 /.
+    publicPath: webpackConfig.output.publicPath,
+    // WebpackDevServer 的默认输出会有很多干扰项，所以我们使用自定义信息代替
+    quiet: true,
+    // 据说这么做在某些系统上能避免 CPU 过载。
+    // https://github.com/facebookincubator/create-react-app/issues/293
+    // src/node_modules 不被忽略以支持使用绝对路径导入
+    // https://github.com/facebookincubator/create-react-app/issues/1065
+    watchOptions: {
+      ignored: new RegExp(
+        `^(?!${path
+          .normalize(config.paths.src + '/')
+          .replace(/[\\]+/g, '\\\\')}).+[\\\\/]node_modules[\\\\/]`,
+        'g'
+      )
+    },
+    // 开启 HTTPS
+    https: false,
+    host: HOST || '0.0.0.0',
+    overlay: false,
+    historyApiFallback: {
+      // Paths with dots should still use the history fallback.
+      // See https://github.com/facebookincubator/create-react-app/issues/387.
+      disableDotRule: true
+    },
+    // public: allowedHost,
+    // proxy,
+    before(app) {
+      // This lets us open files from the runtime error overlay.
+      app.use(errorOverlayMiddleware())
+      // This service worker file is effectively a 'no-op' that will reset any
+      // previous service worker registered for the same host:port combination.
+      // We do this in development to avoid hitting the production cache if
+      // it used the same host and port.
+      // https://github.com/facebookincubator/create-react-app/issues/2272#issuecomment-302832432
+      app.use(noopServiceWorkerMiddleware())
+    }
   })
 }
 
-const server = start()
+async function start() {
+  const port = await getFreePort(DEFAULT_PORT)
+  const devServer = await createDevServer(port)
+  ;['SIGINT', 'SIGTERM'].forEach(sig => {
+    process.on(sig, () => {
+      devServer.close()
+      process.exit()
+    })
+  })
 
-module.exports = {
-  ready: readyPromise,
-  close() {
-    server.close()
-  }
+  return devServer.listen(port, HOST, err => {
+    const uri = `http://${HOST || 'localhost'}:${port}`
+
+    if (err) return console.log(err)
+
+    // 交互模式下清除 console
+    isInteractive && clearConsole()
+
+    console.log('> Starting dev server...')
+    openBrowser(`${uri}/${entry}.html`)
+  })
 }
+
+start()

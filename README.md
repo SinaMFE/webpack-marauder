@@ -1,56 +1,60 @@
 # webpack-marauder
 
+为了保证多人开发时依赖安装的一致性，推荐使用 [yarn](https://yarnpkg.com/zh-Hans/) 作为包管理工具
+
 ## 命令
 
+### 安装依赖
 ``` bash
-# 安装依赖
-npm install
-
-# 启动测试环境，默认端口（3022）
-npm run dev <page_name>
-
-# 生产环境打包,打包后的代码在dist目录下
-npm run build <page_name>
+yarn
 ```
 
-## 配置文件
-所有配置原则上只允许在marauder.config.js里修改，如果没有该配置选项，请联系fengwan@staff.sina.com.cn
+### 启动开发环境
 
-marauder.config.js
-
-hash  		打包后的js，css，image是否加hash，默认true
-resourcePath : ['config.js','config2.js'] 相对路径，会把此类文件copy到dist/
-ensurels   按需加载是否启用本地缓存模式，启动为true，默认不添写为false
-publicPath css、按需加载等相对路径转换为绝对路径
-resource目录下
-
-
-## 开发目录结构
-```
-src
-├── css	静态资源
-│   ├── index.css
-│   └── list.css
-├── images 静态资源
-│   ├── add_icon.jpg
-│   └── align_Hcenter.png
-├── js	静态资源
-└── view  多页面开发目录
-    ├── index  index页面
-    │   ├── index.html     index页面首页
-    │   └── index.js  		index页面入口js
-    └── list   list页面
-        ├── index.html     list页面首页
-        └── index.js	list页面入口js
+运行开发命令将本地启动一个开发服务器，默认基础端口为 `3022`。当为多页应用时，需指定页面文件夹名称。
+```bash
+npm run dev [page_name]
 ```
 
-多页面开发时，多页面名称由 view 下的文件夹名称确定
-入口文件必须为 index.html
-入口 js 必须为 index.js
-当启动测试环境后，index 页面的测试地址为 localhost:3022 或 localhost:3022/index.html,
-list 页面的测试地址为 http://localhost:3022/list.html
+示例：
+```bash
+# 在 index 页面下开发
+npm run dev index
+```
 
-## 版本说明
-- 2.1.19 支持art-template模版引擎
-- 1.6.7 增加ensurels功能及配置
-- 1.6.9 更新ensurels版本号至0.0.7
+### 打包项目
+
+执行 `build` 命令打包页面，当为多页应用时，需指定页面文件夹名称。
+```bash
+npm run build [page_name]
+```
+
+####  FTP 上传
+
+*注意，要使用 ftp 上传功能，需在 `marauder.config.js` 中配置好 ftp 服务器信息。*
+
+在 `build` 命令基础上，可通过添加 `--ftp` 参数上传打包结果。此外，为方便多分支测试，还可通过可选的 `branch` 参数来指定线上分支路径。
+```bash
+npm run build [page_name] --ftp [branch]
+```
+
+示例：
+```bash
+#  打包 index 页面，并上传至测试地址
+npm run build index --ftp
+
+#  打包 index 页面，并通过上传至测试地址下的 feed_feature 文件夹中
+npm run build index --ftp feed_feature
+```
+
+### 打包 dll 文件
+
+*注意，需在 `marauder.config.js` 中配置 `vendor` 信息。*
+
+运行 `dll` 命令生成公共资源包，执行结果将会输出到 `dist/vendor` 文件夹下
+```bash
+npm run dll
+
+# 打包 dll 文件，并上传至服务器
+npm run dll --ftp
+```
