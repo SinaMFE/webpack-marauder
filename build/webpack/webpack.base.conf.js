@@ -55,7 +55,9 @@ module.exports = {
   module: {
     // makes missing exports an error instead of warning
     strictExportPresence: false,
-    loaders: [{ test: /\.html$/, loader: 'html-withimg-loader' }],
+    loaders: [
+      { test: /\.html$/, loader: require.resolve('html-withimg-loader') }
+    ],
     rules: [
       {
         oneOf: [
@@ -66,7 +68,7 @@ module.exports = {
           }),
           {
             test: /\.(bmp|png|jpe?g|gif|svg)(\?.*)?$/,
-            loader: 'url-loader',
+            loader: require.resolve('url-loader'),
             options: {
               limit: 10000,
               name: `static/img/[name]${assetsHash}.[ext]`
@@ -74,11 +76,11 @@ module.exports = {
           },
           {
             test: /\.art$/,
-            loader: 'art-template-loader'
+            loader: require.resolve('art-template-loader')
           },
           {
             test: /\.vue$/,
-            loader: 'vue-loader',
+            loader: require.resolve('vue-loader'),
             options: vueLoaderConfig
           },
           // Process JS with Babel.
@@ -87,7 +89,7 @@ module.exports = {
             include: [paths.src, paths.test].concat(
               babelExternalMoudles(maraConf.esm)
             ),
-            loader: 'babel-loader',
+            loader: require.resolve('babel-loader'),
             options: {
               babelrc: false,
               presets: ['babel-preset-react-app'],
@@ -110,7 +112,7 @@ module.exports = {
           },
           {
             test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-            loader: 'file-loader',
+            loader: require.resolve('file-loader'),
             options: {
               name: `static/fonts/[name]${assetsHash}.[ext]`
             }
@@ -121,7 +123,7 @@ module.exports = {
             // Also exclude `html` and `json` extensions so they get processed
             // by webpacks internal loaders.
             exclude: [/\.js$/, /\.html$/, /\.json$/],
-            loader: 'file-loader',
+            loader: require.resolve('file-loader'),
             options: {
               name: `static/media/[name]${assetsHash}.[ext]`
             }

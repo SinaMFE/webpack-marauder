@@ -51,7 +51,7 @@ function wrapLoader(options, loaders) {
  */
 function cssLoaders(options = {}) {
   const cssLoader = {
-    loader: 'css-loader',
+    loader: require.resolve('css-loader'),
     options: {
       // 启用压缩
       minimize: options.minimize,
@@ -80,7 +80,7 @@ function cssLoaders(options = {}) {
       // 使用 cssnext 提供变量支持，
       // postcss-import 提供代码段引入
       loaders.push({
-        loader: 'postcss-loader',
+        loader: require.resolve('postcss-loader'),
         options: {
           plugins: loader ? postcssPreProcessorsPlugin : postcssNormalPlugin,
           sourceMap: options.sourceMap

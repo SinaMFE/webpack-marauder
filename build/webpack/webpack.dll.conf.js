@@ -46,7 +46,7 @@ module.exports = {
         include: [config.paths.src, config.paths.test].concat(
           babelExternalMoudles(maraConf.esm)
         ),
-        loader: 'babel-loader',
+        loader: require.resolve('babel-loader'),
         options: {
           babelrc: false,
           presets: ['babel-preset-react-app'],
