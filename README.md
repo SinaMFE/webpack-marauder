@@ -1,5 +1,7 @@
 # webpack-marauder
 
+[![npm](https://img.shields.io/npm/v/webpack-marauder.svg)](https://www.npmjs.com/package/webpack-marauder)
+
 为了保证多人开发时依赖安装的一致性，推荐使用 [yarn](https://yarnpkg.com/zh-Hans/) 作为包管理工具
 
 ## 命令
