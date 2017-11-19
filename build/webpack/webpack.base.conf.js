@@ -102,6 +102,8 @@ module.exports = {
           },
           {
             test: /\.tsx?$/,
+            // require.resolve 将会检查模块是否存在
+            // ts-loader 为可选配置，所以这里不使用 require.resolve
             loader: 'ts-loader',
             include: [paths.src, paths.test].concat(
               babelExternalMoudles(maraConf.esm)
