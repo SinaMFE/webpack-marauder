@@ -109,27 +109,30 @@ const webpackConfig = merge(baseWebpackConfig, {
     // You can remove this if you don't use Moment.js:
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
   ].concat(
-    Object.keys(baseWebpackConfig.entry).map(function(name) {
-      // 每个页面生成一个html
-      return new HtmlWebpackPlugin({
-        // 生成出来的html文件名
-        filename: rootPath(`dist/${name}/index.html`),
-        // 每个html的模版，这里多个页面使用同一个模版
-        template: `html-withimg-loader?min=false!${config.paths
-          .page}/${name}/index.html`,
-        minify: false,
-        // 自动将引用插入html
-        inject: true,
-        // 每个html引用的js模块，也可以在这里加上vendor等公用模块
-        chunks: [name],
-        collapseWhitespace: true,
-        removeRedundantAttributes: true,
-        useShortDoctype: true,
-        removeEmptyAttributes: true,
-        removeStyleLinkTypeAttributes: true,
-        keepClosingSlash: true
+    Object.keys(baseWebpackConfig.entry)
+      // 只针对有 index.html 页面的 page 应用生成 dist html
+      .filter(name => fs.existsSync(`${config.paths.page}/${name}/index.html`))
+      .map(name => {
+        // 每个页面生成一个html
+        return new HtmlWebpackPlugin({
+          // 生成出来的html文件名
+          filename: rootPath(`dist/${name}/index.html`),
+          // 每个html的模版，这里多个页面使用同一个模版
+          template: `html-withimg-loader?min=false!${config.paths
+            .page}/${name}/index.html`,
+          minify: false,
+          // 自动将引用插入html
+          inject: true,
+          // 每个html引用的js模块，也可以在这里加上vendor等公用模块
+          chunks: [name],
+          collapseWhitespace: true,
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          keepClosingSlash: true
+        })
       })
-    })
   )
 })
 
