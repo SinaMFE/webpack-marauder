@@ -1,6 +1,6 @@
 {
     "name": "webpack-marauder",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "description": "marauder 脚本库，支持 react，vue 及普通 js 打包",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -32,7 +32,7 @@
         "babel-runtime": "6.26.0",
         "case-sensitive-paths-webpack-plugin": "^2.1.1",
         "chalk": "^1.1.3",
-        "copy-webpack-plugin": "^4.2.0",
+        "copy-webpack-plugin": "^4.2.1",
         "css-loader": "0.28.4",
         "cssnano": "^3.10.0",
         "dev-ip": "^1.0.1",
@@ -75,7 +75,7 @@
         "webpack": "^3.8.1",
         "webpack-bundle-analyzer": "^2.9.1",
         "webpack-dev-server": "^2.9.3",
-        "webpack-merge": "^4.1.0",
+        "webpack-merge": "^4.1.1",
         "yargs": "^8.0.2",
         "zip-webpack-plugin": "^1.1.0"
     },
