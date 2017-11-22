@@ -3,6 +3,7 @@ const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
 const { getEntries, nodeModulesRegExp } = require('../utils/utils')
 const { styleLoaders } = require('./loaders/style-loader')
+const babelLoader = require('./loaders/babel-loader')
 const paths = config.paths
 
 const entry = `src/view/${process.env.ENTRY || '*'}/index.js`
@@ -52,12 +53,13 @@ module.exports = {
       'react-native': 'react-native-web'
     }
   },
+  resolveLoader: {
+    modules: [path.resolve(__dirname, '../../node_modules'), paths.nodeModules]
+  },
   module: {
     // makes missing exports an error instead of warning
     strictExportPresence: false,
-    loaders: [
-      { test: /\.html$/, loader: require.resolve('html-withimg-loader') }
-    ],
+    loaders: [{ test: /\.html$/, loader: 'html-withimg-loader' }],
     rules: [
       {
         oneOf: [
@@ -68,7 +70,7 @@ module.exports = {
           }),
           {
             test: /\.(bmp|png|jpe?g|gif|svg)(\?.*)?$/,
-            loader: require.resolve('url-loader'),
+            loader: 'url-loader',
             options: {
               limit: 10000,
               name: `static/img/[name]${assetsHash}.[ext]`
@@ -76,30 +78,15 @@ module.exports = {
           },
           {
             test: /\.art$/,
-            loader: require.resolve('art-template-loader')
+            loader: 'art-template-loader'
           },
           {
             test: /\.vue$/,
-            loader: require.resolve('vue-loader'),
+            loader: 'vue-loader',
             options: vueLoaderConfig
           },
           // Process JS with Babel.
-          {
-            test: /\.(js|jsx)$/,
-            include: [paths.src, paths.test].concat(
-              babelExternalMoudles(maraConf.esm)
-            ),
-            loader: require.resolve('babel-loader'),
-            options: {
-              babelrc: false,
-              presets: ['babel-preset-react-app'],
-              compact: isProd,
-              // `babel-loader` 特性
-              // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
-              // 提升性能
-              cacheDirectory: !isProd
-            }
-          },
+          babelLoader(isProd),
           {
             test: /\.tsx?$/,
             // require.resolve 将会检查模块是否存在
@@ -114,7 +101,7 @@ module.exports = {
           },
           {
             test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-            loader: require.resolve('file-loader'),
+            loader: 'file-loader',
             options: {
               name: `static/fonts/[name]${assetsHash}.[ext]`
             }
@@ -125,7 +112,7 @@ module.exports = {
             // Also exclude `html` and `json` extensions so they get processed
             // by webpacks internal loaders.
             exclude: [/\.js$/, /\.html$/, /\.json$/],
-            loader: require.resolve('file-loader'),
+            loader: 'file-loader',
             options: {
               name: `static/media/[name]${assetsHash}.[ext]`
             }

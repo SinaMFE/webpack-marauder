@@ -6,6 +6,7 @@ const portscanner = require('portscanner')
 
 // 【注意】utils.js 为纯工具库，请不要依赖 config.js
 
+// From create-react-app
 // Make sure any symlinks in the project folder are resolved:
 // https://github.com/facebookincubator/create-react-app/issues/637
 const appDirectory = fs.realpathSync(process.cwd())

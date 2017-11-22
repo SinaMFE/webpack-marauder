@@ -3,7 +3,8 @@ const config = require('../config')
 const { nodeModulesRegExp, banner, isObject } = require('../utils/utils')
 const webpackBaseConf = require('./webpack.base.conf')
 const maraConf = require(config.paths.marauder)
-
+const babelLoader = require('./loaders/babel-loader')
+const isProd = process.env.NODE_ENV === 'production'
 const library = '[name]_lib'
 
 function babelExternalMoudles(esm) {
@@ -40,20 +41,7 @@ module.exports = {
   resolve: webpackBaseConf.resolve,
 
   module: {
-    rules: [
-      {
-        test: /\.js$/,
-        include: [config.paths.src, config.paths.test].concat(
-          babelExternalMoudles(maraConf.esm)
-        ),
-        loader: require.resolve('babel-loader'),
-        options: {
-          babelrc: false,
-          presets: ['babel-preset-react-app'],
-          compact: true
-        }
-      }
-    ]
+    rules: [babelLoader(isProd)]
   },
 
   plugins: [
