@@ -225,7 +225,8 @@ if (maraConf.zip === true || maraConf.hybrid) {
       filename: entryName,
       // OPTIONAL: defaults to 'zip'
       // the file extension to use instead of 'zip'
-      extension: 'zip',
+      // 对 hybrid 项目使用 php 后缀，防止 CDN 劫持(?)
+      extension: maraConf.hybrid ? 'php' : 'zip',
       // OPTIONAL: defaults to including everything
       // can be a string, a RegExp, or an array of strings and RegExps
       //   include: [/\.js$/],
