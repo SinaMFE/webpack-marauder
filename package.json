@@ -1,6 +1,6 @@
 {
     "name": "webpack-marauder",
-    "version": "1.3.1",
+    "version": "1.3.2",
     "description": "marauder 脚本库，支持 react，vue 及普通 js 打包",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -65,7 +65,7 @@
         "react-dev-utils": "^4.2.1",
         "sinamfe-marauder-debug": "^1.0.0",
         "sinamfe-marauder-ensure-ls": "0.0.10",
-        "sinamfe-webpack-module_dependency": "0.0.1",
+        "sinamfe-webpack-module_dependency": "^1.0.0",
         "url-loader": "^0.5.8",
         "vinyl-fs": "^2.4.4",
         "vinyl-ftp": "^0.6.0",
