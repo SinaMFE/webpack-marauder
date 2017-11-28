@@ -6,6 +6,9 @@ module.exports = {
     chunk: true,
     assets: true
   },
+  keyword:{
+    UMDCOMPILE:"UMDCOMPILE"//关键字，用于作为umd 组件传递进来的参数。作为entry
+  },
   // 压缩配置
   compress: {
     // 移除 console

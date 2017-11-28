@@ -4,9 +4,13 @@ const vueLoaderConfig = require('./loaders/vue-loader.conf')
 const { getEntries, nodeModulesRegExp } = require('../utils/utils')
 const { styleLoaders } = require('./loaders/style-loader')
 const babelLoader = require('./loaders/babel-loader')
-const paths = config.paths
+const paths = config.paths;
+let entry = `src/view/${process.env.ENTRY || '*'}/index.js`
 
-const entry = `src/view/${process.env.ENTRY || '*'}/index.js`
+//判断是否是umd 组件的编译请求：
+if(process.env.ENTRY==config.keyword.UMDCOMPILE){
+  entry="src/index.js";
+}
 const entries = getEntries(entry, require.resolve('./polyfills'))
 const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)

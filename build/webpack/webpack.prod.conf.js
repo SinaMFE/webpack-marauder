@@ -13,8 +13,16 @@ const config = require('../config')
 const { banner, rootPath, isObject } = require('../utils/utils')
 
 const cwd = process.cwd()
-const entryName = process.env.ENTRY
-const distPageDir = config.paths.dist + '/' + entryName
+const entryName = process.env.ENTRY;
+
+let distPageDir = config.paths.dist + '/' + entryName;
+
+//判断是否是umd 组件的编译请求：
+if(process.env.ENTRY==config.keyword.UMDCOMPILE){
+  distPageDir=config.paths.dist;
+  
+}
+
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
 // 压缩配置

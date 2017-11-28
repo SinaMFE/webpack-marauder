@@ -1,6 +1,6 @@
 {
     "name": "webpack-marauder",
-    "version": "1.3.3",
+    "version": "1.4.4",
     "description": "marauder 脚本库，支持 react，vue 及普通 js 打包",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,7 @@
         "type": "git",
         "url": "git@github.com:SinaMFE/webpack-marauder.git"
     },
-    "files": ["build", "README.md", "CHANGELOG.md", ".githelper", "bin"],
+    "files": ["build", "README.md", "CHANGELOG.md", ".githelper", "bin","postpublish.js"],
     "bin": {
         "marau": "./bin/marauder.js"
     },
@@ -32,6 +32,7 @@
         "babel-runtime": "6.26.0",
         "case-sensitive-paths-webpack-plugin": "^2.1.1",
         "chalk": "^1.1.3",
+        "tinify": "^1.5.0",
         "copy-webpack-plugin": "^4.2.1",
         "css-loader": "0.28.4",
         "cssnano": "^3.10.0",

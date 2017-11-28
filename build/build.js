@@ -59,7 +59,7 @@ function build() {
   })
 }
 
-fs.emptyDirSync(paths.dist + '/' + entry)
+fs.emptyDirSync(paths.dist + (config.keyword.UMDCOMPILE==entry?"":('/' +entry)) )
 
 build()
   .then(output => {
