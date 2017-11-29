@@ -3,6 +3,7 @@ const webpack = require('webpack')
 const merge = require('webpack-merge')
 const chalk = require('chalk')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const marauderDebug = require('sinamfe-marauder-debug')
@@ -45,9 +46,8 @@ const webpackConfig = merge(baseWebpackConfig, {
       : 'static/js/[name].chunk.js'
   },
   plugins: [
-    new webpack.DefinePlugin({
-      'process.env': config.build.env
-    }),
+    new InterpolateHtmlPlugin(config.build.env.raw),
+    new webpack.DefinePlugin(config.build.env.stringified),
     new moduleDependency(),
     new marauderDebug(),
     // Minify the code.

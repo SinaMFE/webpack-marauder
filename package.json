@@ -14,7 +14,13 @@
         "type": "git",
         "url": "git@github.com:SinaMFE/webpack-marauder.git"
     },
-    "files": ["build", "README.md", "CHANGELOG.md", ".githelper", "bin"],
+    "files": [
+        "build",
+        "README.md",
+        "CHANGELOG.md",
+        ".githelper",
+        "bin"
+    ],
     "bin": {
         "marau": "./bin/marauder.js"
     },
@@ -65,7 +71,7 @@
         "react-dev-utils": "^4.2.1",
         "sinamfe-marauder-debug": "^1.0.0",
         "sinamfe-marauder-ensure-ls": "0.0.10",
-        "sinamfe-webpack-module_dependency": "^1.0.0",
+        "sinamfe-webpack-module_dependency": "^1.1.0",
         "url-loader": "^0.5.8",
         "vinyl-fs": "^2.4.4",
         "vinyl-ftp": "^0.6.0",
@@ -74,7 +80,7 @@
         "vue-template-compiler": "^2.4.2",
         "webpack": "^3.8.1",
         "webpack-bundle-analyzer": "^2.9.1",
-        "webpack-dev-server": "^2.9.3",
+        "webpack-dev-server": "^2.9.4",
         "webpack-merge": "^4.1.1",
         "yargs": "^8.0.2",
         "zip-webpack-plugin": "^1.1.0"

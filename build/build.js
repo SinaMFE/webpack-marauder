@@ -8,8 +8,8 @@ const { entry, ftpBranch } = require('./utils/entry')
 
 const ora = require('ora')
 const webpack = require('webpack')
-const ftpUpload = require('./utils/ftp.js')
-const config = require('./config.js')
+const ftpUpload = require('./utils/ftp')
+const config = require('./config')
 const paths = config.paths
 const webpackConfig = require('./webpack/webpack.prod.conf')
 const maraConf = require(paths.marauder)

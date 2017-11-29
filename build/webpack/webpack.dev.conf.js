@@ -3,6 +3,7 @@ const webpack = require('webpack')
 const merge = require('webpack-merge')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin')
+const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const baseWebpackConfig = require('./webpack.base.conf')
@@ -20,10 +21,12 @@ module.exports = merge(baseWebpackConfig, {
     pathinfo: true
   },
   plugins: [
+    // 替换 html 内的环境变量
+    // %PUBLIC% 转换为具体路径
+    // 在 dev 环境下为空字符串
+    new InterpolateHtmlPlugin(config.dev.env.raw),
     new webpack.NamedModulesPlugin(),
-    new webpack.DefinePlugin({
-      'process.env': config.dev.env
-    }),
+    new webpack.DefinePlugin(config.dev.env.stringified),
     // https://github.com/glenjamin/webpack-hot-middleware#installation--usage
     new webpack.HotModuleReplacementPlugin(),
     // 出错时只打印错误，但不重新加载页面

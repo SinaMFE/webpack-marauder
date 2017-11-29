@@ -1,6 +1,6 @@
 const autoprefixer = require('autoprefixer')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
-const config = require('../../config.js')
+const config = require('../../config')
 const maraConf = require(config.paths.marauder)
 
 const cssFilename = maraConf.hash

@@ -3,7 +3,7 @@ process.env.BABEL_ENV = 'production'
 process.env.NODE_ENV = 'production'
 
 const chalk = require('chalk')
-const config = require('./config.js')
+const config = require('./config')
 const { isObject, isNotEmptyArray } = require('./utils/utils')
 const paths = config.paths
 const vendorConf = require(paths.marauder).vendor || []

@@ -1,7 +1,7 @@
 process.env.BABEL_ENV = 'development'
 process.env.NODE_ENV = 'development'
 
-const config = require('./config.js')
+const config = require('./config')
 const chalk = require('chalk')
 const { getFreePort, localIp, rootPath } = require('./utils/utils')
 const { entry } = require('./utils/entry')
@@ -65,20 +65,10 @@ async function createDevServer(port) {
     // 屏蔽 WebpackDevServer 自身的日志输出
     // 此设置不影响警告与错误信息
     clientLogLevel: 'none',
-    // By default WebpackDevServer serves physical files from current directory
-    // in addition to all the virtual build products that it serves from memory.
-    // This is confusing because those files won’t automatically be available in
-    // production build folder unless we copy them. However, copying the whole
-    // project directory is dangerous because we may expose sensitive files.
-    // Instead, we establish a convention that only files in `public` directory
-    // get served. Our build script will copy `public` into the `build` folder.
-    // In `index.html`, you can get URL of `public` folder with %PUBLIC_URL%:
+    // 注意，不要通过 webpack import public 内的资源
+    // 对于脚本及样式，应使用 script，link 标签引入
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    // In JavaScript code, you can access it with `process.env.PUBLIC_URL`.
-    // Note that we only recommend to use `public` folder as an escape hatch
-    // for files like `favicon.ico`, `manifest.json`, and libraries that are
-    // for some reason broken when imported through Webpack. If you just want to
-    // use an image, put it in `src` and `import` it from JavaScript instead.
+    // 在 js 内，可使用 process.env.PUBLIC 获取路径
     contentBase: [config.paths.public, pagePublicDir],
     // 监听 public 文件夹内容变化
     watchContentBase: true,

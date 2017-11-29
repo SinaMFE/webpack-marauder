@@ -1,4 +1,5 @@
-const { rootPath } = require('./utils/utils')
+const { rootPath } = require('../utils/utils')
+const getEnv = require('./env')
 
 module.exports = {
   hash: {
@@ -30,10 +31,7 @@ module.exports = {
     dll: rootPath('dll')
   },
   build: {
-    env: {
-      // stringify env for DefinePlugin
-      NODE_ENV: JSON.stringify('production')
-    },
+    env: getEnv(''),
     assetsPublicPath: '/',
     productionGzipExtensions: ['js', 'css'],
     // Run the build command with an extra argument to
@@ -47,10 +45,7 @@ module.exports = {
     uploadFtp: process.env.npm_config_ftp
   },
   dev: {
-    env: {
-      // stringify env for DefinePlugin
-      NODE_ENV: JSON.stringify('development')
-    },
+    env: getEnv(''),
     port: 3022,
     assetsPublicPath: '/',
     proxyTable: {},

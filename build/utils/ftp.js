@@ -3,7 +3,7 @@ const Ftp = require('vinyl-ftp')
 const openBrowser = require('react-dev-utils/openBrowser')
 const path = require('path')
 const chalk = require('chalk')
-const config = require('../config.js')
+const config = require('../config')
 const { rootPath } = require('./utils.js')
 const maraConf = require(config.paths.marauder)
 
