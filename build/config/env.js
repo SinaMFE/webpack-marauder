@@ -1,26 +1,40 @@
 const fs = require('fs')
 const path = require('path')
 
-function stringifyObjVal(obj) {
-  return Object.keys(obj).reduce((env, key) => {
-    env[key] = JSON.stringify(obj[key])
+// 自定义环境变量前缀
+const MARA = /^MARA_/i
+const baseEnv = {
+  // 标识开发与生产环境
+  // React 内部依赖此变量
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  // 方便使用公共资源路径
+  // 在 js 内，以 process.env.PUBLIC 变量存在
+  // html 中可使用 %PUBLIC% 占位符
+  // 例：<img src="%PUBLIC%/img/logo.png">
+  PUBLIC: publicUrl
+}
+
+function genMixPropsFn(mode) {
+  const handle = mode === 'stringify' ? e => JSON.stringify(e) : e => e
+
+  return (env, key) => {
+    env[key] = handle(obj[key])
     return env
-  }, {})
+  }
+}
+
+function stringifyObjVal(obj) {
+  return Object.keys(obj).reduce(genMixPropsFn('stringify'), {})
 }
 
 function getEnv(publicUrl) {
-  const raw = {
-    // Useful for determining whether we’re running in production mode.
-    // Most importantly, it switches React into the correct mode.
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    // Useful for resolving the correct path to static assets in `public`.
-    // For example, <img src={process.env.PUBLIC + '/img/logo.png'} />.
-    // This should only be used as an escape hatch. Normally you would put
-    // images into the `src` and `import` them in code to get their paths.
-    PUBLIC: publicUrl
-  }
+  const raw = Object.keys(process.env)
+    // 混合自定义环境变量
+    // 为防止环境变量混淆，自定义变量需以 MARA_ 作为前缀
+    .filter(key => MARA.test(key))
+    .reduce(genMixPropsFn(), baseEnv)
 
-  // Stringify all values so we can feed into Webpack DefinePlugin
+  // DefinePlugin 需要传入序列化参数值
   const stringified = {
     'process.env': stringifyObjVal(raw)
   }
