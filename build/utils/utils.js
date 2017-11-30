@@ -121,6 +121,17 @@ function isObject(obj) {
   return Object.prototype.toString.call(obj) === '[object Object]'
 }
 
+function ensureSlash(path, needsSlash) {
+  const hasSlash = path.endsWith('/')
+  if (hasSlash && !needsSlash) {
+    return path.substr(path, path.length - 1)
+  } else if (!hasSlash && needsSlash) {
+    return `${path}/`
+  } else {
+    return path
+  }
+}
+
 module.exports = {
   isObject,
   getPageList,
@@ -132,5 +143,6 @@ module.exports = {
   pubDate,
   banner,
   isNotEmptyArray,
-  nodeModulesRegExp
+  nodeModulesRegExp,
+  ensureSlash
 }

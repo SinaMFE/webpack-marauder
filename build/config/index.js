@@ -1,4 +1,4 @@
-const { rootPath } = require('../utils/utils')
+const paths = require('./paths')
 const getEnv = require('./env')
 
 module.exports = {
@@ -17,21 +17,9 @@ module.exports = {
   esm: ['@mfelibs'],
   // 打包 dll
   vendor: [],
-  paths: {
-    app: rootPath('.'),
-    entries: 'src/view/*/index.js',
-    src: rootPath('src'),
-    page: rootPath('src/view'),
-    public: rootPath('public'),
-    dist: rootPath('dist'),
-    test: rootPath('test'),
-    nodeModules: rootPath('node_modules'),
-    packageJson: rootPath('package.json'),
-    marauder: rootPath('marauder.config.js'),
-    dll: rootPath('dll')
-  },
+  paths: paths,
   build: {
-    env: getEnv(''),
+    env: getEnv(paths.servedPath.slice(0, -1)),
     assetsPublicPath: '/',
     productionGzipExtensions: ['js', 'css'],
     // Run the build command with an extra argument to
