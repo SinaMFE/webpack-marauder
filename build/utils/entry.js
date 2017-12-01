@@ -12,7 +12,9 @@ if (pages.length > 1) {
     .command('npm run build <page> [--ftp] [namespace]')
     .demandCommand(
       1,
-      `😂  ${chalk.bgRed('请指定页面名')}  ${chalk.green(`可选值:【${pages}】\n`)}`
+      `😂  ${chalk.bgRed('请指定页面名')}  ${chalk.green(
+        `可选值:【${pages}】\n`
+      )}`
     ).argv._
 } else {
   // 只有一个页面文件夹时，页面名参数不做必传校验
@@ -22,8 +24,9 @@ if (pages.length > 1) {
 if (!input[0]) {
   // 无页面名输入，将唯一的页面作为输入名
   input[0] = pages[0]
-} else if (!pages.includes(input[0])) {
+} else if (!pages.includes(input[0]) && input[0] != config.keyword.UMDCOMPILE) {
   // 页面名有输入时，校验输入页面名的合法性
+  console.log(config.keyword.UMDCOMPILE)
   console.log(
     `😂  ${chalk.bgRed(`页面 ${input[0]} 输入有误`)}  ${chalk.green(
       `可选值：【${pages}】`

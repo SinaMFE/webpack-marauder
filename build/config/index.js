@@ -17,6 +17,10 @@ module.exports = {
     chunk: true,
     assets: true
   },
+  keyword: {
+    // 组件 entry 关键字，用于作为 umd 组件传递进来的参数
+    UMDCOMPILE: 'UMDCOMPILE'
+  },
   // 压缩配置
   compress: {
     // 移除 console

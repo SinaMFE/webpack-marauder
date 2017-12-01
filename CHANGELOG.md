@@ -20,3 +20,7 @@
 - 修复 `dev` 下模式自动打开浏览器后，终端进程不退出问题
 
 
+## v1.4.4
+- 合并 支持组件脚手架引入webpack-marauder
+- 加入了组件依赖的 postpublish，用于发布mjs
+- 加入了文件./build/build4comp.js文件用于做组件demo和umd的批处理入口
