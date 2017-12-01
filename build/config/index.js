@@ -1,5 +1,15 @@
 const paths = require('./paths')
 const getEnv = require('./env')
+const { ensureSlash } = require('../utils/utils')
+const maraConf = require(paths.marauder)
+
+function getServedPath(publicUrl) {
+  // 强制以 / 结尾，为了兼容 publicPath: '.'
+  return publicUrl ? ensureSlash(publicUrl, true) : '/'
+}
+
+const publicPath = getServedPath(maraConf.publicPath)
+const publicDevPath = getServedPath(maraConf.publicDevPath)
 
 module.exports = {
   hash: {
@@ -19,8 +29,8 @@ module.exports = {
   vendor: [],
   paths: paths,
   build: {
-    env: getEnv(paths.servedPath.slice(0, -1)),
-    assetsPublicPath: '/',
+    env: getEnv(publicPath.slice(0, -1)),
+    assetsPublicPath: publicPath,
     productionGzipExtensions: ['js', 'css'],
     // Run the build command with an extra argument to
     // View the bundle analyzer report after build finishes:
@@ -33,9 +43,9 @@ module.exports = {
     uploadFtp: process.env.npm_config_ftp
   },
   dev: {
-    env: getEnv(''),
+    env: getEnv(publicDevPath.slice(0, -1)),
     port: 3022,
-    assetsPublicPath: '/',
+    assetsPublicPath: publicDevPath,
     proxyTable: {},
     // CSS Sourcemaps off by default because relative paths are "buggy"
     // with this option, according to the CSS-Loader README
@@ -44,17 +54,20 @@ module.exports = {
     // just be aware of this issue when enabling this option.
     cssSourceMap: false
   },
-  ftp: {
-    host: '', // 主机
-    port: 0,
-    user: '',
-    password: '',
-    reload: true, // 刷新缓存
-    openBrowser: true, // 上传完毕后自动打开浏览器
-    remotePath: {
-      version: true // 添加 version 路径
-    }
-  },
+  ftp: Object.assign(
+    {
+      host: '', // 主机
+      port: 0,
+      user: '',
+      password: '',
+      reload: true, // 刷新缓存
+      openBrowser: true, // 上传完毕后自动打开浏览器
+      remotePath: {
+        version: true // 添加 version 路径
+      }
+    },
+    maraConf.ftp
+  ),
   // hybrid 项目配置，存在此属性时，将会生成 zip 包
   hybrid: {},
   browserslist: {

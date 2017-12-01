@@ -128,14 +128,19 @@ async function start() {
 
   return devServer.listen(port, HOST, err => {
     const uri = `http://${HOST || 'localhost'}:${port}`
+    let publicDevPath = config.dev.assetsPublicPath
 
     if (err) return console.log(err)
 
     // 交互模式下清除 console
     isInteractive && clearConsole()
 
+    // 以绝对路径 / 开头时，加入 url 中在浏览器打开
+    // 以非 / 开头时，回退为 /，避免浏览器路径错乱
+    publicDevPath = publicDevPath.startsWith('/') ? publicDevPath : '/'
+
     console.log('> Starting dev server...')
-    openBrowser(`${uri}/${entry}.html`)
+    openBrowser(`${uri + publicDevPath + entry}.html`)
   })
 }
 

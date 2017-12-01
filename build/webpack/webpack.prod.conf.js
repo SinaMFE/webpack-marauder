@@ -37,7 +37,7 @@ const webpackConfig = merge(baseWebpackConfig, {
   devtool: shouldUseSourceMap ? 'source-map' : false,
   output: {
     path: distPageDir,
-    publicPath: maraConf.publicPath || config.build.assetsPublicPath,
+    publicPath: config.build.assetsPublicPath,
     filename: maraConf.hash
       ? 'static/js/[name].[chunkhash:8].min.js'
       : 'static/js/[name].min.js',
@@ -118,8 +118,9 @@ const webpackConfig = merge(baseWebpackConfig, {
           // 生成出来的html文件名
           filename: rootPath(`dist/${name}/index.html`),
           // 每个html的模版，这里多个页面使用同一个模版
-          template: `html-withimg-loader?min=false!${config.paths
-            .page}/${name}/index.html`,
+          template: `html-withimg-loader?min=false!${config.paths.page}/${
+            name
+          }/index.html`,
           minify: false,
           // 自动将引用插入html
           inject: true,

@@ -23,10 +23,10 @@ function getEnv(publicUrl) {
     // React 内部依赖此变量
     NODE_ENV: process.env.NODE_ENV || 'development',
     // 方便使用公共资源路径
-    // 在 js 内，以 process.env.PUBLIC 变量存在
-    // html 中可使用 %PUBLIC% 占位符
-    // 例：<img src="%PUBLIC%/img/logo.png">
-    PUBLIC: publicUrl
+    // 在 js 内，以 process.env.PUBLIC_URL 变量存在
+    // html 中可使用 %PUBLIC_URL% 占位符
+    // 例：<img src="%PUBLIC_URL%/img/logo.png">
+    PUBLIC_URL: publicUrl
   }
   const raw = Object.keys(process.env)
     // 混合自定义环境变量

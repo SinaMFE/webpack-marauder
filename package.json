@@ -43,7 +43,7 @@
         "cssnano": "^3.10.0",
         "dev-ip": "^1.0.1",
         "eslint": "^4.8.0",
-        "eslint-config-sinamfe": "^1.0.0",
+        "eslint-config-sinamfe": "^1.0.1",
         "eslint-config-standard": "^10.2.1",
         "eslint-friendly-formatter": "^3.0.0",
         "eslint-loader": "^1.7.1",

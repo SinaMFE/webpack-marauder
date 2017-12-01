@@ -5,10 +5,9 @@ const path = require('path')
 const chalk = require('chalk')
 const config = require('../config')
 const { rootPath } = require('./utils.js')
-const maraConf = require(config.paths.marauder)
 
 const isInteractive = process.stdout.isTTY
-const ftpConf = Object.assign({}, config.ftp, maraConf.ftp)
+const ftpConf = config.ftp
 const uploadStep = [
   `${chalk.blue('🌝  [1/2]')} Connecting ${chalk.yellow(config.ftp.host)}...`,
   `${chalk.blue('🚀  [2/2]')} Uploading package...`

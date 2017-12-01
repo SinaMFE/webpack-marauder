@@ -1,12 +1,4 @@
-const { rootPath, ensureSlash } = require('../utils/utils')
-const marauder = rootPath('marauder.config.js')
-
-function getServedPath() {
-  const publicUrl = marauder.publicPath
-
-  // 强制以 / 结尾，为了兼容 publicPath: '.'
-  return publicUrl ? ensureSlash(publicUrl, true) : '/'
-}
+const { rootPath } = require('../utils/utils')
 
 module.exports = {
   app: rootPath('.'),
@@ -18,7 +10,6 @@ module.exports = {
   test: rootPath('test'),
   nodeModules: rootPath('node_modules'),
   packageJson: rootPath('package.json'),
-  marauder: marauder,
-  servedPath: getServedPath(),
+  marauder: rootPath('marauder.config.js'),
   dll: rootPath('dll')
 }

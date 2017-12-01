@@ -48,7 +48,9 @@ module.exports = merge(baseWebpackConfig, {
         // 以页面文件夹名作为模板名称
         filename: `${name}.html`,
         // 生成各自的 html 模板
-        template: `html-withimg-loader?min=false!${cwd}/src/view/${name}/index.html`,
+        template: `html-withimg-loader?min=false!${cwd}/src/view/${
+          name
+        }/index.html`,
         inject: true,
         // 每个html引用的js模块，也可以在这里加上vendor等公用模块
         chunks: [name]
