@@ -126,7 +126,8 @@ async function start() {
     })
   })
 
-  return devServer.listen(port, HOST, err => {
+  // 指定 listen host 0.0.0.0 允许来自 ip 或 localhost 的访问
+  return devServer.listen(port, '0.0.0.0', err => {
     const uri = `http://${HOST || 'localhost'}:${port}`
     let publicDevPath = config.dev.assetsPublicPath
 
