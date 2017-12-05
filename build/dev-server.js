@@ -5,6 +5,7 @@ const config = require('./config')
 const chalk = require('chalk')
 const { getFreePort, localIp, rootPath } = require('./utils/utils')
 const { entry } = require('./utils/entry')
+const maraConf = require(config.paths.marauder)
 
 // 是否为交互模式
 const isInteractive = process.stdout.isTTY
@@ -19,13 +20,14 @@ const DevServer = require('webpack-dev-server')
 const webpackConfig = require('./webpack/webpack.dev.conf')
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
 const HOST = localIp()
+const protocol = maraConf.https === true ? 'https' : 'http'
 
 // Define HTTP proxies to your custom API backend
 // https://github.com/chimurai/http-proxy-middleware
 const proxyTable = config.dev.proxyTable
 
 async function createCompiler(port) {
-  const uri = `http://${HOST || 'localhost'}:${port}`
+  const uri = `${protocol}://${HOST || 'localhost'}:${port}`
   const compiler = webpack(webpackConfig)
   let isFirstCompile = true
 
@@ -92,8 +94,7 @@ async function createDevServer(port) {
         'g'
       )
     },
-    // 开启 HTTPS
-    https: false,
+    https: protocol === 'https',
     host: HOST || '0.0.0.0',
     overlay: false,
     historyApiFallback: {
@@ -128,7 +129,7 @@ async function start() {
 
   // 指定 listen host 0.0.0.0 允许来自 ip 或 localhost 的访问
   return devServer.listen(port, '0.0.0.0', err => {
-    const uri = `http://${HOST || 'localhost'}:${port}`
+    const uri = `${protocol}://${HOST || 'localhost'}:${port}`
     let publicDevPath = config.dev.assetsPublicPath
 
     if (err) return console.log(err)
