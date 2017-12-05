@@ -7,8 +7,8 @@ const babelLoader = require('./loaders/babel-loader')
 const paths = config.paths
 let entry = `src/view/${process.env.ENTRY || '*'}/index.js`
 
-//判断是否是umd 组件的编译请求：
-if (process.env.ENTRY == config.keyword.UMDCOMPILE) {
+// 判断是否是umd 组件的编译请求：
+if (process.env.ENTRY === config.keyword.UMDCOMPILE) {
   entry = 'src/index.js'
 }
 const entries = getEntries(entry, require.resolve('./polyfills'))
@@ -48,7 +48,10 @@ module.exports = {
     modules: ['node_modules', paths.nodeModules],
     alias: {
       vue$: 'vue/dist/vue.esm.js',
-      src: paths.src,
+      // 使用 `~` 作为 src 别名
+      // 使用特殊符号防止与 npm 包冲突
+      // import '~/css/style.css'
+      '~': paths.src,
       'babel-runtime': path.dirname(
         require.resolve('babel-runtime/package.json')
       ),
