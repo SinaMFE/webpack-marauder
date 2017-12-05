@@ -2,9 +2,6 @@ const fs = require('fs')
 const path = require('path')
 const paths = require('./paths')
 
-// Make sure that including paths.js after env.js will read .env variables.
-delete require.cache[require.resolve('./paths')]
-
 const NODE_ENV = process.env.NODE_ENV
 if (!NODE_ENV) {
   throw new Error(
@@ -39,19 +36,6 @@ dotenvFiles.forEach(dotenvFile => {
   }
 })
 
-function genMixPropsFn(mode) {
-  const handle = mode === 'stringify' ? e => JSON.stringify(e) : e => e
-
-  return (env, key, idx, obj) => {
-    env[key] = handle(obj[key])
-    return env
-  }
-}
-
-function stringifyObjVal(obj) {
-  return Object.keys(obj).reduce(genMixPropsFn('stringify'), {})
-}
-
 function getEnv(publicUrl) {
   const baseEnv = {
     // 标识开发与生产环境
@@ -67,11 +51,17 @@ function getEnv(publicUrl) {
     // 混合自定义环境变量
     // 为防止环境变量混淆，自定义变量需以 MARA_ 作为前缀
     .filter(key => MARA.test(key))
-    .reduce(genMixPropsFn(), baseEnv)
+    .reduce((env, key) => {
+      env[key] = process.env[key]
+      return env
+    }, baseEnv)
 
   // DefinePlugin 需要传入序列化参数值
   const stringified = {
-    'process.env': stringifyObjVal(raw)
+    'process.env': Object.keys(raw).reduce((env, key) => {
+      env[key] = JSON.stringify(raw[key])
+      return env
+    }, {})
   }
 
   return { raw, stringified }
