@@ -2,24 +2,20 @@ process.env.BABEL_ENV = 'development'
 process.env.NODE_ENV = 'development'
 
 const config = require('./config')
-const chalk = require('chalk')
-const { getFreePort, localIp, rootPath } = require('./utils/utils')
+const { getFreePort, rootPath } = require('./utils/utils')
 const { entry } = require('./utils/entry')
 const maraConf = require(config.paths.marauder)
 
 // 是否为交互模式
 const isInteractive = process.stdout.isTTY
 
-const path = require('path')
 const webpack = require('webpack')
-const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
-const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMiddleware')
 const clearConsole = require('react-dev-utils/clearConsole')
 const openBrowser = require('react-dev-utils/openBrowser')
 const DevServer = require('webpack-dev-server')
 const webpackConfig = require('./webpack/webpack.dev.conf')
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
-const HOST = localIp()
+const HOST = webpackConfig.devServer.host
 const protocol = maraConf.https === true ? 'https' : 'http'
 
 // Define HTTP proxies to your custom API backend
@@ -58,63 +54,17 @@ async function createCompiler(port) {
 
 async function createDevServer(port) {
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
+  const serverConf = webpackConfig.devServer
   const compiler = await createCompiler(port)
 
-  return new DevServer(compiler, {
-    disableHostCheck: !proxyTable,
-    // 开启 gzip 压缩
-    compress: true,
-    // 屏蔽 WebpackDevServer 自身的日志输出
-    // 此设置不影响警告与错误信息
-    clientLogLevel: 'none',
-    // 注意，不要通过 webpack import public 内的资源
-    // 对于脚本及样式，应使用 script，link 标签引入
-    // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    // 在 js 内，可使用 process.env.PUBLIC 获取路径
-    contentBase: [config.paths.public, pagePublicDir],
-    // 监听 public 文件夹内容变化
-    watchContentBase: true,
-    // 开启服务器热更新. 它将为 WebpackDevServer 客户端注入 /sockjs-node/ 节点
-    // 从而能够感知文件何时被更新。WebpackDevServer 客户端将会被添加到 Webpack 开发配置
-    // 的入口中。 注意，目前只有 css 能够热更新，js 的改动依然会触发浏览器刷新
-    hot: true,
-    // 指定资源根路径，开发环境默认为 /.
-    publicPath: webpackConfig.output.publicPath,
-    // WebpackDevServer 的默认输出会有很多干扰项，所以我们使用自定义信息代替
-    quiet: true,
-    // 据说这么做在某些系统上能避免 CPU 过载。
-    // https://github.com/facebookincubator/create-react-app/issues/293
-    // src/node_modules 不被忽略以支持使用绝对路径导入
-    // https://github.com/facebookincubator/create-react-app/issues/1065
-    watchOptions: {
-      ignored: new RegExp(
-        `^(?!${path
-          .normalize(config.paths.src + '/')
-          .replace(/[\\]+/g, '\\\\')}).+[\\\\/]node_modules[\\\\/]`,
-        'g'
-      )
-    },
-    https: protocol === 'https',
-    host: HOST || '0.0.0.0',
-    overlay: false,
-    historyApiFallback: {
-      // Paths with dots should still use the history fallback.
-      // See https://github.com/facebookincubator/create-react-app/issues/387.
-      disableDotRule: true
-    },
-    // public: allowedHost,
-    // proxy,
-    before(app) {
-      // This lets us open files from the runtime error overlay.
-      app.use(errorOverlayMiddleware())
-      // This service worker file is effectively a 'no-op' that will reset any
-      // previous service worker registered for the same host:port combination.
-      // We do this in development to avoid hitting the production cache if
-      // it used the same host and port.
-      // https://github.com/facebookincubator/create-react-app/issues/2272#issuecomment-302832432
-      app.use(noopServiceWorkerMiddleware())
-    }
-  })
+  serverConf.https = protocol === 'https'
+  // 安全原因，一般禁用 HostCheck
+  // https://github.com/webpack/webpack-dev-server/issues/887
+  serverConf.disableHostCheck = !proxyTable
+  // 注入页面 public 文件夹
+  serverConf.contentBase.push(pagePublicDir)
+
+  return new DevServer(compiler, serverConf)
 }
 
 async function start() {
