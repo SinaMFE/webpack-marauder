@@ -2,6 +2,7 @@ const { rootPath } = require('../utils/utils')
 
 module.exports = {
   app: rootPath('.'),
+  dotenv: rootPath('.env'),
   entries: 'src/view/*/index.js',
   src: rootPath('src'),
   page: rootPath('src/view'),

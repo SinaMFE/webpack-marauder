@@ -1,8 +1,43 @@
 const fs = require('fs')
 const path = require('path')
+const paths = require('./paths')
+
+// Make sure that including paths.js after env.js will read .env variables.
+delete require.cache[require.resolve('./paths')]
+
+const NODE_ENV = process.env.NODE_ENV
+if (!NODE_ENV) {
+  throw new Error(
+    'The NODE_ENV environment variable is required but was not specified.'
+  )
+}
 
 // 自定义环境变量前缀
 const MARA = /^MARA_/i
+
+// https://github.com/bkeepers/dotenv#what-other-env-files-can-i-use
+const dotenvFiles = [
+  `${paths.dotenv}.${NODE_ENV}.local`,
+  `${paths.dotenv}.${NODE_ENV}`,
+  // Don't include `.env.local` for `test` environment
+  // since normally you expect tests to produce the same
+  // results for everyone
+  NODE_ENV !== 'test' && `${paths.dotenv}.local`,
+  paths.dotenv
+].filter(Boolean)
+
+// merge .env* 文件中的环境变量
+// dotenv 永远不会覆盖已经存在的环境变量
+// 对于环境中已存在的同名变量，dotenv 会略过设置
+// https://github.com/motdotla/dotenv
+dotenvFiles.forEach(dotenvFile => {
+  if (fs.existsSync(dotenvFile)) {
+    require('dotenv').config({
+      // 使用自定义路径
+      path: dotenvFile
+    })
+  }
+})
 
 function genMixPropsFn(mode) {
   const handle = mode === 'stringify' ? e => JSON.stringify(e) : e => e
