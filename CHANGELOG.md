@@ -2,10 +2,13 @@
 
 ## v1.5.0
 
-* html 内支持 `%PUBLIC_URL%` 占位符获取 `public` 资源地址
-* 支持以 `MARA_` 为前缀的自定义环境变量，process.env.MARA_<name>
-* maruder.config 支持 `publicDevPath`
-* 修复本地服务器 `localhost` 域名限制问题
+* 支持 html 内 `%PUBLIC_URL%` 占位符获取 `public` 资源地址
+* 支持 以 `MARA_` 为前缀的自定义环境变量，process.env.MARA_<name>
+* 支持 maruder.config 配置 `publicDevPath`
+* 修复 本地服务器 `localhost` 域名限制问题
+* 优化 使用 `~` 作为 `src` 根目录别名
+* 支持 `.env` 文件管理环境变量
+* 支持 maruder.config 配置 `https`
 
 ## v1.4.0
 
