@@ -45,6 +45,7 @@
         "cssnano": "^3.10.0",
         "dev-ip": "^1.0.1",
         "dotenv": "^4.0.0",
+        "marauder-ejs-loader": "^1.0.0",
         "eslint": "^4.8.0",
         "eslint-config-sinamfe": "^1.0.1",
         "eslint-config-standard": "^10.2.1",

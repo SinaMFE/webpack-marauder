@@ -35,15 +35,15 @@ module.exports = {
   },
   resolve: {
     extensions: [
-      '.js',
-      '.ts',
       '.mjs',
       '.tsx',
+      '.ts',
+      '.jsx',
+      '.js',
       '.web.js',
-      '.vue',
-      '.json',
       '.web.jsx',
-      '.jsx'
+      '.vue',
+      '.json'
     ],
     modules: ['node_modules', paths.nodeModules],
     alias: {
@@ -82,6 +82,10 @@ module.exports = {
               limit: 10000,
               name: `static/img/[name]${assetsHash}.[ext]`
             }
+          },
+          {
+            test: /\.ejs$/,
+            loader: 'marauder-ejs-loader'
           },
           {
             test: /\.art$/,
