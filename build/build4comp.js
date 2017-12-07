@@ -1,3 +1,7 @@
+// 确保在文件首部设置环境变量
+process.env.BABEL_ENV = 'production'
+process.env.NODE_ENV = 'production'
+
 const config = require('./config')
 const paths = config.paths
 const maraConf = require(paths.marauder)
