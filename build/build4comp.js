@@ -1,4 +1,4 @@
-const config = require('./config.js')
+const config = require('./config')
 const paths = config.paths
 const maraConf = require(paths.marauder)
 const { getPageList } = require('./utils/utils')
