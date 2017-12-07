@@ -59,39 +59,46 @@ function build() {
   })
 }
 
-fs.emptyDirSync(
-  paths.dist + (config.keyword.UMDCOMPILE == entry ? '' : '/' + entry)
-)
+function clean() {
+  const isComponent = entry === config.keyword.UMDCOMPILE
 
-build()
-  .then(output => {
-    // webpack 打包结果统计
-    process.stdout.write(
-      output.stats.toString({
-        colors: true,
-        modules: false,
-        children: false,
-        chunks: false,
-        chunkModules: false
-      }) + '\n\n'
+  return fs.emptyDir(paths.dist + (isComponent ? '' : '/' + entry))
+}
+
+function ftp() {
+  // ftp upload
+  config.build.uploadFtp && ftpUpload(entry, ftpBranch)
+}
+
+function success(output) {
+  // webpack 打包结果统计
+  process.stdout.write(
+    output.stats.toString({
+      colors: true,
+      modules: false,
+      children: false,
+      chunks: false,
+      chunkModules: false
+    }) + '\n\n'
+  )
+
+  console.log(chalk.cyan('  Build complete.\n'))
+
+  console.log(
+    chalk.yellow(
+      `  Tip: built files are meant to be served over an HTTP server.\n  Opening index.html over file:// won't work.\n`
     )
+  )
+}
 
-    console.log(chalk.cyan('  Build complete.\n'))
+function error(err) {
+  console.log(chalk.red('Failed to compile.\n'))
+  printBuildError(err)
+  process.exit(1)
+}
 
-    console.log(
-      chalk.yellow(
-        `  Tip: built files are meant to be served over an HTTP server.\n  Opening index.html over file:// won't work.\n`
-      )
-    )
-  })
-  .then(() => {
-    // ftp upload
-    if (config.build.uploadFtp) {
-      ftpUpload(entry, ftpBranch)
-    }
-  })
-  .catch(err => {
-    console.log(chalk.red('Failed to compile.\n'))
-    printBuildError(err)
-    process.exit(1)
-  })
+clean()
+  .then(build)
+  .then(success)
+  .then(ftp)
+  .catch(error)

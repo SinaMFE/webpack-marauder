@@ -13,15 +13,10 @@ const baseWebpackConfig = require('./webpack.base.conf')
 const config = require('../config')
 const { banner, rootPath, isObject } = require('../utils/utils')
 
-const cwd = process.cwd()
 const entryName = process.env.ENTRY
+const isComponent = entryName === config.keyword.UMDCOMPILE
 
-let distPageDir = config.paths.dist + '/' + entryName
-
-//判断是否是umd 组件的编译请求：
-if (process.env.ENTRY == config.keyword.UMDCOMPILE) {
-  distPageDir = config.paths.dist
-}
+const distPageDir = config.paths.dist + (isComponent ? '' : `/${entryName}`)
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
@@ -55,7 +50,6 @@ const webpackConfig = merge(baseWebpackConfig, {
   plugins: [
     new InterpolateHtmlPlugin(config.build.env.raw),
     new webpack.DefinePlugin(config.build.env.stringified),
-    new moduleDependency(),
     new marauderDebug(),
     // Minify the code.
     new webpack.optimize.UglifyJsPlugin({
@@ -143,6 +137,10 @@ const webpackConfig = merge(baseWebpackConfig, {
       })
   )
 })
+
+if (!isComponent) {
+  webpackConfig.plugins.push(new moduleDependency())
+}
 
 // if (maraConf.vendor && maraConf.vendor.length) {
 //   webpackConfig.plugins.push(

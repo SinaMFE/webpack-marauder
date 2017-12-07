@@ -21,14 +21,15 @@ if (pages.length > 1) {
   input = yargs.argv._
 }
 
-if (!input[0]) {
+let entry = input[0]
+const isComponent = entry === config.keyword.UMDCOMPILE
+
+if (!entry) {
   // 无页面名输入，将唯一的页面作为输入名
-  input[0] = pages[0]
-} else if (!pages.includes(input[0]) && input[0] != config.keyword.UMDCOMPILE) {
-  // 页面名有输入时，校验输入页面名的合法性
-  console.log(config.keyword.UMDCOMPILE)
+  entry = pages[0]
+} else if (!isComponent && !pages.includes(entry)) {
   console.log(
-    `😂  ${chalk.bgRed(`页面 ${input[0]} 输入有误`)}  ${chalk.green(
+    `😂  ${chalk.bgRed(`页面 ${entry} 输入有误`)}  ${chalk.green(
       `可选值：【${pages}】`
     )}\n`
   )
@@ -36,11 +37,11 @@ if (!input[0]) {
 }
 
 // 写入运行时环境
-process.env.ENTRY = input[0]
+process.env.ENTRY = entry
 process.env.PAGES = pages
 
 module.exports = {
   input,
-  entry: input[0],
+  entry,
   ftpBranch: input[1]
 }

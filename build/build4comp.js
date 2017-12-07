@@ -7,15 +7,16 @@ const paths = config.paths
 const maraConf = require(paths.marauder)
 const { getPageList } = require('./utils/utils')
 const pages = getPageList(config.paths.entries)
-var spawnSync = require('spawn-sync')
+const spawnSync = require('spawn-sync')
 
-pages.splice(0, 0, config.keyword.UMDCOMPILE)
+console.log('Biuld component...\n')
 
-for (var i = 0; i < pages.length; i++) {
+pages.unshift(config.keyword.UMDCOMPILE)
+pages.forEach(entry => {
   try {
     var result = spawnSync('node', [
       './node_modules/webpack-marauder/build/build.js',
-      pages[i]
+      entry
     ])
 
     if (result.status !== 0) {
@@ -28,4 +29,4 @@ for (var i = 0; i < pages.length; i++) {
   } catch (e) {
     console.log('批量执行出错！')
   }
-}
+})

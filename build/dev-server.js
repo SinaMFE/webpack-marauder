@@ -15,15 +15,15 @@ const openBrowser = require('react-dev-utils/openBrowser')
 const DevServer = require('webpack-dev-server')
 const webpackConfig = require('./webpack/webpack.dev.conf')
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
-const HOST = webpackConfig.devServer.host
+
 const protocol = maraConf.https === true ? 'https' : 'http'
 
 // Define HTTP proxies to your custom API backend
 // https://github.com/chimurai/http-proxy-middleware
 const proxyTable = config.dev.proxyTable
 
-async function createCompiler(port) {
-  const uri = `${protocol}://${HOST || 'localhost'}:${port}`
+async function getCompiler(port) {
+  const uri = getServerUrl(port)
   const compiler = webpack(webpackConfig)
   let isFirstCompile = true
 
@@ -40,22 +40,24 @@ async function createCompiler(port) {
   })
 
   // 为每一个入口文件添加 webpack-dev-server 客户端
-  Object.keys(webpackConfig.entry).forEach(key => {
-    // client 在业务模块之前引入，以捕获初始化错误
-    ;[].unshift.apply(webpackConfig.entry[key], [
-      require.resolve('react-dev-utils/webpackHotDevClient')
-      // require.resolve('webpack-dev-server/client') + '?/',
-      // require.resolve('webpack/hot/dev-server')
-    ])
-  })
+  Object.values(webpackConfig.entry).forEach(addHotDevClient)
 
   return compiler
+}
+
+function addHotDevClient(entry) {
+  // client 在业务模块之前引入，以捕获初始化错误
+  ;[].unshift.apply(entry, [
+    require.resolve('react-dev-utils/webpackHotDevClient')
+    // require.resolve('webpack-dev-server/client') + '?/',
+    // require.resolve('webpack/hot/dev-server')
+  ])
 }
 
 async function createDevServer(port) {
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
   const serverConf = webpackConfig.devServer
-  const compiler = await createCompiler(port)
+  const compiler = await getCompiler(port)
 
   serverConf.https = protocol === 'https'
   // 安全原因，一般禁用 HostCheck
@@ -65,6 +67,12 @@ async function createDevServer(port) {
   serverConf.contentBase.push(pagePublicDir)
 
   return new DevServer(compiler, serverConf)
+}
+
+function getServerUrl(port) {
+  const HOST = webpackConfig.devServer.host
+
+  return `${protocol}://${HOST || 'localhost'}:${port}`
 }
 
 async function start() {
@@ -79,7 +87,7 @@ async function start() {
 
   // 指定 listen host 0.0.0.0 允许来自 ip 或 localhost 的访问
   return devServer.listen(port, '0.0.0.0', err => {
-    const uri = `${protocol}://${HOST || 'localhost'}:${port}`
+    const uri = getServerUrl(port)
     let publicDevPath = config.dev.assetsPublicPath
 
     if (err) return console.log(err)

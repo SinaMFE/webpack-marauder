@@ -60,7 +60,9 @@ function getEntries(globPath, preDep = []) {
   const entries = {}
 
   files.forEach(filepath => {
-    const dirname = path.dirname(path.relative('src/view/', filepath))
+    let dirname = path.dirname(path.relative('src/view/', filepath))
+    // 兼容组件，src/index.js
+    dirname = dirname === '..' ? 'index' : dirname
     entries[dirname] = [].concat(preDep, filepath)
   })
 
