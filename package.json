@@ -1,6 +1,6 @@
 {
     "name": "webpack-marauder",
-    "version": "1.5.1",
+    "version": "1.5.2",
     "description": "marauder 脚本库，支持 react，vue 及普通 js 打包",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
