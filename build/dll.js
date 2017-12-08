@@ -74,6 +74,17 @@ const vendorDir = namespace + 'vendor'
 // 清空 vendor 文件
 fs.emptyDirSync(`${paths.dist}/${vendorDir}`)
 
+function ftp() {
+  // ftp upload
+  config.build.uploadFtp && ftpUpload(vendorDir, input[0])
+}
+
+function errorLog(err) {
+  console.log(chalk.red('Failed to compile.\n'))
+  printBuildError(err)
+  process.exit(1)
+}
+
 build()
   .then(output => {
     // webpack 打包结果统计
@@ -90,17 +101,8 @@ build()
     console.log(chalk.cyan('  DLL Build complete.\n'))
 
     console.log(
-      chalk.yellow(`  Tip: DLL bundle is change, please rebuild your app.\n`)
+      chalk.yellow('  Tip: DLL bundle is change, please rebuild your app.\n')
     )
   })
-  .then(() => {
-    // ftp upload
-    if (config.build.uploadFtp) {
-      ftpUpload(vendorDir, input[0])
-    }
-  })
-  .catch(err => {
-    console.log(chalk.red('Failed to compile.\n'))
-    printBuildError(err)
-    process.exit(1)
-  })
+  .then(ftp)
+  .catch(errorLog)
