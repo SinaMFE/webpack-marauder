@@ -13,7 +13,7 @@ const webpack = require('webpack')
 const clearConsole = require('react-dev-utils/clearConsole')
 const openBrowser = require('react-dev-utils/openBrowser')
 const DevServer = require('webpack-dev-server')
-const webpackConfig = require('./webpack/webpack.dev.conf')
+const webpackConfig = require('./webpack/webpack.dev.conf')(entry)
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
 
 const protocol = maraConf.https === true ? 'https' : 'http'

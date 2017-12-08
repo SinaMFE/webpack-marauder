@@ -32,7 +32,7 @@ const webpack = require('webpack')
 const ftpUpload = require('./utils/ftp')
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const webpackDllConfig = require('./webpack/webpack.dll.conf')
+const webpackDllConfig = require('./webpack/webpack.dll.conf')()
 
 const spinner = ora('building dll...')
 spinner.start()
