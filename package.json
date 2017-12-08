@@ -1,6 +1,6 @@
 {
     "name": "webpack-marauder",
-    "version": "1.5.5",
+    "version": "1.5.6",
     "description": "marauder 脚本库，支持 react，vue 及普通 js 打包",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,7 +23,7 @@
         ".githelper"
     ],
     "bin": {
-        "marau": "./bin/marauder.js"
+        "mara-run": "./bin/marauder.js"
     },
     "engines": {
         "node": ">=8.0.0"
