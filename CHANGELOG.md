@@ -1,7 +1,7 @@
 # Changelog
 
 ## v1.5.0
-
+* 支持 maruder.conf 配置 globalEnv 注入全局变量
 * 支持 html 内 `%PUBLIC_URL%` 占位符获取 `public` 资源地址
 * 支持 以 `MARA_` 为前缀的自定义环境变量，process.env.MARA_<name>
 * 支持 maruder.config 配置 `publicDevPath`

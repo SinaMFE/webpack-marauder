@@ -1,6 +1,6 @@
 const fs = require('fs')
-const path = require('path')
 const paths = require('./paths')
+const maraConf = require(paths.marauder)
 
 const NODE_ENV = process.env.NODE_ENV
 if (!NODE_ENV) {
@@ -37,7 +37,9 @@ dotenvFiles.forEach(dotenvFile => {
 })
 
 function getEnv(publicUrl) {
-  const baseEnv = {
+  // NODE_ENV，PUBLIC_URL 环境变量为脚手架运行依赖
+  // 这里放在 assign 尾部表示顶级含义，不可被覆盖
+  const baseEnv = Object.assign({}, maraConf.globalEnv, {
     // 标识开发与生产环境
     // React 内部依赖此变量
     NODE_ENV: process.env.NODE_ENV || 'development',
@@ -46,9 +48,9 @@ function getEnv(publicUrl) {
     // html 中可使用 %PUBLIC_URL% 占位符
     // 例：<img src="%PUBLIC_URL%/img/logo.png">
     PUBLIC_URL: publicUrl
-  }
+  })
   const raw = Object.keys(process.env)
-    // 混合自定义环境变量
+    // 收集当前环境中的自定义环境变量
     // 为防止环境变量混淆，自定义变量需以 MARA_ 作为前缀
     .filter(key => MARA.test(key))
     .reduce((env, key) => {
@@ -64,6 +66,7 @@ function getEnv(publicUrl) {
     }, {})
   }
 
+  // raw 给 InterpolateHtmlPlugin 插件使用
   return { raw, stringified }
 }
 
