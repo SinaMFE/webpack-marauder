@@ -50,7 +50,6 @@ module.exports = function(entry) {
     plugins: [
       new InterpolateHtmlPlugin(config.build.env.raw),
       new webpack.DefinePlugin(config.build.env.stringified),
-      new webpack.DefinePlugin(maraConf.globalEnv || {}),
       new marauderDebug(),
       // Minify the code.
       new webpack.optimize.UglifyJsPlugin({
