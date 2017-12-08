@@ -12,7 +12,7 @@ if (pages.length > 1) {
     .command('npm run build <page> [--ftp] [namespace]')
     .demandCommand(
       1,
-      `😂  ${chalk.bgRed('请指定页面名')}  ${chalk.green(
+      `😂  ${chalk.red('请指定页面名')}  ${chalk.green(
         `可选值:【${pages}】\n`
       )}`
     ).argv._
@@ -29,7 +29,7 @@ if (!entry) {
   entry = pages[0]
 } else if (!isComponent && !pages.includes(entry)) {
   console.log(
-    `😂  ${chalk.bgRed(`页面 ${entry} 输入有误`)}  ${chalk.green(
+    `😂  ${chalk.red(`页面 ${entry} 输入有误`)}  ${chalk.green(
       `可选值：【${pages}】`
     )}\n`
   )
