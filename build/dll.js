@@ -34,7 +34,7 @@ const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
 const webpackDllConfig = require('./webpack/webpack.dll.conf')()
 
-const spinner = ora('building dll...')
+const spinner = ora('Building dll...')
 spinner.start()
 
 function build() {
