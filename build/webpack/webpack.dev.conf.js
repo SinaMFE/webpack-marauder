@@ -10,6 +10,7 @@ const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
 const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMiddleware')
 const { localIp } = require('../utils/utils')
 const config = require('../config')
+const maraConf = require(paths.marauder)
 
 module.exports = function(entry) {
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
@@ -84,6 +85,7 @@ module.exports = function(entry) {
       new InterpolateHtmlPlugin(config.dev.env.raw),
       new webpack.NamedModulesPlugin(),
       new webpack.DefinePlugin(config.dev.env.stringified),
+      new webpack.DefinePlugin(maraConf.globalEnv || {}),
       // https://github.com/glenjamin/webpack-hot-middleware#installation--usage
       new webpack.HotModuleReplacementPlugin(),
       // 出错时只打印错误，但不重新加载页面
