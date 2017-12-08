@@ -1,3 +1,5 @@
+'use strict'
+
 const autoprefixer = require('autoprefixer')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const config = require('../../config')

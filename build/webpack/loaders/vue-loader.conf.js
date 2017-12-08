@@ -1,3 +1,5 @@
+'use strict'
+
 const { cssLoaders } = require('./style-loader')
 const config = require('../../config')
 const babelLoader = require('./babel-loader')

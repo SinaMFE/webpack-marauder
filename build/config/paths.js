@@ -1,3 +1,5 @@
+'use strict'
+
 const { rootPath } = require('../utils/utils')
 
 module.exports = {

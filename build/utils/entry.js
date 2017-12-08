@@ -1,3 +1,5 @@
+'use strict'
+
 const yargs = require('yargs')
 const chalk = require('chalk')
 const config = require('../config')

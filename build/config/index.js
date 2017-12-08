@@ -1,3 +1,5 @@
+'use strict'
+
 const paths = require('./paths')
 const getEnv = require('./env')
 const { ensureSlash } = require('../utils/utils')

@@ -1,3 +1,5 @@
+'use strict'
+
 const fs = require('vinyl-fs')
 const Ftp = require('vinyl-ftp')
 const openBrowser = require('react-dev-utils/openBrowser')

@@ -1,3 +1,5 @@
+'use strict'
+
 if (typeof Promise === 'undefined') {
   window.Promise = require('promise-polyfill')
 }

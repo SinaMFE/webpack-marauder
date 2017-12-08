@@ -1,3 +1,5 @@
+'use strict'
+
 const webpack = require('webpack')
 const config = require('../config')
 const { banner, isObject } = require('../utils/utils')

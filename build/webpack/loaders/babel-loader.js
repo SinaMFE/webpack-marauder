@@ -1,3 +1,5 @@
+'use strict'
+
 const config = require('../../config')
 const { nodeModulesRegExp } = require('../../utils/utils')
 const paths = config.paths
