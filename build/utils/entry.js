@@ -1,7 +1,7 @@
-const { getPageList } = require('./utils')
+const yargs = require('yargs')
 const chalk = require('chalk')
 const config = require('../config')
-const yargs = require('yargs')
+const { getPageList } = require('./utils')
 
 const pages = getPageList(config.paths.entries)
 let input = []
@@ -22,12 +22,11 @@ if (pages.length > 1) {
 }
 
 let entry = input[0]
-const isComponent = entry === config.keyword.UMDCOMPILE
 
 if (!entry) {
   // 无页面名输入，将唯一的页面作为输入名
   entry = pages[0]
-} else if (!isComponent && !pages.includes(entry)) {
+} else if (!pages.includes(entry)) {
   console.log(
     `😂  ${chalk.red(`页面 ${entry} 输入有误`)}  ${chalk.green(
       `可选值：【${pages}】`
@@ -35,10 +34,6 @@ if (!entry) {
   )
   process.exit(1)
 }
-
-// 写入运行时环境
-process.env.ENTRY = entry
-process.env.PAGES = pages
 
 module.exports = {
   input,
