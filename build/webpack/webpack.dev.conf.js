@@ -40,9 +40,9 @@ module.exports = function(entry) {
       // 在 js 内，可使用 process.env.PUBLIC 获取路径
       contentBase: [
         config.paths.public,
-        pagePublicDir,
+        pagePublicDir
         // @FIXME 监听 html 文件变化，临时措施
-        `${config.paths.page}/${entry}/*.html`
+        // `${config.paths.page}/${entry}/*.html`
       ],
       // 监听 public 文件夹内容变化
       watchContentBase: true,
