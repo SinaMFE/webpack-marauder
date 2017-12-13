@@ -37,6 +37,7 @@
         "babel-jest": "^21.2.0",
         "babel-loader": "^7.1.2",
         "babel-preset-react-app": "^3.1.0",
+        "babel-plugin-transform-decorators-legacy": "^1.3.4",
         "babel-runtime": "^6.26.0",
         "case-sensitive-paths-webpack-plugin": "^2.1.1",
         "chalk": "^2.3.0",
@@ -45,7 +46,6 @@
         "cssnano": "^3.10.0",
         "dev-ip": "^1.0.1",
         "dotenv": "^4.0.0",
-        "marauder-ejs-loader": "^1.0.0",
         "eslint": "^4.12.1",
         "eslint-config-sinamfe": "^1.0.2",
         "eslint-config-standard": "^10.2.1",
@@ -64,6 +64,7 @@
         "html-webpack-plugin": "^2.30.1",
         "html-withimg-loader": "^0.1.16",
         "jest": "^21.2.1",
+        "marauder-ejs-loader": "^1.0.0",
         "object-assign": "^4.1.1",
         "optimize-css-assets-webpack-plugin": "^3.2.0",
         "ora": "^1.3.0",
@@ -91,6 +92,5 @@
         "yargs": "^10.0.3",
         "zip-webpack-plugin": "^2.1.0"
     },
-    "devDependencies": {},
     "license": "MIT"
 }

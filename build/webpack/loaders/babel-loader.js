@@ -21,6 +21,7 @@ module.exports = isProd => ({
   options: {
     babelrc: false,
     presets: ['babel-preset-react-app'],
+    plugins: ['transform-decorators-legacy'],
     compact: isProd,
     // `babel-loader` 特性
     // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
