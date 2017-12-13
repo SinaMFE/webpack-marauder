@@ -10,11 +10,12 @@ const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
 const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMiddleware')
-const { localIp } = require('../utils/utils')
+const { localIp, rootPath } = require('../utils/utils')
 const config = require('../config')
 
 module.exports = function(entry) {
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
+  const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
 
   return merge(baseWebpackConfig, {
     devtool: 'cheap-module-source-map',
@@ -27,6 +28,7 @@ module.exports = function(entry) {
       pathinfo: true
     },
     devServer: {
+      headers: { 'Access-Control-Allow-Origin': '*' },
       // 开启 gzip 压缩
       compress: true,
       // 屏蔽 WebpackDevServer 自身的日志输出
@@ -36,7 +38,12 @@ module.exports = function(entry) {
       // 对于脚本及样式，应使用 script，link 标签引入
       // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
       // 在 js 内，可使用 process.env.PUBLIC 获取路径
-      contentBase: [config.paths.public],
+      contentBase: [
+        config.paths.public,
+        pagePublicDir,
+        // @FIXME 监听 html 文件变化，临时措施
+        `${config.paths.page}/${entry}/*.html`
+      ],
       // 监听 public 文件夹内容变化
       watchContentBase: true,
       // 开启服务器热更新. 它将为 WebpackDevServer 客户端注入 /sockjs-node/ 节点
@@ -107,9 +114,9 @@ module.exports = function(entry) {
           // 以页面文件夹名作为模板名称
           filename: `${name}.html`,
           // 生成各自的 html 模板
-          template: `html-withimg-loader?min=false!${config.paths.page}/${
-            name
-          }/index.html`,
+          template: `html-withimg-loader?min=false!${
+            config.paths.page
+          }/${name}/index.html`,
           inject: true,
           // 每个html引用的js模块，也可以在这里加上vendor等公用模块
           chunks: [name]

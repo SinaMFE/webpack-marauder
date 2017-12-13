@@ -4,7 +4,7 @@ process.env.BABEL_ENV = 'development'
 process.env.NODE_ENV = 'development'
 
 const config = require('./config')
-const { getFreePort, rootPath } = require('./utils/utils')
+const { getFreePort } = require('./utils/utils')
 const { entry } = require('./utils/entry')
 const maraConf = require(config.paths.marauder)
 
@@ -57,7 +57,6 @@ function addHotDevClient(entry) {
 }
 
 async function createDevServer(port) {
-  const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
   const serverConf = webpackConfig.devServer
   const compiler = await getCompiler(port)
 
@@ -65,8 +64,6 @@ async function createDevServer(port) {
   // 安全原因，一般禁用 HostCheck
   // https://github.com/webpack/webpack-dev-server/issues/887
   serverConf.disableHostCheck = !proxyTable
-  // 注入页面 public 文件夹
-  serverConf.contentBase.push(pagePublicDir)
 
   return new DevServer(compiler, serverConf)
 }
