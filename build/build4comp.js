@@ -20,7 +20,10 @@ const spinner = ora('Biuld component...')
 spinner.start()
 
 const pages = getPageList(config.paths.entries)
-const webpackConfs = [getWebpackLibConf(), ...pages.map(getWebpackProdConf)]
+const webpackConfs = [
+  getWebpackLibConf(),
+  ...pages.map(entry => getWebpackProdConf({ entry }))
+]
 
 function build() {
   const compiler = webpack(webpackConfs)
