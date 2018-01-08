@@ -24,11 +24,6 @@ function babelExternalMoudles(esm) {
 
 module.exports = function(entry) {
   let entryGlob = `src/view/${entry || '*'}/index.js`
-
-  // 判断是否是umd 组件的编译请求：
-  if (entry === config.keyword.UMDCOMPILE) {
-    entryGlob = 'src/index.js'
-  }
   const entries = getEntries(entryGlob, require.resolve('./polyfills'))
 
   return {

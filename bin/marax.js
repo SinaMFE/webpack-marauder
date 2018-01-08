@@ -2,27 +2,56 @@
 
 'use strict'
 
+// https://www.npmjs.com/package/cross-spawn
 const spawn = require('react-dev-utils/crossSpawn')
+// args 是当前 bin 脚本的参数，为 bin 以后的内容
+// 如 marax build index，args: ['build', 'index']
 const args = process.argv.slice(2)
 
 const cmdMap = {
   dev: 'dev-server',
   test: 'test',
   build: 'build',
-  comp: 'build4comp',
-  dll: 'dll'
+  lib: 'build4comp',
+  dll: 'dll',
+  '-v': 'version'
 }
 const equalsCmd = cmd => cmdMap.hasOwnProperty(cmd)
 const scriptIndex = args.findIndex(equalsCmd)
 const script = scriptIndex === -1 ? args[0] : args[scriptIndex]
+// bin 命令与 cmd 之间的内容为 nodeArgs
+// 如 marax x build index，nodeArgs: ['x']
 const nodeArgs = scriptIndex > 0 ? args.slice(0, scriptIndex) : []
+// cmd 之后的内容为 cmdArgs
+// marax build index，cmdArgs: ['index']
+const cmdArgs = args.slice(scriptIndex + 1)
 
-if (equalsCmd(script)) {
+if (!equalsCmd(script)) {
+  console.log('Unknown script "' + script + '".')
+  console.log('Perhaps you need to update webpack-marauder?')
+  console.log(
+    'See: https://github.com/SinaMFE/webpack-marauder/blob/master/README.md'
+  )
+  process.exit(0)
+}
+
+function version() {
+  console.log(require('../package.json').version, '\n')
+  console.log('dist-tags:')
+  const res = spawn.sync('npm', ['info', 'webpack-marauder', 'dist-tags'], {
+    stdio: 'inherit'
+  })
+  process.exit(res.status)
+}
+
+if (script === '-v') {
+  version()
+} else {
   const result = spawn.sync(
     'node',
     nodeArgs
       .concat(require.resolve('../build/' + cmdMap[script]))
-      .concat(args.slice(scriptIndex + 1)),
+      .concat(cmdArgs),
     { stdio: 'inherit' }
   )
   if (result.signal) {
@@ -42,10 +71,4 @@ if (equalsCmd(script)) {
     process.exit(1)
   }
   process.exit(result.status)
-} else {
-  console.log('Unknown script "' + script + '".')
-  console.log('Perhaps you need to update webpack-marauder?')
-  console.log(
-    'See: https://github.com/SinaMFE/webpack-marauder/blob/master/README.md'
-  )
 }

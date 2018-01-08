@@ -29,9 +29,8 @@ const compress = Object.assign(config.compress, maraConf.compress)
 //   }
 // }
 
-module.exports = function(entry) {
-  const isComponent = entry === config.keyword.UMDCOMPILE
-  const distPageDir = config.paths.dist + (isComponent ? '' : `/${entry}`)
+module.exports = function({ entry }) {
+  const distPageDir = `${config.paths.dist}/${entry}`
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
 
   const webpackConfig = merge(baseWebpackConfig, {
@@ -123,9 +122,9 @@ module.exports = function(entry) {
             // 生成出来的html文件名
             filename: rootPath(`dist/${name}/index.html`),
             // 每个html的模版，这里多个页面使用同一个模版
-            template: `html-withimg-loader?min=false!${config.paths.page}/${
-              name
-            }/index.html`,
+            template: `html-withimg-loader?min=false!${
+              config.paths.page
+            }/${name}/index.html`,
             minify: false,
             // 自动将引用插入html
             inject: true,
@@ -142,9 +141,7 @@ module.exports = function(entry) {
     )
   })
 
-  if (!isComponent) {
-    webpackConfig.plugins.push(new moduleDependency())
-  }
+  webpackConfig.plugins.push(new moduleDependency())
 
   // if (maraConf.vendor && maraConf.vendor.length) {
   //   webpackConfig.plugins.push(

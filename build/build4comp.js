@@ -12,6 +12,7 @@ const { getPageList } = require('./utils/utils')
 const config = require('./config')
 const paths = config.paths
 const getWebpackProdConf = require('./webpack/webpack.prod.conf')
+const getWebpackLibConf = require('./webpack/webpack.lib.conf')
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
 
@@ -19,9 +20,7 @@ const spinner = ora('Biuld component...')
 spinner.start()
 
 const pages = getPageList(config.paths.entries)
-pages.unshift(config.keyword.UMDCOMPILE)
-
-const webpackConfs = pages.map(getWebpackProdConf)
+const webpackConfs = [getWebpackLibConf(), ...pages.map(getWebpackProdConf)]
 
 function build() {
   const compiler = webpack(webpackConfs)
@@ -51,7 +50,9 @@ function build() {
 }
 
 function clean() {
-  return fs.emptyDir(paths.dist)
+  const targets = [paths.dist, paths.lib]
+
+  return Promise.all(targets.map(dir => fs.emptyDir(dir)))
 }
 
 function success(output) {
