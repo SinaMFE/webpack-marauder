@@ -53,12 +53,6 @@ module.exports = function(target = 'web') {
         },
         sourceMap: shouldUseSourceMap
       }),
-      new webpack.ProvidePlugin({
-        $: 'zepto',
-        Zepto: 'zepto',
-        'window.Zepto': 'zepto',
-        'window.$': 'zepto'
-      }),
       new webpack.BannerPlugin({
         banner: banner(), // 其值为字符串，将作为注释存在
         entryOnly: true // 如果值为 true，将只在入口 chunks 文件中添加
