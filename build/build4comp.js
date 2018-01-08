@@ -11,6 +11,7 @@ const webpack = require('webpack')
 const { getPageList } = require('./utils/utils')
 const config = require('./config')
 const paths = config.paths
+const maraConf = require(paths.marauder)
 const getWebpackProdConf = require('./webpack/webpack.prod.conf')
 const getWebpackLibConf = require('./webpack/webpack.lib.conf')
 const printBuildError = require('react-dev-utils/printBuildError')
@@ -21,7 +22,7 @@ spinner.start()
 
 const pages = getPageList(config.paths.entries)
 const webpackConfs = [
-  getWebpackLibConf(),
+  getWebpackLibConf(maraConf.library),
   ...pages.map(entry => getWebpackProdConf({ entry }))
 ]
 

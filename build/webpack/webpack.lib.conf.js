@@ -8,24 +8,26 @@ const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 const config = require('../config')
 const { banner, rootPath } = require('../utils/utils')
+const pkgName = require(config.paths.packageJson).name
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
 // 压缩配置
 const compress = Object.assign(config.compress, maraConf.compress)
 
-module.exports = function(target = 'web') {
+module.exports = function(conf = {}) {
   const baseWebpackConfig = require('./webpack.base.conf')()
 
   const webpackConfig = merge(baseWebpackConfig, {
     // 在第一个错误出错时抛出，而不是无视错误
     bail: true,
-    target: target,
     entry: rootPath('src/index.js'),
     devtool: shouldUseSourceMap ? 'source-map' : false,
     output: {
       path: config.paths.lib,
-      filename: 'index.min.js'
+      filename: 'index.min.js',
+      library: conf.library || pkgName,
+      libraryTarget: 'umd'
     },
     plugins: [
       new webpack.DefinePlugin(config.build.env.stringified),
