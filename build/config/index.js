@@ -2,8 +2,9 @@
 
 const paths = require('./paths')
 const getEnv = require('./env')
-const { ensureSlash } = require('../utils/utils')
+const { ensureSlash, camelName } = require('../utils/utils')
 const maraConf = require(paths.marauder)
+const pkgName = require(paths.packageJson).name
 
 function getServedPath(publicUrl) {
   // 强制以 / 结尾，为了兼容 publicPath: '.'
@@ -18,6 +19,11 @@ module.exports = {
     main: true,
     chunk: true,
     assets: true
+  },
+  library: {
+    root: 'MyLibrary',
+    amd: pkgName,
+    commonjs: pkgName
   },
   keyword: {
     // 组件 entry 关键字，用于作为 umd 组件传递进来的参数

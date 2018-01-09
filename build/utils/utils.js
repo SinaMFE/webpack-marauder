@@ -136,6 +136,10 @@ function ensureSlash(path, needsSlash) {
   }
 }
 
+function camelName(name) {
+  return name
+}
+
 module.exports = {
   isObject,
   getPageList,
@@ -148,5 +152,6 @@ module.exports = {
   banner,
   isNotEmptyArray,
   nodeModulesRegExp,
-  ensureSlash
+  ensureSlash,
+  camelName
 }

@@ -8,14 +8,19 @@ const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 const config = require('../config')
 const { banner, rootPath } = require('../utils/utils')
-const pkgName = require(config.paths.packageJson).name
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
 // 压缩配置
 const compress = Object.assign(config.compress, maraConf.compress)
 
-module.exports = function(conf = {}) {
+function getLibraryConf() {
+  const pkgName = require(config.paths.packageJson).name
+
+  return pkgName
+}
+
+module.exports = function() {
   const baseWebpackConfig = require('./webpack.base.conf')()
 
   const webpackConfig = merge(baseWebpackConfig, {
@@ -26,7 +31,7 @@ module.exports = function(conf = {}) {
     output: {
       path: config.paths.lib,
       filename: 'index.min.js',
-      library: conf.library || pkgName,
+      library: getLibraryConf(),
       libraryTarget: 'umd'
     },
     plugins: [
@@ -60,7 +65,7 @@ module.exports = function(conf = {}) {
         entryOnly: true // 如果值为 true，将只在入口 chunks 文件中添加
       }),
       new ExtractTextPlugin({
-        filename: 'lib/style.css'
+        filename: 'style.css'
       }),
       new OptimizeCssAssetsPlugin({
         // cssnano 中自带 autoprefixer，在压缩时会根据配置去除无用前缀
