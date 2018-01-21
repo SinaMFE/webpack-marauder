@@ -9,12 +9,20 @@ const cssFilename = maraConf.hash
   ? 'static/css/[name].[contenthash:8].css'
   : 'static/css/[name].min.css'
 const shouldUseRelativeAssetPaths = maraConf.publicPath === './'
-const postcssNormalPlugin = [
+
+const postcssPlugin = [
   require('postcss-import')(),
+  // 通过 postcss-import 导入的模块
+  // 需要引入 postcss-url 解决嵌套层级的图片资源路径问题
+  require('postcss-url')(),
   require('postcss-flexbugs-fixes'),
   require('postcss-cssnext')(config.browserslist)
 ]
-const postcssPreProcessorsPlugin = [
+
+// 与预处理器集成
+// 由于预处理器拥有自定义语法
+// 所以这里不使用 cssnext import 等 postcss 语法增强插件
+const postcssWithPreProcessors = [
   autoprefixer(config.browserslist),
   require('postcss-flexbugs-fixes')
 ]
@@ -84,7 +92,7 @@ function cssLoaders(options = {}) {
       loaders.push({
         loader: require.resolve('postcss-loader'),
         options: {
-          plugins: loader ? postcssPreProcessorsPlugin : postcssNormalPlugin,
+          plugins: loader ? postcssWithPreProcessors : postcssPlugin,
           sourceMap: options.sourceMap
         }
       })

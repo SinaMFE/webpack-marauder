@@ -1,9 +1,16 @@
 # Changelog
 
+## v1.6.0
+
+* 修复 `UMD` 模块输出入口错误问题
+* 修复 静态资源强制使用 `hash` 后缀，防止重名
+* 修复 使用 `postcss-url` 解决 css 资源路径层级错误问题
+
 ## v1.5.0
+
 * 支持 maruder.conf 配置 globalEnv 注入全局变量
 * 支持 html 内 `%PUBLIC_URL%` 占位符获取 `public` 资源地址
-* 支持 以 `MARA_` 为前缀的自定义环境变量，process.env.MARA_<name>
+* 支持 以 `MARA_` 为前缀的自定义环境变量，process.env.MARA\_<name>
 * 支持 maruder.config 配置 `publicDevPath`
 * 修复 本地服务器 `localhost` 域名限制问题
 * 优化 使用 `~` 作为 `src` 根目录别名
@@ -33,4 +40,3 @@
 * 支持 `ftp` 上传项目到测试服务器
 * 优化 端口号防冲，默认向后累加
 * 修复 `dev` 下模式自动打开浏览器后，终端进程不退出问题
-
