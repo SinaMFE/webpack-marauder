@@ -11,7 +11,6 @@ const paths = config.paths
 const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
-const assetsHash = isProd && !!maraConf.assetsHash ? '.[hash:8]' : ''
 
 function babelExternalMoudles(esm) {
   if (!(esm && esm.length)) return nodeModulesRegExp(config.esm)
@@ -83,7 +82,7 @@ module.exports = function(entry) {
               loader: 'url-loader',
               options: {
                 limit: 10000,
-                name: `static/img/[name]${assetsHash}.[ext]`
+                name: `static/img/[name].[hash:8].[ext]`
               }
             },
             {
@@ -117,7 +116,7 @@ module.exports = function(entry) {
               test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
               loader: 'file-loader',
               options: {
-                name: `static/fonts/[name]${assetsHash}.[ext]`
+                name: `static/fonts/[name].[hash:8].[ext]`
               }
             },
             {
@@ -128,7 +127,7 @@ module.exports = function(entry) {
               exclude: [/\.js$/, /\.html$/, /\.json$/],
               loader: 'file-loader',
               options: {
-                name: `static/media/[name]${assetsHash}.[ext]`
+                name: `static/media/[name].[hash:8].[ext]`
               }
             }
           ]

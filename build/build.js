@@ -62,9 +62,7 @@ function build() {
 }
 
 function clean() {
-  const isComponent = entry === config.keyword.UMDCOMPILE
-
-  return fs.emptyDir(paths.dist + (isComponent ? '' : '/' + entry))
+  return fs.emptyDir(paths.dist + '/' + entry)
 }
 
 function ftp() {

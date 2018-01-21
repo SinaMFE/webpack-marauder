@@ -15,6 +15,8 @@ const publicPath = getServedPath(maraConf.publicPath)
 const publicDevPath = getServedPath(maraConf.publicDevPath)
 
 module.exports = {
+  // 为了防止不同文件夹下的同名资源文件冲突
+  // 资源文件不提供 hash 修改权限
   hash: {
     main: true,
     chunk: true,
