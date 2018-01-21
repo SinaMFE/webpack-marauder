@@ -11,9 +11,11 @@ const cssFilename = maraConf.hash
 const shouldUseRelativeAssetPaths = maraConf.publicPath === './'
 
 const postcssPlugin = [
+  // 提供代码段引入，为了保证引入的代码段能够享受后续的配置
+  // 应确保此插件在插件列表中处于第一位
+  // https://github.com/postcss/postcss-import
   require('postcss-import')(),
-  // 通过 postcss-import 导入的模块
-  // 需要引入 postcss-url 解决嵌套层级的图片资源路径问题
+  // 辅助 postcss-import 插件， 解决嵌套层级的图片资源路径问题
   require('postcss-url')(),
   require('postcss-flexbugs-fixes'),
   require('postcss-cssnext')(config.browserslist)
@@ -63,9 +65,6 @@ function cssLoaders(options = {}) {
   const cssLoader = {
     loader: require.resolve('css-loader'),
     options: {
-      // 启用压缩
-      minimize: options.minimize,
-      importLoaders: 1,
       // 启用 sourceMap
       sourceMap: options.sourceMap
     }
@@ -74,6 +73,13 @@ function cssLoaders(options = {}) {
   // generate loader string to be used with extract text plugin
   function generateLoaders(loader, loaderOptions) {
     let loaders = [cssLoader]
+    const postcssLoader = {
+      loader: require.resolve('postcss-loader'),
+      options: {
+        plugins: loader ? postcssWithPreProcessors : postcssPlugin,
+        sourceMap: options.sourceMap
+      }
+    }
 
     if (loader) {
       loaders.push({
@@ -84,18 +90,10 @@ function cssLoaders(options = {}) {
       })
     }
 
-    // vue-loader 自带 postcss，不做处理
+    // css 默认使用 postcss-loader 处理
+    // 由于 vue-loader 自带 postcss，略过
     if (!options.vue) {
-      // css 默认使用 postcss-loader 处理
-      // 使用 cssnext 提供变量支持，
-      // postcss-import 提供代码段引入
-      loaders.push({
-        loader: require.resolve('postcss-loader'),
-        options: {
-          plugins: loader ? postcssWithPreProcessors : postcssPlugin,
-          sourceMap: options.sourceMap
-        }
-      })
+      loaders.push(postcssLoader)
     }
 
     return wrapLoader(options, loaders)
