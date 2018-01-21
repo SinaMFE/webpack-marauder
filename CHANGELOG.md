@@ -2,6 +2,7 @@
 
 ## v1.6.0
 
+* 支持 启用作用域提升插件（`ModuleConcatenationPlugin`）
 * 修复 `UMD` 模块输出入口错误问题
 * 修复 静态资源强制使用 `hash` 后缀，防止重名
 * 修复 使用 `postcss-url` 解决 css 资源路径层级错误问题

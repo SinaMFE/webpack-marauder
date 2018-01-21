@@ -87,12 +87,12 @@ module.exports = function(entry) {
       }
     },
     plugins: [
+      new webpack.DefinePlugin(config.dev.env.stringified),
       // 替换 html 内的环境变量
       // %PUBLIC% 转换为具体路径
       // 在 dev 环境下为空字符串
       new InterpolateHtmlPlugin(config.dev.env.raw),
       new webpack.NamedModulesPlugin(),
-      new webpack.DefinePlugin(config.dev.env.stringified),
       // https://github.com/glenjamin/webpack-hot-middleware#installation--usage
       new webpack.HotModuleReplacementPlugin(),
       // 出错时只打印错误，但不重新加载页面

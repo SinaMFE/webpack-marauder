@@ -51,6 +51,9 @@ module.exports = function({ entry }) {
     plugins: [
       new InterpolateHtmlPlugin(config.build.env.raw),
       new webpack.DefinePlugin(config.build.env.stringified),
+      // 使作作用域提升(scope hoisting)
+      // https://medium.com/webpack/brief-introduction-to-scope-hoisting-in-webpack-8435084c171f
+      new webpack.optimize.ModuleConcatenationPlugin(),
       new marauderDebug(),
       // Minify the code.
       new webpack.optimize.UglifyJsPlugin({
@@ -90,6 +93,7 @@ module.exports = function({ entry }) {
           ? 'static/css/[name].[contenthash:8].css'
           : 'static/css/[name].min.css'
       }),
+
       new OptimizeCssAssetsPlugin({
         // cssnano 中自带 autoprefixer，在压缩时会根据配置去除无用前缀
         // 为保持统一，将其禁用，在 4.0 版本后将会默认禁用
