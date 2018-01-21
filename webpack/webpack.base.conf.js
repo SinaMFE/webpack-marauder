@@ -3,7 +3,7 @@
 const path = require('path')
 const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
-const { getEntries, nodeModulesRegExp } = require('../utils/utils')
+const { getEntries, nodeModulesRegExp } = require('../libs/utils')
 const { styleLoaders } = require('./loaders/style-loader')
 const babelLoader = require('./loaders/babel-loader')
 const paths = config.paths

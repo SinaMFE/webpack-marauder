@@ -13,7 +13,7 @@ const moduleDependency = require('sinamfe-webpack-module_dependency')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 const config = require('../config')
-const { banner, rootPath, isObject } = require('../utils/utils')
+const { banner, rootPath, isObject } = require('../libs/utils')
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap

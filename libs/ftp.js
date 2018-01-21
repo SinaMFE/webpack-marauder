@@ -6,7 +6,7 @@ const openBrowser = require('react-dev-utils/openBrowser')
 const path = require('path')
 const chalk = require('chalk')
 const config = require('../config')
-const { rootPath } = require('./utils.js')
+const { rootPath } = require('./utils')
 
 const isInteractive = process.stdout.isTTY
 const ftpConf = config.ftp

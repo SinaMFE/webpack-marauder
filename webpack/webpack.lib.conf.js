@@ -7,7 +7,7 @@ const marauderDebug = require('sinamfe-marauder-debug')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 const config = require('../config')
-const { banner, rootPath } = require('../utils/utils')
+const { banner, rootPath } = require('../libs/utils')
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap

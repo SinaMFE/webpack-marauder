@@ -2,7 +2,7 @@
 
 const webpack = require('webpack')
 const config = require('../config')
-const { banner, isObject } = require('../utils/utils')
+const { banner, isObject } = require('../libs/utils')
 const webpackBaseConf = require('./webpack.base.conf')()
 const maraConf = require(config.paths.marauder)
 const babelLoader = require('./loaders/babel-loader')

@@ -3,9 +3,9 @@
 process.env.BABEL_ENV = 'development'
 process.env.NODE_ENV = 'development'
 
-const config = require('./config')
-const { getFreePort } = require('./utils/utils')
-const { entry } = require('./utils/entry')
+const config = require('../config')
+const { getFreePort } = require('../libs/utils')
+const { entry } = require('../libs/entry')
 const maraConf = require(config.paths.marauder)
 
 // 是否为交互模式
@@ -15,7 +15,7 @@ const webpack = require('webpack')
 const clearConsole = require('react-dev-utils/clearConsole')
 const openBrowser = require('react-dev-utils/openBrowser')
 const DevServer = require('webpack-dev-server')
-const webpackConfig = require('./webpack/webpack.dev.conf')(entry)
+const webpackConfig = require('../webpack/webpack.dev.conf')(entry)
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
 
 const protocol = maraConf.https === true ? 'https' : 'http'

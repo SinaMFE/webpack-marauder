@@ -2,7 +2,7 @@
 
 const paths = require('./paths')
 const getEnv = require('./env')
-const { ensureSlash, camelName } = require('../utils/utils')
+const { ensureSlash, camelName } = require('../libs/utils')
 const maraConf = require(paths.marauder)
 const pkgName = require(paths.packageJson).name
 

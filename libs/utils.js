@@ -6,7 +6,7 @@ const glob = require('glob')
 const devIp = require('dev-ip')
 const portscanner = require('portscanner')
 
-// 【注意】utils.js 为纯工具库，请不要依赖 config.js
+// 【注意】utils.js 为纯工具库，请不要依赖 config/index.js
 
 // From create-react-app
 // Make sure any symlinks in the project folder are resolved:

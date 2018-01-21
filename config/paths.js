@@ -1,6 +1,6 @@
 'use strict'
 
-const { rootPath } = require('../utils/utils')
+const { rootPath } = require('../libs/utils')
 
 module.exports = {
   app: rootPath('.'),

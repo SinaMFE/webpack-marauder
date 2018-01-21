@@ -5,8 +5,8 @@ process.env.BABEL_ENV = 'production'
 process.env.NODE_ENV = 'production'
 
 const chalk = require('chalk')
-const config = require('./config')
-const { isObject, isNotEmptyArray } = require('./utils/utils')
+const config = require('../config')
+const { isObject, isNotEmptyArray } = require('../libs/utils')
 const paths = config.paths
 const vendorConf = require(paths.marauder).vendor || []
 
@@ -31,10 +31,10 @@ const fs = require('fs-extra')
 const input = require('yargs').argv._
 const ora = require('ora')
 const webpack = require('webpack')
-const ftpUpload = require('./utils/ftp')
+const ftpUpload = require('../libs/ftp')
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const webpackDllConfig = require('./webpack/webpack.dll.conf')()
+const webpackDllConfig = require('../webpack/webpack.dll.conf')()
 
 const spinner = ora('Building dll...')
 spinner.start()

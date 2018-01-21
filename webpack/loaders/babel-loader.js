@@ -1,7 +1,7 @@
 'use strict'
 
 const config = require('../../config')
-const { nodeModulesRegExp } = require('../../utils/utils')
+const { nodeModulesRegExp } = require('../../libs/utils')
 const paths = config.paths
 const maraConf = require(paths.marauder)
 

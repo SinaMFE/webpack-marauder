@@ -1,20 +1,22 @@
 'use strict'
 
-var path = require('path')
-var cwd = process.cwd()
+const path = require('path')
+const cwd = process.cwd()
 
-var packageConfig = require(path.resolve(cwd, 'package.json'))
-var distPath = path.resolve(cwd, 'dist')
+const packageConfig = require(path.resolve(cwd, 'package.json'))
+const distPath = path.resolve(cwd, 'dist')
 
-var glob = require('glob')
-var files = glob.sync(distPath + '/**')
+const glob = require('glob')
+const files = glob.sync(distPath + '/**')
 
-var http = require('http')
-var chalk = require('chalk')
-var ora = require('ora')
+const http = require('http')
+const chalk = require('chalk')
+const ora = require('ora')
 
-var spinner = ora('开始上线umd资源到mjs...')
+const spinner = ora('开始上线umd资源到mjs...')
+
 console.log('开始上线umd资源到mjs...')
+
 spinner.start()
 http
   .get(
