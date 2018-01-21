@@ -1,27 +1,16 @@
 {
     "name": "webpack-marauder",
-    "version": "1.5.9-rc2",
-    "description": "marauder 脚本库，支持 react，vue 及普通 js 打包",
+    "version": "1.6.0-rc",
+    "description": "marauder 脚本库，支持打包 React，Vue 及 Vanilla JS ",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "contributors": [
-        "shaopeng <shaopeng1@sina.staff.com.cn>",
-        "fengwan <fengwan@sina.staff.com.cn>",
-        "wensen <wensen@sina.staff.com.cn>"
-    ],
+    "author": "Vincent Lee <vv314@foxmail.com>",
     "repository": {
         "type": "git",
         "url": "git@github.com:SinaMFE/webpack-marauder.git"
     },
-    "files": [
-        "bin",
-        "build",
-        "hook",
-        "README.md",
-        "CHANGELOG.md",
-        ".githelper"
-    ],
+    "bugs": "https://github.com/SinaMFE/webpack-marauder/issues",
     "bin": {
         "marax": "./bin/marax.js"
     },
