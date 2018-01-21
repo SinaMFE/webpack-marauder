@@ -66,6 +66,7 @@ function success(output) {
       colors: true,
       modules: false,
       hash: false,
+      // 多配置输出
       children: true,
       chunks: false,
       chunkModules: false

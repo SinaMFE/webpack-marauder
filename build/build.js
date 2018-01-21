@@ -74,10 +74,10 @@ function success(output) {
   // webpack 打包结果统计
   process.stdout.write(
     output.stats.toString({
+      hash: false,
       colors: true,
       modules: false,
-      hash: false,
-      children: false,
+      children: false, // if you are using ts-loader, setting this to true will make typescript errors show up during build
       chunks: false,
       chunkModules: false
     }) + '\n\n'
