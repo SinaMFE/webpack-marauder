@@ -11,7 +11,6 @@ module.exports = {
     cssLoaders({
       sourceMap: isProd && maraConf.sourceMap,
       extract: isProd,
-      minimize: isProd,
       vue: true
     }),
     {
@@ -19,7 +18,7 @@ module.exports = {
     }
   ),
   transformToRequire: {
-    video: 'src',
+    video: ['src', 'poster'],
     source: 'src',
     img: 'src',
     image: 'xlink:href'
