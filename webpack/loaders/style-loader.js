@@ -1,6 +1,7 @@
 'use strict'
 
 const autoprefixer = require('autoprefixer')
+const browserslist = require('browserslist')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const config = require('../../config')
 const maraConf = require(config.paths.marauder)
