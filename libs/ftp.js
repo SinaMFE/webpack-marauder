@@ -65,7 +65,7 @@ module.exports = async function(page, namespace) {
 
     ftpConf.openBrowser && isInteractive && openBrowser(url)
 
-    return remotePath
+    return url
   } catch (err) {
     console.log(`\n🌚  ${chalk.red(err)}`)
     process.exit(1)
