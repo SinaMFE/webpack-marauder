@@ -4,18 +4,24 @@ const uploadftp = require('uploadftp/uploadftp')
 const Ftp = require('uploadftp/ftp')
 const fs = require('fs')
 const md5 = require('md5')
+const execAsync = require('../libs/execAsync')
 const config = require('../config')
-const fetch = require('./fetch')
 
 let ftpOption = config.ftp
 
 class Hybrid {
   constructor({ entry, ftpBranch }) {
     this.ftp = new Ftp()
-    this.getOption({ entry, ftpBranch })
+    this.entry = entry
+    this.ftpBranch = ftpBranch
   }
 
   async changeHybridConfig() {
+    await this.getOption({ entry: this.entry, ftpBranch: this.ftpBranch })
+    if (!this.name) {
+      console.log('获取git工程名失败，请检查是否设置远程git仓库')
+      return
+    }
     let config = {}
     await this.ftp.connect(ftpOption)
     let configPath = `/wap_front/hybrid/config/${this.zip_config_name}.json`
@@ -84,7 +90,7 @@ class Hybrid {
     this.ftp.end()
   }
 
-  getOption({ entry, ftpBranch }) {
+  async getOption({ entry, ftpBranch }) {
     this.viewname = entry
     this.branch = ftpBranch
     let maraConf = require(path.resolve(cwd, 'marauder.config.js'))
@@ -106,8 +112,18 @@ class Hybrid {
     let packageJson = JSON.parse(
       fs.readFileSync(path.resolve(cwd, './package.json'))
     )
-    let { name, version } = packageJson
-    this.name = name
+
+    try {
+      let { stdout, stderr } = await execAsync('git remote -v')
+      if (stdout && !stderr) {
+        let [fullname, name] = stdout.match(/([\w-]*)\.git/)
+        this.name = name
+      }
+    } catch (e) {
+      console.error(e)
+    }
+
+    let { version } = packageJson
     this.version = version
   }
 }
