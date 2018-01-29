@@ -61,7 +61,7 @@ module.exports = async function(page, namespace) {
     console.log(chalk.green('🎉  success!'))
 
     const url = host + remotePath.replace('/wap_front', '')
-    console.log(chalk.bgYellow('\nRemote url'), chalk.yellow(`${url}`))
+    console.log('\n', chalk.bgYellow(' URL '), chalk.yellow(`${url}`), '\n')
 
     ftpConf.openBrowser && isInteractive && openBrowser(url)
 
