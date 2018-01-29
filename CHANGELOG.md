@@ -4,7 +4,6 @@
 
 * 支持 启用作用域提升插件（`ModuleConcatenationPlugin`）
 * 支持 hybrid 项目使用 ftp 上传到开发环境
-* 支持 组件打包生成 `cjs`, `umd` 格式
 * 优化 更新项目依赖
 * 修复 `UMD` 模块输出入口错误问题
 * 修复 静态资源强制使用 `hash` 后缀，防止重名
