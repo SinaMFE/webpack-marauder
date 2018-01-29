@@ -3,6 +3,8 @@
 ## v1.6.0
 
 * 支持 启用作用域提升插件（`ModuleConcatenationPlugin`）
+* 支持 hybrid 项目使用 ftp 上传到开发环境
+* 优化 更新项目依赖
 * 修复 `UMD` 模块输出入口错误问题
 * 修复 静态资源强制使用 `hash` 后缀，防止重名
 * 修复 使用 `postcss-url` 解决 css 资源路径层级错误问题
@@ -20,9 +22,8 @@
 
 ## v1.4.0
 
-* 合并 支持组件脚手架引入 webpack-marauder
-* 加入了组件依赖的 postpublish，用于发布 mjs
-* 加入了  文件 ./build/build4comp.js 文件用于做组件 demo 和 umd 的批处理入口
+* 支持 组件打包(build4comp.js)
+* 支持 使用 postpublish 钩子，发布至 CDN
 
 ## v1.2.0
 

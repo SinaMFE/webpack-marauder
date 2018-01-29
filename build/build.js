@@ -18,6 +18,7 @@ const maraConf = require(paths.marauder)
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
 const VERSION = process.env.npm_package_version
+const Hybrid = require('../libs/hybrid')
 
 const spinner = ora('building for production...')
 spinner.start()
@@ -67,7 +68,7 @@ function clean() {
 
 function ftp() {
   // ftp upload
-  config.build.uploadFtp && ftpUpload(entry, ftpBranch)
+  return config.build.uploadFtp && ftpUpload(entry, ftpBranch)
 }
 
 function success(output) {
@@ -92,6 +93,14 @@ function success(output) {
   )
 }
 
+async function hybrid(remotePath) {
+  if (!maraConf.hybrid || !config.build.uploadFtp) {
+    return
+  }
+  let hybridInstance = new Hybrid({ entry, ftpBranch, remotePath })
+  await hybridInstance.changeHybridConfig()
+}
+
 function error(err) {
   console.log(chalk.red('Failed to compile.\n'))
   printBuildError(err)
@@ -102,4 +111,5 @@ clean()
   .then(build)
   .then(success)
   .then(ftp)
+  .then(hybrid)
   .catch(error)

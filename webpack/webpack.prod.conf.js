@@ -4,7 +4,7 @@ const fs = require('fs')
 const webpack = require('webpack')
 const merge = require('webpack-merge')
 const chalk = require('chalk')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin-hash')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
@@ -176,6 +176,7 @@ module.exports = function({ entry }) {
 
   // copy page public assets
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
+  console.log('pagePublicDir', pagePublicDir)
   if (fs.existsSync(pagePublicDir)) {
     webpackConfig.plugins.push(
       new CopyWebpackPlugin([
