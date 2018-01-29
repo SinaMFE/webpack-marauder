@@ -84,5 +84,14 @@
         "yargs": "^10.0.3",
         "zip-webpack-plugin": "^2.1.0"
     },
-    "license": "MIT"
+    "license": "MIT",
+    "devDependencies": {
+        "husky": "^0.14.3",
+        "lint-staged": "^6.1.0",
+        "prettier": "^1.10.2"
+    },
+    "lint-staged": {
+        "ignore": ["node_modules"],
+        "*.{js,json}": ["prettier", "git add"]
+    }
 }
