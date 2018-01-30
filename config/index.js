@@ -94,6 +94,7 @@ module.exports = {
     ],
     flexbox: 'no-2009',
     features: {
+      // 与雪碧图使用时存在 bug
       imageSet: false
     }
   }
