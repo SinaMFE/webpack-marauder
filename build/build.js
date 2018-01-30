@@ -4,12 +4,15 @@
 process.env.BABEL_ENV = 'production'
 process.env.NODE_ENV = 'production'
 
+process.on('unhandledRejection', err => {
+  throw err
+})
+
 const fs = require('fs-extra')
 const chalk = require('chalk')
-const { entry, ftpBranch } = require('../libs/entry')
-
 const ora = require('ora')
 const webpack = require('webpack')
+const { entry, ftpBranch } = require('../libs/entry')
 const ftpUpload = require('../libs/ftp')
 const config = require('../config')
 const paths = config.paths

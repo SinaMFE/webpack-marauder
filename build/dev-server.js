@@ -3,6 +3,10 @@
 process.env.BABEL_ENV = 'development'
 process.env.NODE_ENV = 'development'
 
+process.on('unhandledRejection', err => {
+  throw err
+})
+
 const config = require('../config')
 const { getFreePort } = require('../libs/utils')
 const { entry } = require('../libs/entry')
@@ -86,10 +90,10 @@ async function start() {
 
   // 指定 listen host 0.0.0.0 允许来自 ip 或 localhost 的访问
   return devServer.listen(port, '0.0.0.0', err => {
+    if (err) return console.log(err)
+
     const uri = getServerUrl(port)
     let publicDevPath = config.dev.assetsPublicPath
-
-    if (err) return console.log(err)
 
     // 交互模式下清除 console
     isInteractive && clearConsole()
