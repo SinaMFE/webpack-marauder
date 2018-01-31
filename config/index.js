@@ -92,6 +92,10 @@ module.exports = {
       'android >= 4.1',
       'not ie < 9'
     ],
-    flexbox: 'no-2009'
+    flexbox: 'no-2009',
+    features: {
+      // 与雪碧图使用时存在 bug，在此禁用
+      imageSet: false
+    }
   }
 }

@@ -51,14 +51,6 @@ class Hybrid {
     //   this.viewname
     // }.php`;
     let pkg_url = this.remotePath + this.viewname + '.php'
-    let isHave = false
-    const module = {
-      name: moduleName,
-      version: this.version,
-      pkg_url: pkg_url,
-      hybrid: this.maraConf.hybrid,
-      md5: pkgmd5
-    }
 
     if (!config) {
       config = {
@@ -70,14 +62,21 @@ class Hybrid {
       }
     }
 
-    config.data.modules
-      .filter(item => item.name == moduleName)
-      .forEach(item => {
-        item = module
-        isHave = true
-      })
+    const moduleIdx = config.data.modules.findIndex(
+      item => item.name == moduleName
+    )
 
-    if (!isHave) {
+    const module = {
+      name: moduleName,
+      version: this.version,
+      pkg_url: pkg_url,
+      hybrid: this.maraConf.hybrid,
+      md5: pkgmd5
+    }
+
+    if (moduleIdx > -1) {
+      config.data.modules[moduleIdx] = module
+    } else {
       config.data.modules.push(module)
     }
 
