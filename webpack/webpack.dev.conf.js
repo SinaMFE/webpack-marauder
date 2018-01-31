@@ -10,6 +10,7 @@ const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
 const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMiddleware')
+const ignoredFiles = require('react-dev-utils/ignoredFiles')
 const { localIp, rootPath } = require('../libs/utils')
 const config = require('../config')
 
@@ -57,20 +58,15 @@ module.exports = function(entry) {
       // 据说这么做在某些系统上能避免 CPU 过载。
       // https://github.com/facebookincubator/create-react-app/issues/293
       // src/node_modules 不被忽略以支持使用绝对路径导入
-      // https://github.com/facebookincubator/create-react-app/issues/1065
+      // https://github.com/facebook/create-react-app/issues/1065
       watchOptions: {
-        ignored: new RegExp(
-          `^(?!${path
-            .normalize(config.paths.src + '/')
-            .replace(/[\\]+/g, '\\\\')}).+[\\\\/]node_modules[\\\\/]`,
-          'g'
-        )
+        ignored: ignoredFiles(config.paths.src)
       },
       host: localIp(),
       overlay: false,
       historyApiFallback: {
         // Paths with dots should still use the history fallback.
-        // See https://github.com/facebookincubator/create-react-app/issues/387.
+        // See https://github.com/facebook/create-react-app/issues/387.
         disableDotRule: true
       },
       // public: allowedHost,

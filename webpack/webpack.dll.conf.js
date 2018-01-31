@@ -4,6 +4,7 @@ const webpack = require('webpack')
 const config = require('../config')
 const { banner, isObject } = require('../libs/utils')
 const webpackBaseConf = require('./webpack.base.conf')()
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const maraConf = require(config.paths.marauder)
 const babelLoader = require('./loaders/babel-loader')
 const isProd = process.env.NODE_ENV === 'production'
@@ -45,26 +46,33 @@ module.exports = function() {
         // This must match the output.library option above
         name: library
       }),
-      new webpack.optimize.UglifyJsPlugin({
-        compress: {
-          warnings: false,
-          // Disabled because of an issue with Uglify breaking seemingly valid code:
-          // https://github.com/facebookincubator/create-react-app/issues/2376
-          // Pending further investigation:
-          // https://github.com/mishoo/UglifyJS2/issues/2011
-          comparisons: false,
-          // https://github.com/mishoo/UglifyJS2/tree/harmony#compress-options
-          drop_console: compress.drop_console
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          ecma: 8,
+          compress: {
+            warnings: false,
+            // Disabled because of an issue with Uglify breaking seemingly valid code:
+            // https://github.com/facebook/create-react-app/issues/2376
+            // Pending further investigation:
+            // https://github.com/mishoo/UglifyJS2/issues/2011
+            comparisons: false,
+            drop_console: compress.drop_console
+          },
+          mangle: {
+            safari10: true
+          },
+          output: {
+            comments: false,
+            // Turned on because emoji and regex is not minified properly using default
+            // https://github.com/facebook/create-react-app/issues/2488
+            ascii_only: true
+          }
         },
-        mangle: {
-          safari10: true
-        },
-        output: {
-          comments: false,
-          // Turned on because emoji and regex is not minified properly using default
-          // https://github.com/facebookincubator/create-react-app/issues/2488
-          ascii_only: true
-        },
+        // Use multi-process parallel running to improve the build speed
+        // Default number of concurrent runs: os.cpus().length - 1
+        parallel: true,
+        // Enable file caching
+        cache: true,
         sourceMap: false
       }),
       // 确保在 UglifyJsPlugin 后引入

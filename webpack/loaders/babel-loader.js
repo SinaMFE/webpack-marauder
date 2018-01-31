@@ -15,17 +15,25 @@ function babelExternalMoudles(esm) {
 }
 
 module.exports = isProd => ({
-  test: /\.(js|jsx)$/,
+  test: /\.(js|jsx|mjs)$/,
   include: [paths.src, paths.test].concat(babelExternalMoudles(maraConf.esm)),
-  loader: 'babel-loader',
-  options: {
-    babelrc: false,
-    presets: ['babel-preset-react-app'],
-    plugins: ['transform-decorators-legacy'],
-    compact: isProd,
-    // `babel-loader` 特性
-    // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
-    // 提升性能
-    cacheDirectory: !isProd
-  }
+  use: [
+    // This loader parallelizes code compilation, it is optional but
+    // improves compile time on larger projects
+    require.resolve('thread-loader'),
+    {
+      loader: 'babel-loader',
+      options: {
+        babelrc: false,
+        presets: ['babel-preset-react-app'],
+        plugins: ['transform-decorators-legacy'],
+        compact: isProd,
+        // `babel-loader` 特性
+        // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
+        // 提升性能
+        cacheDirectory: !isProd,
+        highlightCode: true
+      }
+    }
+  ]
 })

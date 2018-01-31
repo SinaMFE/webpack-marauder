@@ -29,12 +29,15 @@ const dotenvFiles = [
 // dotenv 永远不会覆盖已经存在的环境变量
 // 对于环境中已存在的同名变量，dotenv 会略过设置
 // https://github.com/motdotla/dotenv
+// https://github.com/motdotla/dotenv-expand
 dotenvFiles.forEach(dotenvFile => {
   if (fs.existsSync(dotenvFile)) {
-    require('dotenv').config({
-      // 使用自定义路径
-      path: dotenvFile
-    })
+    require('dotenv-expand')(
+      require('dotenv').config({
+        // 使用自定义路径
+        path: dotenvFile
+      })
+    )
   }
 })
 
