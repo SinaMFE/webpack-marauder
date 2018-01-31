@@ -47,7 +47,6 @@ module.exports = function(entry) {
       ],
       modules: ['node_modules'],
       alias: {
-        vue$: 'vue/dist/vue.esm.js',
         // 使用 `~` 作为 src 别名
         // 使用特殊符号防止与 npm 包冲突
         // import '~/css/style.css'
