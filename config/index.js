@@ -1,5 +1,6 @@
 'use strict'
 
+const browserslist = require('browserslist')
 const paths = require('./paths')
 const getEnv = require('./env')
 const { ensureSlash, camelName } = require('../libs/utils')
@@ -84,14 +85,14 @@ module.exports = {
   ),
   // hybrid 项目配置，存在此属性时，将会生成 zip 包
   hybrid: {},
-  browserslist: {
-    browsers: [
-      '> 1%',
-      'last 4 versions',
-      'ios >= 8',
-      'android >= 4.1',
-      'not ie < 9'
-    ],
+  postcss: {
+    // browsers: [
+    //   '> 1%',
+    //   'last 4 versions',
+    //   'ios >= 8',
+    //   'android >= 4.1',
+    //   'not ie < 9'
+    // ],
     flexbox: 'no-2009',
     features: {
       // 与雪碧图使用时存在 bug，在此禁用

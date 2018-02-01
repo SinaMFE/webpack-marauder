@@ -68,10 +68,7 @@ module.exports = function(entry) {
       ]
     },
     resolveLoader: {
-      modules: [
-        path.resolve(__dirname, '../../node_modules'),
-        paths.nodeModules
-      ]
+      modules: [paths.ownNodeModules, paths.nodeModules]
     },
     module: {
       // makes missing exports an error instead of warning
@@ -104,6 +101,7 @@ module.exports = function(entry) {
             },
             {
               test: /\.vue$/,
+
               loader: 'vue-loader',
               options: vueLoaderConfig
             },

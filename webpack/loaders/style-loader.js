@@ -19,14 +19,14 @@ const postcssPlugin = [
   // 辅助 postcss-import 插件， 解决嵌套层级的图片资源路径问题
   require('postcss-url')(),
   require('postcss-flexbugs-fixes'),
-  require('postcss-cssnext')(config.browserslist)
+  require('postcss-cssnext')(config.postcss)
 ]
 
 // 与预处理器集成
 // 由于预处理器拥有自定义语法
 // 所以这里不使用 cssnext import 等 postcss 语法增强插件
 const postcssWithPreProcessors = [
-  autoprefixer(config.browserslist),
+  autoprefixer(config.postcss),
   require('postcss-flexbugs-fixes')
 ]
 
@@ -64,7 +64,7 @@ function wrapLoader(options, loaders) {
  */
 function cssLoaders(options = {}) {
   const cssLoader = {
-    loader: require.resolve('css-loader'),
+    loader: 'css-loader',
     options: {
       // 启用 sourceMap
       sourceMap: options.sourceMap
@@ -75,7 +75,7 @@ function cssLoaders(options = {}) {
   function generateLoaders(loader, loaderOptions) {
     let loaders = [cssLoader]
     const postcssLoader = {
-      loader: require.resolve('postcss-loader'),
+      loader: 'postcss-loader',
       options: {
         plugins: loader ? postcssWithPreProcessors : postcssPlugin,
         sourceMap: options.sourceMap

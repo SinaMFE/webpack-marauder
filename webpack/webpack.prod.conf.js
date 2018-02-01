@@ -184,7 +184,6 @@ module.exports = function({ entry }) {
 
   // copy page public assets
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
-  console.log('pagePublicDir', pagePublicDir)
   if (fs.existsSync(pagePublicDir)) {
     webpackConfig.plugins.push(
       new CopyWebpackPlugin([
