@@ -12,22 +12,20 @@ const cssFilename = maraConf.hash
 const shouldUseRelativeAssetPaths = maraConf.publicPath === './'
 
 const postcssPlugin = [
+  require('postcss-flexbugs-fixes'),
+  autoprefixer(config.postcss)
+]
+
+// css 语法增强
+const postcssPluginAdvanced = [
   // 提供代码段引入，为了保证引入的代码段能够享受后续的配置
   // 应确保此插件在插件列表中处于第一位
   // https://github.com/postcss/postcss-import
   require('postcss-import')(),
   // 辅助 postcss-import 插件， 解决嵌套层级的图片资源路径问题
   require('postcss-url')(),
-  require('postcss-flexbugs-fixes'),
-  require('postcss-cssnext')(config.postcss)
-]
-
-// 与预处理器集成
-// 由于预处理器拥有自定义语法
-// 所以这里不使用 cssnext import 等 postcss 语法增强插件
-const postcssWithPreProcessors = [
-  autoprefixer(config.postcss),
-  require('postcss-flexbugs-fixes')
+  require('postcss-preset-env')(config.postcss),
+  ...postcssPlugin
 ]
 
 // Extract CSS when that option is specified
@@ -77,7 +75,7 @@ function cssLoaders(options = {}) {
     const postcssLoader = {
       loader: 'postcss-loader',
       options: {
-        plugins: loader ? postcssWithPreProcessors : postcssPlugin,
+        plugins: loader ? postcssPlugin : postcssPluginAdvanced,
         sourceMap: options.sourceMap
       }
     }
