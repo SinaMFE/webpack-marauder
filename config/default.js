@@ -52,9 +52,10 @@ module.exports = {
   ],
   postcss: {
     flexbox: 'no-2009',
+    // https://github.com/jonathantneal/postcss-preset-env/blob/master/lib/plugins-by-specification-id.js
     features: {
-      // 与雪碧图使用时存在 bug，在此禁用
-      imageSet: false
+      // image-set polyfill 与雪碧图使用时存在 bug，在此禁用
+      'css-images-image-set-notation': false
     }
   }
 }
