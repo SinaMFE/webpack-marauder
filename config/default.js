@@ -20,26 +20,9 @@ module.exports = {
   esm: ['@mfelibs'],
   // 打包 dll
   vendor: [],
-  paths: {},
-  build: {
-    env: {},
-    assetsPublicPath: '',
-    productionGzipExtensions: ['js', 'css'],
-    // Run the build command with an extra argument to
-    // View the bundle analyzer report after build finishes:
-    // `npm run build --report`
-    // Set to `true` or `false` to always turn it on or off
-    bundleAnalyzerReport: process.env.npm_config_report,
-    // upload bundle use ftp
-    // `npm run build <page> --ftp [namespace]`
-    // Set to `true` or `false` to always turn it on or off
-    uploadFtp: process.env.npm_config_ftp
-  },
+  build: {},
   dev: {
-    env: {},
     port: 3022,
-    assetsPublicPath: '',
-    proxyTable: {},
     // CSS Sourcemaps off by default because relative paths are "buggy"
     // with this option, according to the CSS-Loader README
     // (https://github.com/webpack/css-loader#sourcemaps)
@@ -60,14 +43,18 @@ module.exports = {
   },
   // hybrid 项目配置，存在此属性时，将会生成 zip 包
   hybrid: {},
-  browserslist: {
-    browsers: [
-      '> 1%',
-      'last 4 versions',
-      'ios >= 8',
-      'android >= 4.1',
-      'not ie < 9'
-    ],
-    flexbox: 'no-2009'
+  browserslist: [
+    '> 1%',
+    'last 4 versions',
+    'ios >= 8',
+    'android >= 4.1',
+    'not ie < 9'
+  ],
+  postcss: {
+    flexbox: 'no-2009',
+    features: {
+      // 与雪碧图使用时存在 bug，在此禁用
+      imageSet: false
+    }
   }
 }

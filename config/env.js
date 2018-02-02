@@ -2,6 +2,7 @@
 
 const fs = require('fs')
 const paths = require('./paths')
+const defConf = require('./default')
 const maraConf = require(paths.marauder)
 
 const NODE_ENV = process.env.NODE_ENV
@@ -9,6 +10,15 @@ if (!NODE_ENV) {
   throw new Error(
     'The NODE_ENV environment variable is required but was not specified.'
   )
+}
+
+const browserslist = require('browserslist')
+
+// https://github.com/ai/browserslist/blob/master/node.js
+if (!browserslist.findConfig(paths.app)) {
+  // 默认浏览器配置，移动为先
+  // babel-preset-env，Autoprefixer 使用
+  process.env.BROWSERSLIST = defConf.browserslist
 }
 
 // 自定义环境变量前缀
