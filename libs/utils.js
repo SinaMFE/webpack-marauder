@@ -140,6 +140,11 @@ function camelName(name) {
   return name
 }
 
+// https://stackoverflow.com/questions/20270973/nodejs-spawn-stdout-string-format
+function buffer2String(data) {
+  return data.toString().replace(/[\n\r]/g, '')
+}
+
 module.exports = {
   isObject,
   getPageList,
@@ -153,5 +158,6 @@ module.exports = {
   isNotEmptyArray,
   nodeModulesRegExp,
   ensureSlash,
-  camelName
+  camelName,
+  buffer2String
 }

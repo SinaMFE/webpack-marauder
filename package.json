@@ -55,6 +55,7 @@
         "glob": "^7.1.2",
         "html-webpack-plugin": "^2.30.1",
         "html-withimg-loader": "^0.1.16",
+        "inquirer": "^5.0.1",
         "jest": "^22.1.2",
         "marauder-ejs-loader": "^1.0.0",
         "md5": "^2.2.1",
@@ -98,6 +99,9 @@
         "prettier": "^1.10.2"
     },
     "lint-staged": {
-        "**/*.{js,json}": ["prettier", "git add"]
+        "**/*.{js,json}": [
+            "prettier",
+            "git add"
+        ]
     }
 }
