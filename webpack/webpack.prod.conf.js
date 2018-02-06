@@ -45,8 +45,8 @@ module.exports = function({ entry }) {
         ? 'static/js/[name].[chunkhash:8].min.js'
         : 'static/js/[name].min.js',
       chunkFilename: maraConf.chunkHash
-        ? 'static/js/[name].[chunkhash:8].chunk.js'
-        : 'static/js/[name].chunk.js'
+        ? 'static/js/[name].[chunkhash:8].async.js'
+        : 'static/js/[name].async.js'
     },
     plugins: [
       new InterpolateHtmlPlugin(config.build.env.raw),
