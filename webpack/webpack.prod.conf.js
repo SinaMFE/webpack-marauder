@@ -130,8 +130,11 @@ module.exports = function({ entry }) {
             minify: false,
             // 自动将引用插入html
             inject: true,
-            // 每个html引用的js模块
-            chunks: chunkNames.concat('common', name),
+            // 模块排序，common > entry > servant
+            chunksSortMode(a, b) {
+              const order = ['common', name].concat(chunkNames)
+              return order.indexOf(a.names[0]) - order.indexOf(b.names[0])
+            },
             collapseWhitespace: true,
             removeRedundantAttributes: true,
             useShortDoctype: true,
