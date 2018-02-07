@@ -20,18 +20,16 @@ const shouldUseSourceMap = !!maraConf.sourceMap
 // 压缩配置
 const compress = Object.assign(config.compress, maraConf.compress)
 
-// let configvendor = maraConf.vendor
-// if (configvendor == null || configvendor.length == 0) {
-//   configvendor = {}
-// } else {
-//   configvendor = {
-//     vendor: configvendor
-//   }
-// }
+function getChunksName(entry) {
+  const names = Object.keys(entry)
+
+  return names.filter(n => n.includes('.servant')).sort()
+}
 
 module.exports = function({ entry }) {
   const distPageDir = `${config.paths.dist}/${entry}`
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
+  const chunkNames = getChunksName(baseWebpackConfig.entry)
 
   const webpackConfig = merge(baseWebpackConfig, {
     // 在第一个错误出错时抛出，而不是无视错误
@@ -132,8 +130,8 @@ module.exports = function({ entry }) {
             minify: false,
             // 自动将引用插入html
             inject: true,
-            // 每个html引用的js模块，也可以在这里加上vendor等公用模块
-            chunks: [name],
+            // 每个html引用的js模块
+            chunks: chunkNames.concat('common', name),
             collapseWhitespace: true,
             removeRedundantAttributes: true,
             useShortDoctype: true,
@@ -150,7 +148,7 @@ module.exports = function({ entry }) {
   // if (maraConf.vendor && maraConf.vendor.length) {
   //   webpackConfig.plugins.push(
   //     new webpack.optimize.CommonsChunkPlugin({
-  //       name: 'vendor',
+  //       name: 'common',
   //       minChunks: Infinity
   //     })
   //   )
