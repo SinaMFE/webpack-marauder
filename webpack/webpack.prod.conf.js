@@ -20,18 +20,16 @@ const shouldUseSourceMap = !!maraConf.sourceMap
 // 压缩配置
 const compress = Object.assign(config.compress, maraConf.compress)
 
-// let configvendor = maraConf.vendor
-// if (configvendor == null || configvendor.length == 0) {
-//   configvendor = {}
-// } else {
-//   configvendor = {
-//     vendor: configvendor
-//   }
-// }
+function getChunksName(entry) {
+  const names = Object.keys(entry)
+
+  return names.filter(n => n.includes('.servant')).sort()
+}
 
 module.exports = function({ entry }) {
   const distPageDir = `${config.paths.dist}/${entry}`
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
+  const chunkNames = getChunksName(baseWebpackConfig.entry)
 
   const webpackConfig = merge(baseWebpackConfig, {
     // 在第一个错误出错时抛出，而不是无视错误
@@ -45,8 +43,8 @@ module.exports = function({ entry }) {
         ? 'static/js/[name].[chunkhash:8].min.js'
         : 'static/js/[name].min.js',
       chunkFilename: maraConf.chunkHash
-        ? 'static/js/[name].[chunkhash:8].chunk.js'
-        : 'static/js/[name].chunk.js'
+        ? 'static/js/[name].[chunkhash:8].async.js'
+        : 'static/js/[name].async.js'
     },
     plugins: [
       new InterpolateHtmlPlugin(config.build.env.raw),
@@ -132,8 +130,11 @@ module.exports = function({ entry }) {
             minify: false,
             // 自动将引用插入html
             inject: true,
-            // 每个html引用的js模块，也可以在这里加上vendor等公用模块
-            chunks: [name],
+            // 模块排序，common > entry > servant
+            chunksSortMode(a, b) {
+              const order = ['common', name].concat(chunkNames)
+              return order.indexOf(a.names[0]) - order.indexOf(b.names[0])
+            },
             collapseWhitespace: true,
             removeRedundantAttributes: true,
             useShortDoctype: true,
@@ -150,7 +151,7 @@ module.exports = function({ entry }) {
   // if (maraConf.vendor && maraConf.vendor.length) {
   //   webpackConfig.plugins.push(
   //     new webpack.optimize.CommonsChunkPlugin({
-  //       name: 'vendor',
+  //       name: 'common',
   //       minChunks: Infinity
   //     })
   //   )
