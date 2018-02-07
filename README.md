@@ -122,3 +122,26 @@ npm run build
 ```
 
 打包后文件将在 `lib` 目录中输出
+
+## 教程
+
+### 代码分割
+
+#### 动态代码分割
+
+@TODO
+
+#### 静态代码分割
+
+此功能可零配置启用，凡是在 `view/<page_name>/` 下符合命名约定 `index.<chunk_name>.js` 的文件均会被视为 `chunk` 包拆分，拆分后的 bundle 文件以 `<chunk_name>.servant.js` 命名，这里称之为 `servant` 包。
+
+其中 `chunk_name` 为拆分入口的名称，例如 `index.foo.js` 构建后将生成 `foo.servant.js`
+
+`<chunk_name>.servant.js` 文件将只会在生产环境(build)生成，在开发环境(dev)中，所有的 servant 将合并到 entry 中引入。对于使用者来说一切都是无感知的。
+
+**注意**
+由于 entry bundle 中已经包含 `polyfill`（Promise，Object.assign），为了避免打包不必要冗余，通过此方式拆分出的 servant 包将不包含 polyfill 内容。为安全起见，建议将 servant 包置于 entry 之后引入（除非您清楚 servant 中不会触发兼容性问题），这也是取名为 `servant` 的本意。`webpack-marauder` 已为您默认配置好一切。
+
+#### 打包 vendor
+
+@TODO
