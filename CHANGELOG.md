@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.7.0
+
+* 支持 静态代码分割
+* 支持 默认 browserlist
+* 支持 交互式选择构建目标
+* 优化 `uglify` 开启多线程加速
+* 优化 升级自身依赖版本
+* 优化 使用 `postcss-env` 代替 `cssnext`
+
 ## v1.6.0
 
 * 支持 启用作用域提升插件（`ModuleConcatenationPlugin`）
