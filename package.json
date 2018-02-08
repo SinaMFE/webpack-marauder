@@ -1,6 +1,6 @@
 {
     "name": "webpack-marauder",
-    "version": "1.6.3",
+    "version": "1.7.0-rc",
     "description": "marauder 脚本库，支持打包 React，Vue 及 Vanilla JS ",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -99,9 +99,6 @@
         "prettier": "^1.10.2"
     },
     "lint-staged": {
-        "**/*.{js,json}": [
-            "prettier",
-            "git add"
-        ]
+        "**/*.{js,json}": ["prettier", "git add"]
     }
 }
