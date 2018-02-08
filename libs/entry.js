@@ -1,10 +1,14 @@
 'use strict'
 
-const yargs = require('yargs')
 const chalk = require('chalk')
-const { prompt } = require('inquirer')
+const { prompt, Separator } = require('inquirer')
 const config = require('../config')
 const { getPageList } = require('./utils')
+
+const args = process.argv.slice(2)
+const pages = getPageList(config.paths.entries)
+
+// console.log(args)
 
 // TL
 // 识别 entry, branch
@@ -15,68 +19,70 @@ const { getPageList } = require('./utils')
 // npm run build index --ftp
 // 输入出错
 
-const pages = getPageList(config.paths.entries)
-let input = yargs.argv._
-
-// 存在多页面文件夹时，页面名必传检查（短路操作）
-// if (pages.length > 1) {
-//   input = yargs.command('npm run build <page> [--ftp] [namespace]').argv._
-// } else {
-//   // 只有一个页面文件夹时，页面名参数不做必传校验
-//   input = yargs.argv._
-// }
-
-let entry = input[0]
-
-if (!entry) {
-  // 无页面名输入，将唯一的页面作为输入名
-  entry = pages[0]
-  chooseEntry(pages)
-} else if (!pages.includes(entry)) {
+function empty() {
+  console.log(`😂  ${chalk.red('请创建入口文件')}\n`)
   console.log(
-    `😂  ${chalk.red(`页面 ${entry} 输入有误`)}  ${chalk.green(
-      `可选值：【${pages}】`
-    )}\n`
+    `src
+└── view
+    ├── page1
+    │   ├── ${chalk.green('index.html')}
+    │   └── ${chalk.green('index.js')}
+    └── page2
+        ├── ${chalk.green('index.html')}
+        └── ${chalk.green('index.js')}`,
+    '\n'
   )
   process.exit(1)
 }
 
-async function chooseEntry() {
+async function getEntry() {
+  if (!pages.length) {
+    empty()
+  } else if (pages.length === 1) {
+    return chooseOne()
+  } else {
+    return chooseMany()
+  }
+}
+
+function result(entry = '') {
+  return Promise.resolve({ entry, trunk: args[1] })
+}
+
+function chooseOne() {
+  const illegalInput = args.length && !validEntry(args[0])
+
+  if (illegalInput) {
+    return chooseEntry('您输入的页面有误, 请选择:')
+  } else {
+    return result(pages[0])
+  }
+}
+
+function chooseMany() {
+  if (validEntry(args[0])) return result(args[0])
+
+  chooseEntry(args.length && '您输入的页面有误, 请选择:')
+}
+
+function validEntry(entry) {
+  return pages.includes(entry)
+}
+
+async function chooseEntry(message = '请选择您的目标页面:') {
+  const list = [...pages, new Separator(), { name: 'exit', value: '' }]
   const question = {
     type: 'list',
     name: 'entry',
-    choices: pages,
-    default: pages.indexOf('index'),
-    message: '请选择页面'
+    choices: list,
+    default: list.indexOf('index'),
+    message
   }
-  let entry = input[0]
+  const { entry } = await prompt(question)
 
-  if (pages.length > 1) {
-    const answer = await prompt(question)
-    entry = answer.entry
-  }
+  if (!entry) process.exit(0)
 
-  if (!entry) {
-    // 无页面名输入，将唯一的页面作为输入名
-    entry = pages[0]
-    chooseEntry(pages)
-  } else if (!pages.includes(entry)) {
-    console.log(
-      `😂  ${chalk.red(`页面 ${entry} 输入有误`)}  ${chalk.green(
-        `可选值：【${pages}】`
-      )}\n`
-    )
-    process.exit(1)
-  }
-
-  return {
-    entry,
-    ftpBranch: input[1]
-  }
+  return result(entry)
 }
 
-module.exports = {
-  input,
-  pages,
-  chooseEntry
-}
+module.exports = getEntry
