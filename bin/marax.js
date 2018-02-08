@@ -4,6 +4,8 @@
 
 // https://www.npmjs.com/package/cross-spawn
 const spawn = require('react-dev-utils/crossSpawn')
+const { buffer2String } = require('../libs/utils')
+const paths = require('../config/paths')
 // args 是当前 bin 脚本的参数，为 bin 以后的内容
 // 如 marax build index，args: ['build', 'index']
 const args = process.argv.slice(2)
@@ -36,12 +38,18 @@ if (!equalsCmd(script)) {
 }
 
 function version() {
-  console.log(require('../package.json').version, '\n')
-  console.log('dist-tags:')
-  const res = spawn.sync('npm', ['info', 'webpack-marauder', 'dist-tags'], {
-    stdio: 'inherit'
+  const npm = spawn('npm', ['info', 'webpack-marauder', 'dist-tags'])
+  const res = new Promise((resolve, reject) => {
+    npm.stdout.on('data', data => resolve(buffer2String(data)))
+    npm.stderr.on('data', data => reject(buffer2String(data)))
   })
-  process.exit(res.status)
+
+  console.log(require(paths.ownPackageJson).version, '\n')
+  console.log('dist-tags:')
+  return res.then(data => {
+    const arr = data.replace(/[{}]/g, '').split(',')
+    return arr.map(tag => console.log(`  ${tag}`))
+  })
 }
 
 if (script === '-v') {

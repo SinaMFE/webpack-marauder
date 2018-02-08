@@ -4,16 +4,19 @@
 process.env.BABEL_ENV = 'production'
 process.env.NODE_ENV = 'production'
 
+process.on('unhandledRejection', err => {
+  throw err
+})
+
 const fs = require('fs-extra')
 const chalk = require('chalk')
-const { entry, ftpBranch } = require('../libs/entry')
-
 const ora = require('ora')
 const webpack = require('webpack')
+const getEntry = require('../libs/entry')
 const ftpUpload = require('../libs/ftp')
 const config = require('../config')
 const paths = config.paths
-const webpackConfig = require('../webpack/webpack.prod.conf')({ entry })
+const getWebpackConfig = require('../webpack/webpack.prod.conf')
 const maraConf = require(paths.marauder)
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
@@ -21,9 +24,10 @@ const VERSION = process.env.npm_package_version
 const Hybrid = require('../libs/hybrid')
 
 const spinner = ora('building for production...')
-spinner.start()
+let entryInput = null
 
 function build() {
+  const webpackConfig = getWebpackConfig(entryInput)
   const compiler = webpack(webpackConfig)
 
   compiler.plugin('compilation', compilation => {
@@ -63,12 +67,14 @@ function build() {
 }
 
 function clean() {
-  return fs.emptyDir(paths.dist + '/' + entry)
+  return fs.emptyDir(paths.dist + '/' + entryInput.entry)
 }
 
 function ftp() {
   // ftp upload
-  return config.build.uploadFtp && ftpUpload(entry, ftpBranch)
+  return (
+    config.build.uploadFtp && ftpUpload(entryInput.entry, entryInput.ftpBranch)
+  )
 }
 
 function success(output) {
@@ -88,17 +94,18 @@ function success(output) {
 
   console.log(
     chalk.yellow(
-      "  Tip: built files are meant to be served over an HTTP server.\n  Opening index.html over file:// won't work.\n"
+      `  Tip: built files are meant to be served over an HTTP server.\n  Opening index.html over file:// won't work.\n`
     )
   )
 }
 
 async function hybrid(remotePath) {
-  if (!maraConf.hybrid || !config.build.uploadFtp) {
-    return
-  }
-  let hybridInstance = new Hybrid({ entry, ftpBranch, remotePath })
-  await hybridInstance.changeHybridConfig()
+  if (!maraConf.hybrid || !config.build.uploadFtp) return
+
+  const { entry, ftpBranch } = entryInput
+  const hybridInstance = new Hybrid({ entry, ftpBranch, remotePath })
+
+  return hybridInstance.changeHybridConfig()
 }
 
 function error(err) {
@@ -107,7 +114,14 @@ function error(err) {
   process.exit(1)
 }
 
-clean()
+function setup(entry) {
+  entryInput = entry
+  spinner.start()
+}
+
+getEntry()
+  .then(setup)
+  .then(clean)
   .then(build)
   .then(success)
   .then(ftp)

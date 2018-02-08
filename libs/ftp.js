@@ -68,6 +68,8 @@ module.exports = async function(page, namespace) {
     return url
   } catch (err) {
     console.log(`\n🌚  ${chalk.red(err)}`)
-    process.exit(1)
+    console.log(
+      chalk.red('   上传失败，请确保已在 marauder.config 中正确配置 ftp 信息')
+    )
   }
 }

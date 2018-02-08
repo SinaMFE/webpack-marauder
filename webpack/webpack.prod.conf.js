@@ -5,6 +5,7 @@ const webpack = require('webpack')
 const merge = require('webpack-merge')
 const chalk = require('chalk')
 const CopyWebpackPlugin = require('copy-webpack-plugin-hash')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
@@ -54,26 +55,33 @@ module.exports = function({ entry }) {
       new webpack.optimize.ModuleConcatenationPlugin(),
       new marauderDebug(),
       // Minify the code.
-      new webpack.optimize.UglifyJsPlugin({
-        compress: {
-          warnings: false,
-          // Disabled because of an issue with Uglify breaking seemingly valid code:
-          // https://github.com/facebookincubator/create-react-app/issues/2376
-          // Pending further investigation:
-          // https://github.com/mishoo/UglifyJS2/issues/2011
-          comparisons: false,
-          // https://github.com/mishoo/UglifyJS2/tree/harmony#compress-options
-          drop_console: compress.drop_console
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          ecma: 8,
+          compress: {
+            warnings: false,
+            // Disabled because of an issue with Uglify breaking seemingly valid code:
+            // https://github.com/facebook/create-react-app/issues/2376
+            // Pending further investigation:
+            // https://github.com/mishoo/UglifyJS2/issues/2011
+            comparisons: false,
+            drop_console: compress.drop_console
+          },
+          mangle: {
+            safari10: true
+          },
+          output: {
+            comments: false,
+            // Turned on because emoji and regex is not minified properly using default
+            // https://github.com/facebook/create-react-app/issues/2488
+            ascii_only: true
+          }
         },
-        mangle: {
-          safari10: true
-        },
-        output: {
-          comments: false,
-          // Turned on because emoji and regex is not minified properly using default
-          // https://github.com/facebookincubator/create-react-app/issues/2488
-          ascii_only: true
-        },
+        // Use multi-process parallel running to improve the build speed
+        // Default number of concurrent runs: os.cpus().length - 1
+        parallel: true,
+        // Enable file caching
+        cache: true,
         sourceMap: shouldUseSourceMap
       }),
       // new webpack.ProvidePlugin({
@@ -177,7 +185,6 @@ module.exports = function({ entry }) {
 
   // copy page public assets
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
-  console.log('pagePublicDir', pagePublicDir)
   if (fs.existsSync(pagePublicDir)) {
     webpackConfig.plugins.push(
       new CopyWebpackPlugin([
