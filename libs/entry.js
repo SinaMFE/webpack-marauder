@@ -62,21 +62,22 @@ function chooseOne() {
 function chooseMany() {
   if (validEntry(args[0])) return result(args[0])
 
-  chooseEntry(args.length && '您输入的页面有误, 请选择:')
+  return chooseEntry(args.length && '您输入的页面有误, 请选择:')
 }
 
 function validEntry(entry) {
   return pages.includes(entry)
 }
 
-async function chooseEntry(message = '请选择您的目标页面:') {
+async function chooseEntry(msg) {
   const list = [...pages, new Separator(), { name: 'exit', value: '' }]
   const question = {
     type: 'list',
     name: 'entry',
     choices: list,
     default: list.indexOf('index'),
-    message
+    // message 不可为空串
+    message: msg || '请选择:'
   }
   const { entry } = await prompt(question)
 

@@ -4,7 +4,7 @@ const path = require('path')
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
 const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
-const { getEntries, nodeModulesRegExp } = require('../libs/utils')
+const { getEntries, getChunks, nodeModulesRegExp } = require('../libs/utils')
 const { styleLoaders } = require('./loaders/style-loader')
 const babelLoader = require('./loaders/babel-loader')
 const paths = config.paths
@@ -22,16 +22,31 @@ function babelExternalMoudles(esm) {
   return nodeModulesRegExp([].concat(config.esm, esm))
 }
 
+function parseEntry(entry) {
+  const entryGlob = `src/view/${entry}/index.js`
+  const chunkGlob = `src/view/${entry}/index.*.js`
+  const entryObj = getEntries(entryGlob, require.resolve('./polyfills'))
+  const chunkObj = getChunks(chunkGlob)
+  const chunks = Object.values(chunkObj).reduce(
+    (res, cur) => res.concat(cur),
+    []
+  )
+  const devEntry = { [entry]: entryObj[entry].concat(chunks) }
+  // 保证 entryObj 为第一位
+  const prodEntry = Object.assign(chunkObj, entryObj)
+
+  return { devEntry, prodEntry }
+}
+
 module.exports = function(entry) {
-  let entryGlob = `src/view/${entry || '*'}/index.js`
-  const entries = getEntries(entryGlob, require.resolve('./polyfills'))
+  const { devEntry, prodEntry } = parseEntry(entry)
 
   return {
-    entry: entries,
+    entry: isProd ? prodEntry : devEntry,
     output: {
       path: paths.dist,
       filename: 'static/js/[name].js',
-      chunkFilename: 'static/js/[name].chunk.js'
+      chunkFilename: 'static/js/[name].async.js'
     },
     resolve: {
       extensions: [
