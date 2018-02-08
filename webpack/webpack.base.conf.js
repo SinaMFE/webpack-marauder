@@ -66,6 +66,7 @@ module.exports = function(entry) {
         // 使用特殊符号防止与 npm 包冲突
         // import '~/css/style.css'
         '~': paths.src,
+        vue$: 'vue/dist/vue.esm.js',
         'babel-runtime': path.dirname(
           require.resolve('babel-runtime/package.json')
         ),

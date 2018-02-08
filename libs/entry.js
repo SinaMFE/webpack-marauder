@@ -70,18 +70,20 @@ function validEntry(entry) {
 }
 
 async function chooseEntry(msg) {
-  const list = [...pages, new Separator(), { name: 'exit', value: '' }]
+  const list = [...pages]
+  // const list = [...pages, new Separator(), { name: 'exit', value: '' }]
   const question = {
     type: 'list',
     name: 'entry',
     choices: list,
     default: list.indexOf('index'),
     // message 不可为空串
-    message: msg || '请选择:'
+    message: msg || '请选择您的目标页面:'
   }
   const { entry } = await prompt(question)
 
   if (!entry) process.exit(0)
+  console.log()
 
   return result(entry)
 }

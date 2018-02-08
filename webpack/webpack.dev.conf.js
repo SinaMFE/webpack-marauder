@@ -14,7 +14,7 @@ const ignoredFiles = require('react-dev-utils/ignoredFiles')
 const { localIp, rootPath } = require('../libs/utils')
 const config = require('../config')
 
-module.exports = function(entry) {
+module.exports = function({ entry }) {
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
 

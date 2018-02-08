@@ -27,7 +27,7 @@ const spinner = ora('building for production...')
 let entryInput = null
 
 function build() {
-  const webpackConfig = getWebpackConfig(entryInput.entry)
+  const webpackConfig = getWebpackConfig(entryInput)
   const compiler = webpack(webpackConfig)
 
   compiler.plugin('compilation', compilation => {
@@ -114,13 +114,13 @@ function error(err) {
   process.exit(1)
 }
 
-function start(entry) {
+function setup(entry) {
   entryInput = entry
   spinner.start()
 }
 
 getEntry()
-  .then(start)
+  .then(setup)
   .then(clean)
   .then(build)
   .then(success)

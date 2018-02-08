@@ -9,7 +9,7 @@ process.on('unhandledRejection', err => {
 
 const config = require('../config')
 const { getFreePort } = require('../libs/utils')
-const { entry } = require('../libs/entry')
+const getEntry = require('../libs/entry')
 const maraConf = require(config.paths.marauder)
 
 // 是否为交互模式
@@ -19,7 +19,7 @@ const webpack = require('webpack')
 const clearConsole = require('react-dev-utils/clearConsole')
 const openBrowser = require('react-dev-utils/openBrowser')
 const DevServer = require('webpack-dev-server')
-const webpackConfig = require('../webpack/webpack.dev.conf')(entry)
+const getWebpackConfig = require('../webpack/webpack.dev.conf')
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
 
 const protocol = maraConf.https === true ? 'https' : 'http'
@@ -28,9 +28,9 @@ const protocol = maraConf.https === true ? 'https' : 'http'
 // https://github.com/chimurai/http-proxy-middleware
 const proxyTable = config.dev.proxyTable
 
-async function getCompiler(port) {
-  const uri = getServerUrl(port)
-  const compiler = webpack(webpackConfig)
+async function getCompiler(webpackConf, uri) {
+  // const uri = getServerUrl(webpackConf.devServer.host, port)
+  const compiler = webpack(webpackConf)
   let isFirstCompile = true
 
   compiler.plugin('done', stats => {
@@ -46,7 +46,7 @@ async function getCompiler(port) {
   })
 
   // 为每一个入口文件添加 webpack-dev-server 客户端
-  Object.values(webpackConfig.entry).forEach(addHotDevClient)
+  Object.values(webpackConf.entry).forEach(addHotDevClient)
 
   return compiler
 }
@@ -60,9 +60,9 @@ function addHotDevClient(entry) {
   ])
 }
 
-async function createDevServer(port) {
-  const serverConf = webpackConfig.devServer
-  const compiler = await getCompiler(port)
+async function createDevServer(config, uri) {
+  const serverConf = config.devServer
+  const compiler = await getCompiler(config, uri)
 
   serverConf.https = protocol === 'https'
   // 安全原因，一般禁用 HostCheck
@@ -72,15 +72,16 @@ async function createDevServer(port) {
   return new DevServer(compiler, serverConf)
 }
 
-function getServerUrl(port) {
-  const HOST = webpackConfig.devServer.host
-
-  return `${protocol}://${HOST || 'localhost'}:${port}`
+function getServerUrl(host, port) {
+  return `${protocol}://${host || 'localhost'}:${port}`
 }
 
-async function start() {
+async function server(entryInput) {
+  const webpackConf = getWebpackConfig(entryInput)
+
   const port = await getFreePort(DEFAULT_PORT)
-  const devServer = await createDevServer(port)
+  const uri = getServerUrl(webpackConf.devServer.host, port)
+  const devServer = await createDevServer(webpackConf, uri)
   ;['SIGINT', 'SIGTERM'].forEach(sig => {
     process.on(sig, () => {
       devServer.close()
@@ -92,7 +93,6 @@ async function start() {
   return devServer.listen(port, '0.0.0.0', err => {
     if (err) return console.log(err)
 
-    const uri = getServerUrl(port)
     let publicDevPath = config.dev.assetsPublicPath
 
     // 交互模式下清除 console
@@ -103,8 +103,8 @@ async function start() {
     publicDevPath = publicDevPath.startsWith('/') ? publicDevPath : '/'
 
     console.log('> Starting dev server...')
-    openBrowser(`${uri + publicDevPath + entry}.html`)
+    openBrowser(`${uri + publicDevPath + entryInput.entry}.html`)
   })
 }
 
-start()
+getEntry().then(server)
