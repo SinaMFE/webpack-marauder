@@ -1,44 +1,91 @@
 'use strict'
 
-const yargs = require('yargs')
 const chalk = require('chalk')
+const { prompt, Separator } = require('inquirer')
 const config = require('../config')
 const { getPageList } = require('./utils')
 
+const args = process.argv.slice(2)
 const pages = getPageList(config.paths.entries)
-let input = []
 
-// 存在多页面文件夹时，必须指定页面名（短路操作）
-if (pages.length > 1) {
-  input = yargs
-    .command('npm run build <page> [--ftp] [namespace]')
-    .demandCommand(
-      1,
-      `😂  ${chalk.red('请指定页面名')}  ${chalk.green(
-        `可选值:【${pages}】\n`
-      )}`
-    ).argv._
-} else {
-  // 只有一个页面文件夹时，页面名参数不做必传校验
-  input = yargs.argv._
-}
+// console.log(args)
 
-let entry = input[0]
+// TL
+// 识别 entry, branch
+// 可指定输入页面名，或选择页面名
 
-if (!entry) {
-  // 无页面名输入，将唯一的页面作为输入名
-  entry = pages[0]
-} else if (!pages.includes(entry)) {
+// npm run build
+// npm run build --ftp
+// npm run build index --ftp
+// 输入出错
+
+function empty() {
+  console.log(`😂  ${chalk.red('请创建入口文件')}\n`)
   console.log(
-    `😂  ${chalk.red(`页面 ${entry} 输入有误`)}  ${chalk.green(
-      `可选值：【${pages}】`
-    )}\n`
+    `src
+└── view
+    ├── page1
+    │   ├── ${chalk.green('index.html')}
+    │   └── ${chalk.green('index.js')}
+    └── page2
+        ├── ${chalk.green('index.html')}
+        └── ${chalk.green('index.js')}`,
+    '\n'
   )
   process.exit(1)
 }
 
-module.exports = {
-  input,
-  entry,
-  ftpBranch: input[1]
+async function getEntry() {
+  if (!pages.length) {
+    empty()
+  } else if (pages.length === 1) {
+    return chooseOne()
+  } else {
+    return chooseMany()
+  }
 }
+
+function result(entry = '') {
+  return Promise.resolve({ entry, trunk: args[1] })
+}
+
+function chooseOne() {
+  const illegalInput = args.length && !validEntry(args[0])
+
+  if (illegalInput) {
+    return chooseEntry('您输入的页面有误, 请选择:')
+  } else {
+    return result(pages[0])
+  }
+}
+
+function chooseMany() {
+  if (validEntry(args[0])) return result(args[0])
+
+  return chooseEntry(args.length && '您输入的页面有误, 请选择:')
+}
+
+function validEntry(entry) {
+  return pages.includes(entry)
+}
+
+async function chooseEntry(msg) {
+  const list = [...pages]
+  // const list = [...pages, new Separator(), { name: 'exit', value: '' }]
+  const question = {
+    type: 'list',
+    name: 'entry',
+    choices: list,
+    default: list.indexOf('index'),
+    // message 不可为空串
+    message: msg || '请选择您的目标页面:'
+  }
+  const { entry } = await prompt(question)
+
+  if (!entry) process.exit(0)
+  console.log()
+
+  return result(entry)
+}
+
+module.exports = getEntry

@@ -4,6 +4,10 @@
 process.env.BABEL_ENV = 'production'
 process.env.NODE_ENV = 'production'
 
+process.on('unhandledRejection', err => {
+  throw err
+})
+
 const chalk = require('chalk')
 const config = require('../config')
 const { isObject, isNotEmptyArray } = require('../libs/utils')

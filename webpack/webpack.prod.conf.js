@@ -5,6 +5,7 @@ const webpack = require('webpack')
 const merge = require('webpack-merge')
 const chalk = require('chalk')
 const CopyWebpackPlugin = require('copy-webpack-plugin-hash')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
@@ -20,18 +21,16 @@ const shouldUseSourceMap = !!maraConf.sourceMap
 // 压缩配置
 const compress = Object.assign(config.compress, maraConf.compress)
 
-// let configvendor = maraConf.vendor
-// if (configvendor == null || configvendor.length == 0) {
-//   configvendor = {}
-// } else {
-//   configvendor = {
-//     vendor: configvendor
-//   }
-// }
+function getChunksName(entry) {
+  const names = Object.keys(entry)
+
+  return names.filter(n => n.includes('.servant')).sort()
+}
 
 module.exports = function({ entry }) {
   const distPageDir = `${config.paths.dist}/${entry}`
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
+  const chunkNames = getChunksName(baseWebpackConfig.entry)
 
   const webpackConfig = merge(baseWebpackConfig, {
     // 在第一个错误出错时抛出，而不是无视错误
@@ -45,8 +44,8 @@ module.exports = function({ entry }) {
         ? 'static/js/[name].[chunkhash:8].min.js'
         : 'static/js/[name].min.js',
       chunkFilename: maraConf.chunkHash
-        ? 'static/js/[name].[chunkhash:8].chunk.js'
-        : 'static/js/[name].chunk.js'
+        ? 'static/js/[name].[chunkhash:8].async.js'
+        : 'static/js/[name].async.js'
     },
     plugins: [
       new InterpolateHtmlPlugin(config.build.env.raw),
@@ -56,26 +55,33 @@ module.exports = function({ entry }) {
       new webpack.optimize.ModuleConcatenationPlugin(),
       new marauderDebug(),
       // Minify the code.
-      new webpack.optimize.UglifyJsPlugin({
-        compress: {
-          warnings: false,
-          // Disabled because of an issue with Uglify breaking seemingly valid code:
-          // https://github.com/facebookincubator/create-react-app/issues/2376
-          // Pending further investigation:
-          // https://github.com/mishoo/UglifyJS2/issues/2011
-          comparisons: false,
-          // https://github.com/mishoo/UglifyJS2/tree/harmony#compress-options
-          drop_console: compress.drop_console
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          ecma: 8,
+          compress: {
+            warnings: false,
+            // Disabled because of an issue with Uglify breaking seemingly valid code:
+            // https://github.com/facebook/create-react-app/issues/2376
+            // Pending further investigation:
+            // https://github.com/mishoo/UglifyJS2/issues/2011
+            comparisons: false,
+            drop_console: compress.drop_console
+          },
+          mangle: {
+            safari10: true
+          },
+          output: {
+            comments: false,
+            // Turned on because emoji and regex is not minified properly using default
+            // https://github.com/facebook/create-react-app/issues/2488
+            ascii_only: true
+          }
         },
-        mangle: {
-          safari10: true
-        },
-        output: {
-          comments: false,
-          // Turned on because emoji and regex is not minified properly using default
-          // https://github.com/facebookincubator/create-react-app/issues/2488
-          ascii_only: true
-        },
+        // Use multi-process parallel running to improve the build speed
+        // Default number of concurrent runs: os.cpus().length - 1
+        parallel: true,
+        // Enable file caching
+        cache: true,
         sourceMap: shouldUseSourceMap
       }),
       // new webpack.ProvidePlugin({
@@ -132,8 +138,11 @@ module.exports = function({ entry }) {
             minify: false,
             // 自动将引用插入html
             inject: true,
-            // 每个html引用的js模块，也可以在这里加上vendor等公用模块
-            chunks: [name],
+            // 模块排序，common > entry > servant
+            chunksSortMode(a, b) {
+              const order = ['common', name].concat(chunkNames)
+              return order.indexOf(a.names[0]) - order.indexOf(b.names[0])
+            },
             collapseWhitespace: true,
             removeRedundantAttributes: true,
             useShortDoctype: true,
@@ -150,7 +159,7 @@ module.exports = function({ entry }) {
   // if (maraConf.vendor && maraConf.vendor.length) {
   //   webpackConfig.plugins.push(
   //     new webpack.optimize.CommonsChunkPlugin({
-  //       name: 'vendor',
+  //       name: 'common',
   //       minChunks: Infinity
   //     })
   //   )
@@ -176,7 +185,6 @@ module.exports = function({ entry }) {
 
   // copy page public assets
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
-  console.log('pagePublicDir', pagePublicDir)
   if (fs.existsSync(pagePublicDir)) {
     webpackConfig.plugins.push(
       new CopyWebpackPlugin([

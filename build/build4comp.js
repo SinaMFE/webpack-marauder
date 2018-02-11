@@ -4,6 +4,10 @@
 process.env.BABEL_ENV = 'production'
 process.env.NODE_ENV = 'production'
 
+process.on('unhandledRejection', err => {
+  throw err
+})
+
 const fs = require('fs-extra')
 const chalk = require('chalk')
 const ora = require('ora')

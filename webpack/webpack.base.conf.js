@@ -1,9 +1,10 @@
 'use strict'
 
 const path = require('path')
+const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
 const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
-const { getEntries, nodeModulesRegExp } = require('../libs/utils')
+const { getEntries, getChunks, nodeModulesRegExp } = require('../libs/utils')
 const { styleLoaders } = require('./loaders/style-loader')
 const babelLoader = require('./loaders/babel-loader')
 const paths = config.paths
@@ -21,16 +22,31 @@ function babelExternalMoudles(esm) {
   return nodeModulesRegExp([].concat(config.esm, esm))
 }
 
+function parseEntry(entry) {
+  const entryGlob = `src/view/${entry}/index.js`
+  const chunkGlob = `src/view/${entry}/index.*.js`
+  const entryObj = getEntries(entryGlob, require.resolve('./polyfills'))
+  const chunkObj = getChunks(chunkGlob)
+  const chunks = Object.values(chunkObj).reduce(
+    (res, cur) => res.concat(cur),
+    []
+  )
+  const devEntry = { [entry]: entryObj[entry].concat(chunks) }
+  // 保证 entryObj 为第一位
+  const prodEntry = Object.assign(chunkObj, entryObj)
+
+  return { devEntry, prodEntry }
+}
+
 module.exports = function(entry) {
-  let entryGlob = `src/view/${entry || '*'}/index.js`
-  const entries = getEntries(entryGlob, require.resolve('./polyfills'))
+  const { devEntry, prodEntry } = parseEntry(entry)
 
   return {
-    entry: entries,
+    entry: isProd ? prodEntry : devEntry,
     output: {
       path: paths.dist,
       filename: 'static/js/[name].js',
-      chunkFilename: 'static/js/[name].chunk.js'
+      chunkFilename: 'static/js/[name].async.js'
     },
     resolve: {
       extensions: [
@@ -44,32 +60,39 @@ module.exports = function(entry) {
         '.vue',
         '.json'
       ],
-      modules: ['node_modules', paths.nodeModules],
+      modules: ['node_modules'],
       alias: {
-        vue$: 'vue/dist/vue.esm.js',
         // 使用 `~` 作为 src 别名
         // 使用特殊符号防止与 npm 包冲突
         // import '~/css/style.css'
         '~': paths.src,
+        vue$: 'vue/dist/vue.esm.js',
         'babel-runtime': path.dirname(
           require.resolve('babel-runtime/package.json')
         ),
         // Support React Native Web
         // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
         'react-native': 'react-native-web'
-      }
+      },
+      plugins: [
+        // Prevents users from importing files from outside of src/ (or node_modules/).
+        // This often causes confusion because we only process files within src/ with babel.
+        // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
+        // please link the files into your node_modules/ and let module-resolution kick in.
+        // Make sure your source files are compiled, as they will not be processed in any way.
+        new ModuleScopePlugin(paths.src, [paths.packageJson])
+      ]
     },
     resolveLoader: {
-      modules: [
-        path.resolve(__dirname, '../../node_modules'),
-        paths.nodeModules
-      ]
+      modules: [paths.ownNodeModules, paths.nodeModules]
     },
     module: {
       // makes missing exports an error instead of warning
       strictExportPresence: false,
       loaders: [{ test: /\.html$/, loader: 'html-withimg-loader' }],
       rules: [
+        // Disable require.ensure as it's not a standard language feature.
+        { parser: { requireEnsure: false } },
         {
           oneOf: [
             ...styleLoaders({
@@ -94,6 +117,7 @@ module.exports = function(entry) {
             },
             {
               test: /\.vue$/,
+
               loader: 'vue-loader',
               options: vueLoaderConfig
             },
@@ -123,8 +147,8 @@ module.exports = function(entry) {
               // it's runtime that would otherwise processed through "file" loader.
               // Also exclude `html` and `json` extensions so they get processed
               // by webpacks internal loaders.
-              exclude: [/\.js$/, /\.html$/, /\.json$/],
               loader: 'file-loader',
+              exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
               options: {
                 name: `static/media/[name].[hash:8].[ext]`
               }

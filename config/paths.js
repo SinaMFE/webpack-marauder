@@ -1,6 +1,9 @@
 'use strict'
 
+const path = require('path')
 const { rootPath } = require('../libs/utils')
+
+const resolveOwn = relativePath => path.resolve(__dirname, '..', relativePath)
 
 module.exports = {
   app: rootPath('.'),
@@ -17,5 +20,9 @@ module.exports = {
   packageJson: rootPath('package.json'),
   // 配置文件
   marauder: rootPath('marauder.config.js'),
-  dll: rootPath('dll')
+  dll: rootPath('dll'),
+  // 脚手架自身路径
+  own: resolveOwn('.'),
+  ownNodeModules: resolveOwn('node_modules'),
+  ownPackageJson: resolveOwn('package.json')
 }

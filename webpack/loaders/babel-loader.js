@@ -15,7 +15,7 @@ function babelExternalMoudles(esm) {
 }
 
 module.exports = isProd => ({
-  test: /\.(js|jsx)$/,
+  test: /\.(js|jsx|mjs)$/,
   include: [paths.src, paths.test].concat(babelExternalMoudles(maraConf.esm)),
   loader: 'babel-loader',
   options: {
@@ -26,6 +26,7 @@ module.exports = isProd => ({
     // `babel-loader` 特性
     // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
     // 提升性能
-    cacheDirectory: !isProd
+    cacheDirectory: !isProd,
+    highlightCode: true
   }
 })
