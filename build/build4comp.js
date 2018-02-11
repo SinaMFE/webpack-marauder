@@ -25,10 +25,25 @@ const spinner = ora('Biuld component...')
 spinner.start()
 
 const pages = getPageList(config.paths.entries)
-const webpackConfs = [
-  getWebpackLibConf(maraConf.library),
-  ...pages.map(entry => getWebpackProdConf({ entry }))
+const targets = [
+  {
+    format: 'commonjs2',
+    filename: 'index.cjs.js'
+  },
+  {
+    format: 'umd',
+    filename: 'index.min.js',
+    minify: true
+  },
+  {
+    format: 'umd',
+    filename: 'index.js'
+  }
 ]
+
+const webpackConfs = targets
+  .map(library => getWebpackLibConf(library))
+  .concat(pages.map(entry => getWebpackProdConf({ entry })))
 
 function build() {
   const compiler = webpack(webpackConfs)
@@ -58,9 +73,9 @@ function build() {
 }
 
 function clean() {
-  const targets = [paths.dist, paths.lib]
+  const dists = [paths.dist, paths.lib]
 
-  return Promise.all(targets.map(dir => fs.emptyDir(dir)))
+  return Promise.all(dists.map(dir => fs.emptyDir(dir)))
 }
 
 function success(output) {
