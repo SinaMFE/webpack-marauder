@@ -48,6 +48,7 @@ const webpackConfs = targets
   .concat(pages.map(entry => getWebpackProdConf({ entry })))
 
 function build() {
+  // @TODO 多配置应用 prehandleConfig
   // const webpackConfig = prehandleConfig('lib', webpackConfig);
   const compiler = webpack(webpackConfs)
 

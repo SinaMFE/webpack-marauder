@@ -19,7 +19,7 @@ const webpack = require('webpack')
 const clearConsole = require('react-dev-utils/clearConsole')
 const openBrowser = require('react-dev-utils/openBrowser')
 const DevServer = require('webpack-dev-server')
-const prehandleConfig = require('../libs/prehandleConfig');
+const prehandleConfig = require('../libs/prehandleConfig')
 const getWebpackConfig = require('../webpack/webpack.dev.conf')
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
 
@@ -78,8 +78,7 @@ function getServerUrl(host, port) {
 }
 
 async function server(entryInput) {
-  let webpackConf = getWebpackConfig(entryInput)
-  webpackConfig = prehandleConfig('dev',webpackConfig);
+  const webpackConf = prehandleConfig('dev', getWebpackConfig(entryInput))
   const port = await getFreePort(DEFAULT_PORT)
   const uri = getServerUrl(webpackConf.devServer.host, port)
   const devServer = await createDevServer(webpackConf, uri)
