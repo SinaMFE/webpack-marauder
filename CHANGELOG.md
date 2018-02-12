@@ -6,6 +6,7 @@
 * 支持 默认 browserlist
 * 支持 拓展自定义 webpack 插件([#7](https://github.com/SinaMFE/webpack-marauder/pull/7))
 * 支持 交互式选择构建目标
+* 支持 组件输出 CommonJS 模块
 * 优化 `uglify` 开启多线程加速
 * 优化 升级自身依赖版本
 * 优化 使用 `postcss-env` 代替 `cssnext`
