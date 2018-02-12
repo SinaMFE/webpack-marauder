@@ -45,7 +45,7 @@ const spinner = ora('Building dll...')
 spinner.start()
 
 function build() {
-	webpackDllConfig = prehandleConfig('dev',webpackDllConfig);
+	webpackDllConfig = prehandleConfig('dll',webpackDllConfig);
   const compiler = webpack(webpackDllConfig)
 
   return new Promise((resolve, reject) => {
