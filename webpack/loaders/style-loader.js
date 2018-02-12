@@ -1,14 +1,10 @@
 'use strict'
 
+const path = require('path')
 const autoprefixer = require('autoprefixer')
-const browserslist = require('browserslist')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const config = require('../../config')
 const maraConf = require(config.paths.marauder)
-
-const cssFilename = maraConf.hash
-  ? 'static/css/[name].[contenthash:8].css'
-  : 'static/css/[name].min.css'
 const shouldUseRelativeAssetPaths = maraConf.publicPath === './'
 
 const postcssPlugin = [
@@ -34,6 +30,11 @@ function wrapLoader(options, loaders) {
   if (!options.extract) {
     return ['vue-style-loader'].concat(loaders)
   }
+
+  const assets = options.library ? '' : `${config.assetsDir}/css`
+  const cssFilename = maraConf.hash
+    ? path.join(assets, '[name].[contenthash:8].css')
+    : path.join(assets, '[name].min.css')
 
   // ExtractTextPlugin expects the build output to be flat.
   // (See https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/27)

@@ -28,6 +28,7 @@ module.exports = {
     amd: pkgName,
     commonjs: pkgName
   },
+  assetsDir: 'static',
   // 压缩配置
   compress: {
     // 移除 console

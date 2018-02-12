@@ -14,29 +14,25 @@ const moduleDependency = require('sinamfe-webpack-module_dependency')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 const config = require('../config')
-const { banner, rootPath, isObject } = require('../libs/utils')
+const { banner, rootPath, getChunks, isObject } = require('../libs/utils')
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
 // 压缩配置
 const compress = Object.assign(config.compress, maraConf.compress)
 
-function getChunksName(entry) {
-  const names = Object.keys(entry)
-
-  return names.filter(n => n.includes('.servant')).sort()
-}
-
 module.exports = function({ entry }) {
   const distPageDir = `${config.paths.dist}/${entry}`
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
-  const chunkNames = getChunksName(baseWebpackConfig.entry)
+  const hasHtml = fs.existsSync(`${config.paths.page}/${entry}/index.html`)
+  const chunksEntry = getChunks(`src/view/${entry}/index.*.js`)
 
+  // https://github.com/survivejs/webpack-merge
   const webpackConfig = merge(baseWebpackConfig, {
     // 在第一个错误出错时抛出，而不是无视错误
     bail: true,
-    // entry: Object.assign(configvendor, baseWebpackConfig.entry),
     devtool: shouldUseSourceMap ? 'source-map' : false,
+    entry: chunksEntry,
     output: {
       path: distPageDir,
       publicPath: config.build.assetsPublicPath,
@@ -119,51 +115,35 @@ module.exports = function({ entry }) {
       // solution that requires the user to opt into importing specific locales.
       // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
       // You can remove this if you don't use Moment.js:
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
-    ].concat(
-      Object.keys(baseWebpackConfig.entry)
-        // 只针对有 index.html 页面的 page 应用生成 dist html
-        .filter(name =>
-          fs.existsSync(`${config.paths.page}/${name}/index.html`)
-        )
-        .map(name => {
-          // 每个页面生成一个html
-          return new HtmlWebpackPlugin({
-            // 生成出来的html文件名
-            filename: rootPath(`dist/${name}/index.html`),
-            // 每个html的模版，这里多个页面使用同一个模版
-            template: `html-withimg-loader?min=false!${
-              config.paths.page
-            }/${name}/index.html`,
-            minify: false,
-            // 自动将引用插入html
-            inject: true,
-            // 模块排序，common > entry > servant
-            chunksSortMode(a, b) {
-              const order = ['common', name].concat(chunkNames)
-              return order.indexOf(a.names[0]) - order.indexOf(b.names[0])
-            },
-            collapseWhitespace: true,
-            removeRedundantAttributes: true,
-            useShortDoctype: true,
-            removeEmptyAttributes: true,
-            removeStyleLinkTypeAttributes: true,
-            keepClosingSlash: true
-          })
-        })
-    )
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+      hasHtml &&
+        new HtmlWebpackPlugin({
+          // 生成出来的html文件名
+          filename: rootPath(`dist/${entry}/index.html`),
+          // 每个html的模版，这里多个页面使用同一个模版
+          template: `html-withimg-loader?min=false!${
+            config.paths.page
+          }/${entry}/index.html`,
+          minify: false,
+          // 自动将引用插入html
+          inject: true,
+          // 模块排序，common > entry > servant
+          chunksSortMode(a, b) {
+            const chunkNames = Object.keys(chunksEntry).sort()
+            const order = ['common', entry].concat(chunkNames)
+
+            return order.indexOf(a.names[0]) - order.indexOf(b.names[0])
+          },
+          collapseWhitespace: true,
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          keepClosingSlash: true
+        }),
+      new moduleDependency()
+    ].filter(Boolean)
   })
-
-  webpackConfig.plugins.push(new moduleDependency())
-
-  // if (maraConf.vendor && maraConf.vendor.length) {
-  //   webpackConfig.plugins.push(
-  //     new webpack.optimize.CommonsChunkPlugin({
-  //       name: 'common',
-  //       minChunks: Infinity
-  //     })
-  //   )
-  // }
 
   if (maraConf.ensurels) {
     const ensure_ls = require('sinamfe-marauder-ensure-ls')

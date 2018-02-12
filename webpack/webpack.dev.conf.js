@@ -11,15 +11,26 @@ const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
 const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMiddleware')
 const ignoredFiles = require('react-dev-utils/ignoredFiles')
-const { localIp, rootPath } = require('../libs/utils')
+const { localIp, getChunks, rootPath } = require('../libs/utils')
 const config = require('../config')
+
+function parseChunks(entry) {
+  const chunkObj = getChunks(`src/view/${entry}/index.*.js`)
+  const chunks = [].concat(...Object.values(chunkObj))
+
+  return { [entry]: chunks }
+}
 
 module.exports = function({ entry }) {
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
+  const chunksEntry = parseChunks(entry)
 
-  return merge(baseWebpackConfig, {
+  // https://github.com/survivejs/webpack-merge
+  // 当 entry 为数组时，webpack-merge 默认执行 append
+  const webpackConfig = merge(baseWebpackConfig, {
     devtool: 'cheap-module-source-map',
+    entry: chunksEntry,
     output: {
       publicPath: config.dev.assetsPublicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
@@ -102,23 +113,19 @@ module.exports = function({ entry }) {
       // solution that requires the user to opt into importing specific locales.
       // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
       // You can remove this if you don't use Moment.js:
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
-    ].concat(
-      Object.keys(baseWebpackConfig.entry).map(name => {
-        // 每个页面生成一个html
-        return new HtmlWebpackPlugin({
-          // 以页面文件夹名作为模板名称
-          filename: `${name}.html`,
-          // 生成各自的 html 模板
-          template: `html-withimg-loader?min=false!${
-            config.paths.page
-          }/${name}/index.html`,
-          inject: true,
-          // 每个html引用的js模块，也可以在这里加上vendor等公用模块
-          chunks: [name]
-        })
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+      new HtmlWebpackPlugin({
+        // 以页面文件夹名作为模板名称
+        filename: `${entry}.html`,
+        // 生成各自的 html 模板
+        template: `html-withimg-loader?min=false!${
+          config.paths.page
+        }/${entry}/index.html`,
+        inject: true,
+        // 每个html引用的js模块，也可以在这里加上vendor等公用模块
+        chunks: [entry]
       })
-    ),
+    ],
     // Turn off performance hints during development because we don't do any
     // splitting or minification in interest of speed. These warnings become
     // cumbersome.
@@ -126,4 +133,6 @@ module.exports = function({ entry }) {
       hints: false
     }
   })
+
+  return webpackConfig
 }

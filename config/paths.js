@@ -9,6 +9,7 @@ module.exports = {
   app: rootPath('.'),
   dotenv: rootPath('.env'),
   entries: 'src/view/*/index.js',
+  libEntry: 'src/index.js',
   src: rootPath('src'),
   page: rootPath('src/view'),
   public: rootPath('public'),

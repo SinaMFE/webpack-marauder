@@ -4,7 +4,7 @@ const path = require('path')
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
 const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
-const { getEntries, getChunks, nodeModulesRegExp } = require('../libs/utils')
+const { getEntries, nodeModulesRegExp } = require('../libs/utils')
 const { styleLoaders } = require('./loaders/style-loader')
 const babelLoader = require('./loaders/babel-loader')
 const paths = config.paths
@@ -22,31 +22,18 @@ function babelExternalMoudles(esm) {
   return nodeModulesRegExp([].concat(config.esm, esm))
 }
 
-function parseEntry(entry) {
-  const entryGlob = `src/view/${entry}/index.js`
-  const chunkGlob = `src/view/${entry}/index.*.js`
-  const entryObj = getEntries(entryGlob, require.resolve('./polyfills'))
-  const chunkObj = getChunks(chunkGlob)
-  const chunks = Object.values(chunkObj).reduce(
-    (res, cur) => res.concat(cur),
-    []
-  )
-  const devEntry = { [entry]: entryObj[entry].concat(chunks) }
-  // 保证 entryObj 为第一位
-  const prodEntry = Object.assign(chunkObj, entryObj)
-
-  return { devEntry, prodEntry }
-}
-
 module.exports = function(entry) {
-  const { devEntry, prodEntry } = parseEntry(entry)
+  const isLib = entry == '__LIB__'
+  const ASSETS = isLib ? '' : config.assetsDir
+  const entryGlob = `src/view/${entry}/index.js`
 
   return {
-    entry: isProd ? prodEntry : devEntry,
+    // dev, build 环境依赖 base.entry，务必提供
+    entry: getEntries(entryGlob, require.resolve('./polyfills')),
     output: {
       path: paths.dist,
-      filename: 'static/js/[name].js',
-      chunkFilename: 'static/js/[name].async.js'
+      filename: path.join(ASSETS, 'js/[name].js'),
+      chunkFilename: path.join(ASSETS, 'js/[name].async.js')
     },
     resolve: {
       extensions: [
@@ -60,6 +47,9 @@ module.exports = function(entry) {
         '.vue',
         '.json'
       ],
+      // https://doc.webpack-china.org/configuration/resolve/#resolve-mainfields
+      // source 为自定义拓展属性，表示源码入口
+      mainFields: ['source', 'browser', 'module', 'main'],
       modules: ['node_modules'],
       alias: {
         // 使用 `~` 作为 src 别名
@@ -97,14 +87,15 @@ module.exports = function(entry) {
           oneOf: [
             ...styleLoaders({
               sourceMap: shouldUseSourceMap,
-              extract: isProd
+              extract: isProd,
+              library: isLib
             }),
             {
               test: /\.(bmp|png|jpe?g|gif|svg)(\?.*)?$/,
               loader: 'url-loader',
               options: {
                 limit: 10000,
-                name: `static/img/[name].[hash:8].[ext]`
+                name: path.join(ASSETS, 'img/[name].[hash:8].[ext]')
               }
             },
             {
@@ -139,7 +130,7 @@ module.exports = function(entry) {
               test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
               loader: 'file-loader',
               options: {
-                name: `static/fonts/[name].[hash:8].[ext]`
+                name: path.join(ASSETS, 'fonts/[name].[hash:8].[ext]')
               }
             },
             {
@@ -150,7 +141,7 @@ module.exports = function(entry) {
               loader: 'file-loader',
               exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
               options: {
-                name: `static/media/[name].[hash:8].[ext]`
+                name: path.join(ASSETS, 'media/[name].[hash:8].[ext]')
               }
             }
           ]
