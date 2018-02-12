@@ -32,7 +32,7 @@ let webpackConfs = [
 ]
 
 function build() {
-	webpackConfig = prehandleConfig('build4comp',webpackConfig);
+	webpackConfig = prehandleConfig('lib',webpackConfig);
   const compiler = webpack(webpackConfs)
 
   return new Promise((resolve, reject) => {
