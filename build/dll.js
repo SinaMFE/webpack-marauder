@@ -38,12 +38,14 @@ const webpack = require('webpack')
 const ftpUpload = require('../libs/ftp')
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const webpackDllConfig = require('../webpack/webpack.dll.conf')()
+const prehandleConfig = require('../libs/prehandleConfig');
+let webpackDllConfig = require('../webpack/webpack.dll.conf')()
 
 const spinner = ora('Building dll...')
 spinner.start()
 
 function build() {
+	webpackDllConfig = prehandleConfig('dll',webpackDllConfig);
   const compiler = webpack(webpackDllConfig)
 
   return new Promise((resolve, reject) => {

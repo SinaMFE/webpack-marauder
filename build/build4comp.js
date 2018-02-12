@@ -20,17 +20,19 @@ const getWebpackProdConf = require('../webpack/webpack.prod.conf')
 const getWebpackLibConf = require('../webpack/webpack.lib.conf')
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
+const prehandleConfig = require('../libs/prehandleConfig');
 
 const spinner = ora('Biuld component...')
 spinner.start()
 
 const pages = getPageList(config.paths.entries)
-const webpackConfs = [
+let webpackConfs = [
   getWebpackLibConf(maraConf.library),
   ...pages.map(entry => getWebpackProdConf({ entry }))
 ]
 
 function build() {
+	webpackConfig = prehandleConfig('lib',webpackConfig);
   const compiler = webpack(webpackConfs)
 
   return new Promise((resolve, reject) => {
