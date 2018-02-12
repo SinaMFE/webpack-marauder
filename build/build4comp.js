@@ -20,11 +20,13 @@ const getWebpackProdConf = require('../webpack/webpack.prod.conf')
 const getWebpackLibConf = require('../webpack/webpack.lib.conf')
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
+const prehandleConfig = require('../libs/prehandleConfig')
 
 const spinner = ora('Biuld component...')
 spinner.start()
 
 const pages = getPageList(config.paths.entries)
+
 const targets = [
   {
     format: 'commonjs2',
@@ -46,6 +48,7 @@ const webpackConfs = targets
   .concat(pages.map(entry => getWebpackProdConf({ entry })))
 
 function build() {
+  // const webpackConfig = prehandleConfig('lib', webpackConfig);
   const compiler = webpack(webpackConfs)
 
   return new Promise((resolve, reject) => {
