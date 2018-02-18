@@ -10,6 +10,7 @@ process.on('unhandledRejection', err => {
 
 const fs = require('fs-extra')
 const chalk = require('chalk')
+const path = require('path')
 const ora = require('ora')
 const webpack = require('webpack')
 const getEntry = require('../libs/entry')
@@ -22,14 +23,19 @@ const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
 const VERSION = process.env.npm_package_version
 const Hybrid = require('../libs/hybrid')
-const prehandleConfig = require('../libs/prehandleConfig');
+const buildReporter = require('../libs/buildReporter')
+const prehandleConfig = require('../libs/prehandleConfig')
+
+// These sizes are pretty large. We'll warn for bundles exceeding them.
+const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
+const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024
 
 const spinner = ora('building for production...')
 let entryInput = null
 
-function build() {
+function build(dist) {
   let webpackConfig = getWebpackConfig(entryInput)
-  webpackConfig = prehandleConfig('build',webpackConfig);
+  webpackConfig = prehandleConfig('build', webpackConfig)
   const compiler = webpack(webpackConfig)
 
   compiler.plugin('compilation', compilation => {
@@ -62,6 +68,7 @@ function build() {
 
       return resolve({
         stats,
+        dist,
         warnings: messages.warnings
       })
     })
@@ -69,7 +76,8 @@ function build() {
 }
 
 function clean() {
-  return fs.emptyDir(paths.dist + '/' + entryInput.entry)
+  const dist = path.join(paths.dist, entryInput.entry)
+  return fs.emptyDir(dist).then(() => dist)
 }
 
 function ftp() {
@@ -80,19 +88,20 @@ function ftp() {
 }
 
 function success(output) {
-  // webpack 打包结果统计
-  process.stdout.write(
-    output.stats.toString({
-      hash: false,
-      colors: true,
-      modules: false,
-      children: false, // if you are using ts-loader, setting this to true will make typescript errors show up during build
+  console.log(chalk.green('Build complete.\n'))
+  console.log('File sizes after gzip:\n')
+  buildReporter(
+    output.stats.toJson({
       chunks: false,
+      modules: false,
       chunkModules: false
-    }) + '\n\n'
+    }),
+    { distDir: output.dist },
+    WARN_AFTER_BUNDLE_GZIP_SIZE,
+    WARN_AFTER_CHUNK_GZIP_SIZE
   )
 
-  console.log(chalk.cyan('  Build complete.\n'))
+  console.log()
 
   console.log(
     chalk.yellow(

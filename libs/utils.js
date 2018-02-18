@@ -164,8 +164,18 @@ function buffer2String(data) {
   return data.toString().replace(/[\n\r]/g, '')
 }
 
+function write(dest, code) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(dest, code, err => {
+      if (err) return reject(err)
+      resolve()
+    })
+  })
+}
+
 module.exports = {
   isObject,
+  write,
   getPageList,
   localIp,
   getFreePort,

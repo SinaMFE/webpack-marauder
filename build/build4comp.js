@@ -20,13 +20,17 @@ const getWebpackProdConf = require('../webpack/webpack.prod.conf')
 const getWebpackLibConf = require('../webpack/webpack.lib.conf')
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
+const buildReporter = require('../libs/buildReporter')
 const prehandleConfig = require('../libs/prehandleConfig')
 
 const spinner = ora('Biuld component...')
 spinner.start()
 
 const pages = getPageList(config.paths.entries)
-
+const dists = {
+  distDir: paths.dist,
+  libDir: paths.lib
+}
 const targets = [
   {
     format: 'commonjs2',
@@ -44,10 +48,24 @@ const targets = [
 ]
 
 const webpackConfs = targets
-  .map(library => getWebpackLibConf(library))
+  .map(library => {
+    const libConf = getWebpackLibConf(library)
+    // 可在 stats.children[0].publicPath 获取
+    libConf.output.publicPath = `__LIB__${library.format}`
+    return libConf
+  })
   .concat(pages.map(entry => getWebpackProdConf({ entry })))
 
-function build() {
+function write(dest, code) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(dest, code, err => {
+      if (err) return reject(err)
+      resolve()
+    })
+  })
+}
+
+function build(dists) {
   // @TODO 多配置应用 prehandleConfig
   // const webpackConfig = prehandleConfig('lib', webpackConfig);
   const compiler = webpack(webpackConfs)
@@ -70,33 +88,31 @@ function build() {
 
       return resolve({
         stats,
+        dists,
         warnings: messages.warnings
       })
     })
   })
 }
 
-function clean() {
-  const dists = [paths.dist, paths.lib]
+function clean(dists) {
+  const distArr = Object.values(dists)
 
-  return Promise.all(dists.map(dir => fs.emptyDir(dir)))
+  return Promise.all(distArr.map(dir => fs.emptyDir(dir))).then(() => dists)
 }
 
 function success(output) {
-  // webpack 打包结果统计
-  process.stdout.write(
-    output.stats.toString({
-      colors: true,
-      modules: false,
-      hash: false,
-      // 多配置输出
-      children: true,
+  console.log(chalk.green('Build complete.\n'))
+  console.log('File sizes after gzip:')
+  write('lib/stats.json', JSON.stringify(output.stats.toJson().children))
+  buildReporter(
+    output.stats.toJson({
       chunks: false,
+      modules: false,
       chunkModules: false
-    }) + '\n\n'
+    }).children,
+    output.dists
   )
-
-  console.log(chalk.cyan('  Build complete.\n'))
 }
 
 function error(err) {
@@ -105,7 +121,7 @@ function error(err) {
   process.exit(1)
 }
 
-clean()
+clean(dists)
   .then(build)
   .then(success)
   .catch(error)
