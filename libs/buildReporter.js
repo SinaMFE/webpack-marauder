@@ -11,14 +11,14 @@ const formatMap = {
 }
 
 function reporter(webpackStats, dest, maxBundleGzipSize, maxChunkGzipSize) {
-  const { distDir, libDir } = dest
+  const { distDir, libDir, entry } = dest
   const statsList = [].concat(webpackStats)
   // https://raw.githubusercontent.com/webpack/analyse/master/app/pages/upload/example.json
   let labelLengthArr = []
   let suggestBundleSplitting = false
 
   function mainAssetInfo(asset) {
-    const isMainBundle = asset.name.indexOf('main.') === 0
+    const isMainBundle = entry && asset.name.indexOf(`${entry}.`) === 0
     const maxRecommendedSize = isMainBundle
       ? maxBundleGzipSize
       : maxChunkGzipSize

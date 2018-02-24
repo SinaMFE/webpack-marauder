@@ -90,19 +90,24 @@ function ftp() {
 function success(output) {
   console.log(chalk.green('Build complete.\n'))
   console.log('File sizes after gzip:\n')
+
+  const stats = output.stats.toJson({
+    chunks: false,
+    modules: false,
+    chunkModules: false
+  })
+
   buildReporter(
-    output.stats.toJson({
-      chunks: false,
-      modules: false,
-      chunkModules: false
-    }),
-    { distDir: output.dist },
+    stats,
+    {
+      distDir: output.dist,
+      entry: entryInput.entry
+    },
     WARN_AFTER_BUNDLE_GZIP_SIZE,
     WARN_AFTER_CHUNK_GZIP_SIZE
   )
 
   console.log()
-
   console.log(
     chalk.yellow(
       `  Tip: built files are meant to be served over an HTTP server.\n  Opening index.html over file:// won't work.\n`
