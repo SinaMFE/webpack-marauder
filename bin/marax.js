@@ -2,6 +2,21 @@
 
 'use strict'
 
+const chalk = require('chalk')
+const semver = require('semver')
+const requiredVersion = require('../package.json').engines.node
+
+if (!semver.satisfies(process.version, requiredVersion)) {
+  console.log(
+    chalk.red(
+      `You are using Node ${
+        process.version
+      }, but vue-cli-service requires Node ${requiredVersion}.\nPlease upgrade your Node version.\n`
+    )
+  )
+  process.exit(1)
+}
+
 // https://www.npmjs.com/package/cross-spawn
 const spawn = require('react-dev-utils/crossSpawn')
 const { buffer2String } = require('../libs/utils')
