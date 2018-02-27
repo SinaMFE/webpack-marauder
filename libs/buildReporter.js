@@ -10,15 +10,14 @@ const formatMap = {
   COMMONJS2: 'CJS'
 }
 
-function reporter(webpackStats, dest, maxBundleGzipSize, maxChunkGzipSize) {
-  const { distDir, libDir, entry } = dest
+function reporter(webpackStats, maxBundleGzipSize, maxChunkGzipSize) {
   const statsList = [].concat(webpackStats)
   // https://raw.githubusercontent.com/webpack/analyse/master/app/pages/upload/example.json
   let labelLengthArr = []
   let suggestBundleSplitting = false
 
-  function mainAssetInfo(asset) {
-    const isMainBundle = entry && asset.name.indexOf(`${entry}.`) === 0
+  function mainAssetInfo(asset, format) {
+    const isMainBundle = !format && asset.name.indexOf(`${asset.folder}.`) === 0
     const maxRecommendedSize = isMainBundle
       ? maxBundleGzipSize
       : maxChunkGzipSize
@@ -54,7 +53,7 @@ function reporter(webpackStats, dest, maxBundleGzipSize, maxChunkGzipSize) {
     let assetMap = groupBy(
       stats.assets // .filter(asset => /\.(js|css)$/.test(asset.name))
         .map(asset => {
-          const buildDir = libFormat ? libDir : distDir
+          const buildDir = stats['__path']
           const fileContents = fs.readFileSync(path.join(buildDir, asset.name))
           const size = gzipSize(fileContents)
           const sizeLabel = filesize(size)
@@ -70,8 +69,11 @@ function reporter(webpackStats, dest, maxBundleGzipSize, maxChunkGzipSize) {
         }),
       asset => (/\.(js|css)$/.test(asset.name) ? 'main' : 'other')
     )
+
     assetMap.format = libFormat && libFormat[1]
     assetMap.time = stats.time
+    assetMap.main = assetMap.main || []
+    assetMap.other = assetMap.other || []
 
     return assetMap
   })
@@ -91,13 +93,15 @@ function reporter(webpackStats, dest, maxBundleGzipSize, maxChunkGzipSize) {
       console.log()
       console.log(
         chalk.bgGreen.black(` ${formatFlag} `),
-        `Time: ${assetMap.time}ms\n`
+        `Time: ${assetMap.time}ms`
       )
-    } else {
-      // console.log('Time:', `${stats.time}ms\n`)
+    } else if (statsList.length > 1) {
+      console.log(`\nDEMO Time:`, `${assetMap.time}ms`)
     }
 
-    assetMap.main.sort((a, b) => b.size - a.size).forEach(mainAssetInfo)
+    assetMap.main
+      .sort((a, b) => b.size - a.size)
+      .forEach(asset => mainAssetInfo(asset, assetMap.format))
     assetMap.other
       .sort((a, b) => b.size - a.size)
       .forEach(asset => assetInfo(asset))

@@ -104,15 +104,21 @@ function clean(dists) {
 function success(output) {
   console.log(chalk.green('Build complete.\n'))
   console.log('File sizes after gzip:')
-  write('lib/stats.json', JSON.stringify(output.stats.toJson().children))
-  buildReporter(
-    output.stats.toJson({
-      chunks: false,
-      modules: false,
-      chunkModules: false
-    }).children,
-    output.dists
-  )
+
+  const libReg = /^__LIB__(\w*)$/i
+  const stats = output.stats.toJson({
+    chunks: false,
+    modules: false,
+    chunkModules: false
+  }).children
+  const compStats = stats.filter(info => libReg.test(info.publicPath))
+  const newStats = stats.map((st, i) => {
+    st['__path'] = webpackConfs[i].output.path
+
+    return st
+  })
+
+  buildReporter(newStats)
 }
 
 function error(err) {

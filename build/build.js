@@ -68,7 +68,7 @@ function build(dist) {
 
       return resolve({
         stats,
-        dist,
+        path: webpackConfig.output.path,
         warnings: messages.warnings
       })
     })
@@ -97,15 +97,8 @@ function success(output) {
     chunkModules: false
   })
 
-  buildReporter(
-    stats,
-    {
-      distDir: output.dist,
-      entry: entryInput.entry
-    },
-    WARN_AFTER_BUNDLE_GZIP_SIZE,
-    WARN_AFTER_CHUNK_GZIP_SIZE
-  )
+  stats['__path'] = output.path
+  buildReporter(stats, WARN_AFTER_BUNDLE_GZIP_SIZE, WARN_AFTER_CHUNK_GZIP_SIZE)
 
   console.log()
   console.log(
