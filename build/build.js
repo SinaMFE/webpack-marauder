@@ -88,23 +88,23 @@ function ftp() {
 }
 
 function success(output) {
-  console.log(chalk.green('Build complete.\n'))
-  console.log('File sizes after gzip:\n')
-
   const stats = output.stats.toJson({
     chunks: false,
     modules: false,
     chunkModules: false
   })
 
+  console.log(chalk.green(`Build successfully in ${stats.time}ms\n`))
+  console.log('File sizes after gzip:\n')
+
   stats['__path'] = output.path
   buildReporter(stats, WARN_AFTER_BUNDLE_GZIP_SIZE, WARN_AFTER_CHUNK_GZIP_SIZE)
 
   console.log()
   console.log(
-    chalk.yellow(
-      `  Tip: built files are meant to be served over an HTTP server.\n  Opening index.html over file:// won't work.\n`
-    )
+    `The ${chalk.cyan(
+      'dist/' + entryInput.entry
+    )} directory is ready to be deployed.`
   )
 }
 

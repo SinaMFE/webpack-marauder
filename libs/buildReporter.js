@@ -33,6 +33,8 @@ function reporter(webpackStats, maxBundleGzipSize, maxChunkGzipSize) {
   function assetInfo(asset, isLarge = false) {
     let sizeLabel = asset.sizeLabel
     const sizeLength = stripAnsi(sizeLabel).length
+    const assetPath =
+      chalk.dim(asset.folder + path.sep) + chalk.cyan(asset.name)
 
     if (sizeLength < longestSizeLabelLength) {
       const rightPadding = ' '.repeat(longestSizeLabelLength - sizeLength)
@@ -40,11 +42,7 @@ function reporter(webpackStats, maxBundleGzipSize, maxChunkGzipSize) {
     }
 
     console.log(
-      '  ' +
-        (isLarge ? chalk.yellow(sizeLabel) : sizeLabel) +
-        '  ' +
-        chalk.dim(asset.folder + path.sep) +
-        chalk.cyan(asset.name)
+      `  ${isLarge ? chalk.yellow(sizeLabel) : sizeLabel}  ${assetPath}`
     )
   }
 
@@ -80,11 +78,6 @@ function reporter(webpackStats, maxBundleGzipSize, maxChunkGzipSize) {
 
   const longestSizeLabelLength = Math.max.apply(null, labelLengthArr)
 
-  // project build time
-  if (!Array.isArray(webpackStats)) {
-    console.log('Time:', `${webpackStats.time}ms\n`)
-  }
-
   assets.forEach(assetMap => {
     if (assetMap.format) {
       const formatFlag =
@@ -102,6 +95,7 @@ function reporter(webpackStats, maxBundleGzipSize, maxChunkGzipSize) {
     assetMap.main
       .sort((a, b) => b.size - a.size)
       .forEach(asset => mainAssetInfo(asset, assetMap.format))
+
     assetMap.other
       .sort((a, b) => b.size - a.size)
       .forEach(asset => assetInfo(asset))
