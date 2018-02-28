@@ -25,6 +25,7 @@ module.exports = function({ entry }) {
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
   const chunksEntry = parseChunks(entry)
+  const { transformer, formatter } = require('../libs/resolveLoaderError')
 
   // https://github.com/survivejs/webpack-merge
   // 当 entry 为数组时，webpack-merge 默认执行 append
@@ -106,7 +107,12 @@ module.exports = function({ entry }) {
       new webpack.NoEmitOnErrorsPlugin(),
       // 安装缺失模块后不用重启服务
       new WatchMissingNodeModulesPlugin(config.paths.nodeModules),
-      new FriendlyErrorsPlugin(),
+      // friendly error plugin displays very confusing errors when webpack
+      // fails to resolve a loader, so we provide custom handlers to improve it
+      new FriendlyErrorsPlugin({
+        additionalTransformers: [transformer],
+        additionalFormatters: [formatter]
+      }),
       new CaseSensitivePathsPlugin(),
       // Moment.js is an extremely popular library that bundles large locale files
       // by default due to how Webpack interprets its code. This is a practical

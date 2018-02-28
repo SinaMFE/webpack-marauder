@@ -15,6 +15,7 @@ const ora = require('ora')
 const webpack = require('webpack')
 const getEntry = require('../libs/entry')
 const ftpUpload = require('../libs/ftp')
+const { rootPath } = require('../libs/utils')
 const config = require('../config')
 const paths = config.paths
 const getWebpackConfig = require('../webpack/webpack.prod.conf')
@@ -32,6 +33,7 @@ const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024
 
 const spinner = ora('building for production...')
 let entryInput = null
+let isFirstBuild = true
 
 function build(dist) {
   let webpackConfig = getWebpackConfig(entryInput)
@@ -68,6 +70,7 @@ function build(dist) {
 
       return resolve({
         stats,
+        publicPath: webpackConfig.output.publicPath,
         path: webpackConfig.output.path,
         warnings: messages.warnings
       })
@@ -101,11 +104,29 @@ function success(output) {
   buildReporter(stats, WARN_AFTER_BUNDLE_GZIP_SIZE, WARN_AFTER_CHUNK_GZIP_SIZE)
 
   console.log()
+
   console.log(
     `The ${chalk.cyan(
       'dist/' + entryInput.entry
-    )} directory is ready to be deployed.`
+    )} directory is ready to be deployed.\n`
   )
+
+  if (output.publicPath === '/') {
+    console.log(
+      chalk.yellow(
+        `The app is built assuming that it will be deployed at the root of a domain.`
+      )
+    )
+    console.log(
+      chalk.yellow(
+        `If you intend to deploy it under a subpath, update the ${chalk.green(
+          'publicPath'
+        )} option in your project config (${chalk.cyan(
+          `marauder.config.js`
+        )}).\n`
+      )
+    )
+  }
 }
 
 async function hybrid(remotePath) {
