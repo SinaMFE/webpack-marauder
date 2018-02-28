@@ -16,13 +16,9 @@ const clearConsole = require('react-dev-utils/clearConsole')
 // 是否为交互模式
 const isInteractive = process.stdout.isTTY
 
-console.log('> Starting development server...')
-
 const webpack = require('webpack')
-const openBrowser = require('react-dev-utils/openBrowser')
-const DevServer = require('webpack-dev-server')
-const prehandleConfig = require('../libs/prehandleConfig')
 const getWebpackConfig = require('../webpack/webpack.dev.conf')
+const prehandleConfig = require('../libs/prehandleConfig')
 const progressHandler = require('../libs/buildProgress')
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
 const PROTOCOL = maraConf.https === true ? 'https' : 'http'
@@ -32,6 +28,7 @@ const PROTOCOL = maraConf.https === true ? 'https' : 'http'
 const proxyTable = config.dev.proxyTable
 
 async function getCompiler(webpackConf, { entry, port } = {}) {
+  const openBrowser = require('react-dev-utils/openBrowser')
   const hostUri = getServerHostUri(webpackConf.devServer.host, port)
   const compiler = webpack(webpackConf)
   let lineCaretPosition = 0
@@ -80,6 +77,7 @@ function addHotDevClient(entry) {
 }
 
 async function createDevServer(webpackConf, opt) {
+  const DevServer = require('webpack-dev-server')
   const serverConf = webpackConf.devServer
   const compiler = await getCompiler(webpackConf, opt)
 
@@ -106,6 +104,8 @@ function getServerURL(hostUri, entry) {
 }
 
 async function server(entryInput) {
+  console.log('> Starting development server...')
+
   const webpackConf = prehandleConfig('dev', getWebpackConfig(entryInput))
   const port = await getFreePort(DEFAULT_PORT)
   const devServer = await createDevServer(webpackConf, {
