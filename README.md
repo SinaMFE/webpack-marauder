@@ -4,9 +4,11 @@
 
 基于 webpack 的项目打包工具。
 
-`webpack-marauder` 的诞生离不开社区优秀的开源项目，本工具**持续跟进**并融合了 [create-react-app](https://github.com/facebook/create-react-app) 与 [vue-webpack](https://github.com/vuejs-templates/webpack) 的最佳配置，旨在为 `React`，`Vue` 以及纯 `Vanilla JS` 项目提供**一致性**的构建流程与开发体验。
+`webpack-marauder` 的诞生离不开社区优秀的开源项目，本工具**持续跟进**并融合了 [create-react-app](https://github.com/facebook/create-react-app) 与 [vue-webpack](https://github.com/vuejs-templates/webpack) 的最佳配置，旨在为 `React`，`Vue` 以及 `Vanilla JS` 项目提供**一致性**的构建流程与开发体验。
 
 ## 安装
+
+> 注意：本项目使用了 async/await 特性依赖 Node.js 8.0 以上
 
 为了保证多人开发时依赖安装的一致性，推荐使用 [yarn](https://yarnpkg.com/zh-Hans/) 作为包管理工具。
 
