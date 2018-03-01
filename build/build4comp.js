@@ -9,6 +9,7 @@ process.on('unhandledRejection', err => {
 })
 
 const fs = require('fs-extra')
+const path = require('path')
 const chalk = require('chalk')
 const ora = require('ora')
 const webpack = require('webpack')
@@ -22,16 +23,14 @@ const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
 const buildReporter = require('../libs/buildReporter')
 const prehandleConfig = require('../libs/prehandleConfig')
+const Stopwatch = require('../libs/Stopwatch')
+const { groupBy } = require('lodash')
 
-const spinner = ora('Biuld component...')
+const spinner = ora('Biuld library (commonjs + umd)...')
 spinner.start()
 
 const pages = getPageList(config.paths.entries)
-const dists = {
-  distDir: paths.dist,
-  libDir: paths.lib
-}
-const targets = [
+const libs = [
   {
     format: 'commonjs2',
     filename: 'index.cjs.js'
@@ -47,14 +46,11 @@ const targets = [
   }
 ]
 
-const webpackConfs = targets
-  .map(library => {
-    const libConf = getWebpackLibConf(library)
-    // 可在 stats.children[0].publicPath 获取
-    libConf.output.publicPath = `__LIB__${library.format}`
-    return libConf
-  })
-  .concat(pages.map(entry => getWebpackProdConf({ entry })))
+const webpackConfs = libs.concat(pages).map(target => {
+  return typeof target === 'object'
+    ? getWebpackLibConf(target)
+    : getWebpackProdConf({ entry: target })
+})
 
 function write(dest, code) {
   return new Promise((resolve, reject) => {
@@ -68,10 +64,13 @@ function write(dest, code) {
 function build(dists) {
   // @TODO 多配置应用 prehandleConfig
   // const webpackConfig = prehandleConfig('lib', webpackConfig);
+  const ticker = new Stopwatch()
   const compiler = webpack(webpackConfs)
 
   return new Promise((resolve, reject) => {
+    ticker.start()
     compiler.run((err, stats) => {
+      const time = ticker.check()
       spinner.stop()
 
       if (err) return reject(err)
@@ -89,6 +88,7 @@ function build(dists) {
       return resolve({
         stats,
         dists,
+        time,
         warnings: messages.warnings
       })
     })
@@ -102,23 +102,34 @@ function clean(dists) {
 }
 
 function success(output) {
-  console.log(chalk.green('Build complete.\n'))
-  console.log('File sizes after gzip:')
+  console.log(chalk.green(`Build complete in ${output.time}ms\n`))
+  console.log('File sizes after gzip:\n')
 
-  const libReg = /^__LIB__(\w*)$/i
-  const stats = output.stats.toJson({
+  const { children } = output.stats.toJson({
+    hash: false,
     chunks: false,
     modules: false,
     chunkModules: false
-  }).children
-  const compStats = stats.filter(info => libReg.test(info.publicPath))
-  const newStats = stats.map((st, i) => {
-    st['__path'] = webpackConfs[i].output.path
+  })
+  const compAssets = {
+    lib: children.slice(0, libs.length),
+    demo: children.slice(libs.length)
+  }
 
-    return st
+  compAssets.lib = compAssets.lib.map((stats, i) => {
+    return stats.assets.map(a => {
+      a['__dist'] = paths.lib
+      a['__format'] = libs[i].format
+      return a
+    })
   })
 
-  buildReporter(newStats)
+  compAssets.demo = compAssets.demo.map((stats, i) => {
+    stats.assets['__dist'] = path.join(paths.dist, pages[i])
+    return stats.assets
+  })
+
+  buildReporter(compAssets)
 }
 
 function error(err) {
@@ -127,7 +138,10 @@ function error(err) {
   process.exit(1)
 }
 
-clean(dists)
+clean({
+  distDir: paths.dist,
+  libDir: paths.lib
+})
   .then(build)
   .then(success)
   .catch(error)

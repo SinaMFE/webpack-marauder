@@ -6,35 +6,41 @@ const stripAnsi = require('strip-ansi')
 const gzipSize = require('gzip-size').sync
 const { groupBy } = require('lodash')
 
-const formatMap = {
-  COMMONJS2: 'CJS'
-}
-
-function reporter(webpackStats, maxBundleGzipSize, maxChunkGzipSize) {
-  const statsList = [].concat(webpackStats)
+// assetsData：{<Object>: <Array>}
+function reporter(assetsData, maxBundleGzipSize, maxChunkGzipSize) {
   // https://raw.githubusercontent.com/webpack/analyse/master/app/pages/upload/example.json
   let labelLengthArr = []
   let suggestBundleSplitting = false
+  const isJS = val => /\.js$/.test(val)
+  const isCSS = val => /\.css$/.test(val)
+  const isMinJS = val => /\.min\.js$/.test(val)
 
-  function mainAssetInfo(asset, format) {
-    const isMainBundle = !format && asset.name.indexOf(`${asset.folder}.`) === 0
+  function mainAssetInfo(info, type) {
+    // __format 属性为组件资源特有
+    const isMainBundle =
+      item.type === 'page' && info.name.indexOf(`${info.folder}.`) === 0
     const maxRecommendedSize = isMainBundle
       ? maxBundleGzipSize
       : maxChunkGzipSize
-    const isLarge = maxRecommendedSize && asset.size > maxRecommendedSize
+    const isLarge = maxRecommendedSize && info.size > maxRecommendedSize
 
-    if (isLarge && path.extname(asset.name) === '.js') {
+    if (isLarge && isJS(info.name)) {
       suggestBundleSplitting = true
     }
 
-    assetInfo(asset, isLarge)
+    assetInfo(info, isLarge)
   }
 
-  function assetInfo(asset, isLarge = false) {
-    let sizeLabel = asset.sizeLabel
+  function assetInfo(info, isLarge = false) {
+    let sizeLabel = info.sizeLabel
     const sizeLength = stripAnsi(sizeLabel).length
-    const assetPath =
-      chalk.dim(asset.folder + path.sep) + chalk.cyan(asset.name)
+    const longestSizeLabelLength = Math.max.apply(null, labelLengthArr)
+    let assetPath = chalk.dim(info.folder + path.sep) + chalk.cyan(info.name)
+
+    if (isJS(info.name)) {
+      // 脚本文件添加模块格式标识
+      assetPath += info.format ? chalk.cyan(` (${info.format})`) : ''
+    }
 
     if (sizeLength < longestSizeLabelLength) {
       const rightPadding = ' '.repeat(longestSizeLabelLength - sizeLength)
@@ -46,12 +52,15 @@ function reporter(webpackStats, maxBundleGzipSize, maxChunkGzipSize) {
     )
   }
 
-  const assets = statsList.map(stats => {
-    const libFormat = stats.publicPath.match(/^__LIB__(\w*)$/i)
-    let assetMap = groupBy(
-      stats.assets // .filter(asset => /\.(js|css)$/.test(asset.name))
+  function parseAssets(assets) {
+    const seenNames = new Map()
+    const assetsInfo = groupBy(
+      assets
+        .filter(
+          a => (seenNames.has(a.name) ? false : seenNames.set(a.name, true))
+        )
         .map(asset => {
-          const buildDir = stats['__path']
+          const buildDir = assets['__dist'] || asset['__dist']
           const fileContents = fs.readFileSync(path.join(buildDir, asset.name))
           const size = gzipSize(fileContents)
           const sizeLabel = filesize(size)
@@ -61,6 +70,7 @@ function reporter(webpackStats, maxBundleGzipSize, maxChunkGzipSize) {
           return {
             folder: path.basename(buildDir),
             name: asset.name,
+            format: asset['__format'],
             size: size,
             sizeLabel
           }
@@ -68,37 +78,49 @@ function reporter(webpackStats, maxBundleGzipSize, maxChunkGzipSize) {
       asset => (/\.(js|css)$/.test(asset.name) ? 'main' : 'other')
     )
 
-    assetMap.format = libFormat && libFormat[1]
-    assetMap.time = stats.time
-    assetMap.main = assetMap.main || []
-    assetMap.other = assetMap.other || []
+    assetsInfo.main = assetsInfo.main || []
+    assetsInfo.other = assetsInfo.other || []
 
-    return assetMap
-  })
+    return assetsInfo
+  }
 
-  const longestSizeLabelLength = Math.max.apply(null, labelLengthArr)
+  const assetList = Object.keys(assetsData).map(type => {
+    let assets = assetsData[type]
+    let output
 
-  assets.forEach(assetMap => {
-    if (assetMap.format) {
-      const formatFlag =
-        formatMap[assetMap.format.toUpperCase()] ||
-        assetMap.format.toUpperCase()
-      console.log()
-      console.log(
-        chalk.bgGreen.black(` ${formatFlag} `),
-        `Time: ${assetMap.time}ms`
-      )
-    } else if (statsList.length > 1) {
-      console.log(`\nDEMO Time:`, `${assetMap.time}ms`)
+    if (type === 'lib') {
+      assets = [].concat.apply([], assets)
+      output = [parseAssets(assets)]
+    } else {
+      output = assets.map(a => parseAssets(a))
     }
 
-    assetMap.main
-      .sort((a, b) => b.size - a.size)
-      .forEach(asset => mainAssetInfo(asset, assetMap.format))
+    return {
+      type,
+      output
+    }
+  })
 
-    assetMap.other
-      .sort((a, b) => b.size - a.size)
-      .forEach(asset => assetInfo(asset))
+  assetList.forEach(item => {
+    if (item.type === 'demo') console.log('\nDEMO:')
+
+    item.output.forEach(assetsInfo => {
+      if (item.type === 'demo') console.log()
+
+      assetsInfo.main
+        .sort((a, b) => {
+          if (isJS(a.name) && isCSS(b.name)) return -1
+          if (isCSS(a.name) && isJS(b.name)) return 1
+          if (isMinJS(a.name) && !isMinJS(b.name)) return -1
+          if (!isMinJS(a.name) && isMinJS(b.name)) return 1
+          return b.size - a.size
+        })
+        .forEach(info => mainAssetInfo(info, item.type))
+
+      assetsInfo.other
+        .sort((a, b) => b.size - a.size)
+        .forEach(info => assetInfo(info))
+    })
   })
 
   if (suggestBundleSplitting) {

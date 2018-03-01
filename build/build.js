@@ -92,6 +92,7 @@ function ftp() {
 
 function success(output) {
   const stats = output.stats.toJson({
+    hash: false,
     chunks: false,
     modules: false,
     chunkModules: false
@@ -100,11 +101,16 @@ function success(output) {
   console.log(chalk.green(`Build successfully in ${stats.time}ms\n`))
   console.log('File sizes after gzip:\n')
 
-  stats['__path'] = output.path
-  buildReporter(stats, WARN_AFTER_BUNDLE_GZIP_SIZE, WARN_AFTER_CHUNK_GZIP_SIZE)
+  stats.assets['__dist'] = output.path
+
+  buildReporter(
+    // page 为数组
+    { page: [stats.assets] },
+    WARN_AFTER_BUNDLE_GZIP_SIZE,
+    WARN_AFTER_CHUNK_GZIP_SIZE
+  )
 
   console.log()
-
   console.log(
     `The ${chalk.cyan(
       'dist/' + entryInput.entry
