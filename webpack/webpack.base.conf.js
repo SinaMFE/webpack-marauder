@@ -112,6 +112,10 @@ module.exports = function(entry) {
               loader: 'vue-loader',
               options: vueLoaderConfig
             },
+            {
+              test: /\.mustache$/,
+              loader: 'mustache-loader'
+            },
             // Process JS with Babel.
             babelLoader(isProd),
             {
