@@ -18,7 +18,7 @@ function reporter(assetsData, maxBundleGzipSize, maxChunkGzipSize) {
   function mainAssetInfo(info, type) {
     // __format 属性为组件资源特有
     const isMainBundle =
-      item.type === 'page' && info.name.indexOf(`${info.folder}.`) === 0
+      type === 'page' && info.name.indexOf(`${info.folder}.`) === 0
     const maxRecommendedSize = isMainBundle
       ? maxBundleGzipSize
       : maxChunkGzipSize
