@@ -96,6 +96,7 @@ function success(output) {
     chunkModules: false
   })
 
+  console.log(chalk.green(`Build complete in ${stats.time}ms\n`))
   console.log('File sizes after gzip:\n')
 
   stats.assets['__dist'] = output.path
