@@ -15,17 +15,16 @@ const ora = require('ora')
 const webpack = require('webpack')
 const getEntry = require('../libs/entry')
 const ftpUpload = require('../libs/ftp')
-const { rootPath } = require('../libs/utils')
 const config = require('../config')
 const paths = config.paths
 const getWebpackConfig = require('../webpack/webpack.prod.conf')
 const maraConf = require(paths.marauder)
-const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const VERSION = process.env.npm_package_version
 const Hybrid = require('../libs/hybrid')
+const printBuildError = require('../libs/printBuildError')
 const buildReporter = require('../libs/buildReporter')
 const prehandleConfig = require('../libs/prehandleConfig')
+const VERSION = process.env.npm_package_version
 
 // These sizes are pretty large. We'll warn for bundles exceeding them.
 const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
@@ -33,7 +32,6 @@ const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024
 
 const spinner = ora('building for production...')
 let entryInput = null
-let isFirstBuild = true
 
 function build(dist) {
   let webpackConfig = getWebpackConfig(entryInput)
@@ -98,7 +96,6 @@ function success(output) {
     chunkModules: false
   })
 
-  console.log(chalk.green(`Build successfully in ${stats.time}ms\n`))
   console.log('File sizes after gzip:\n')
 
   stats.assets['__dist'] = output.path

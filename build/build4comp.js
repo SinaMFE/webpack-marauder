@@ -19,12 +19,11 @@ const paths = config.paths
 const maraConf = require(paths.marauder)
 const getWebpackProdConf = require('../webpack/webpack.prod.conf')
 const getWebpackLibConf = require('../webpack/webpack.lib.conf')
-const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
+const printBuildError = require('../libs/printBuildError')
 const buildReporter = require('../libs/buildReporter')
 const prehandleConfig = require('../libs/prehandleConfig')
 const Stopwatch = require('../libs/Stopwatch')
-const { groupBy } = require('lodash')
 
 const spinner = ora('Biuld library (commonjs + umd)...')
 spinner.start()
@@ -51,15 +50,6 @@ const webpackConfs = libs.concat(pages).map(target => {
     ? getWebpackLibConf(target)
     : getWebpackProdConf({ entry: target })
 })
-
-function write(dest, code) {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(dest, code, err => {
-      if (err) return reject(err)
-      resolve()
-    })
-  })
-}
 
 function build(dists) {
   // @TODO 多配置应用 prehandleConfig

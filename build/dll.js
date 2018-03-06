@@ -36,8 +36,8 @@ const input = require('yargs').argv._
 const ora = require('ora')
 const webpack = require('webpack')
 const ftpUpload = require('../libs/ftp')
-const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
+const printBuildError = require('../libs/printBuildError')
 const prehandleConfig = require('../libs/prehandleConfig')
 let webpackDllConfig = require('../webpack/webpack.dll.conf')()
 
