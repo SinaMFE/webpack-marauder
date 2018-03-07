@@ -51,7 +51,7 @@ module.exports = {
     'not ie < 9'
   ],
   postcss: {
-    flexbox: 'no-2009',
+    // 允许 flexbox 2009 以支持多行超出省略
     // https://github.com/jonathantneal/postcss-preset-env/blob/master/lib/plugins-by-specification-id.js
     features: {
       // image-set polyfill 与雪碧图使用时存在 bug，在此禁用
