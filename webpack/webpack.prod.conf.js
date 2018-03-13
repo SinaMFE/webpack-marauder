@@ -49,7 +49,7 @@ module.exports = function({ entry }) {
       // 使作作用域提升(scope hoisting)
       // https://medium.com/webpack/brief-introduction-to-scope-hoisting-in-webpack-8435084c171f
       new webpack.optimize.ModuleConcatenationPlugin(),
-      new marauderDebug(),
+      config.debug && new marauderDebug(),
       // Minify the code.
       new UglifyJsPlugin({
         uglifyOptions: {
