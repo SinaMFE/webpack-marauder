@@ -5,6 +5,8 @@ module.exports = {
     main: true,
     chunk: true
   },
+  // 用于生成未压缩文件
+  debug: true,
   library: {
     root: 'MyLibrary',
     amd: '',

@@ -23,6 +23,7 @@ module.exports = {
     chunk: true,
     assets: true
   },
+  debug: maraConf.debug,
   library: {
     root: 'MyLibrary',
     amd: pkgName,
