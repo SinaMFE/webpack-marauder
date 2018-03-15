@@ -1,11 +1,14 @@
 'use strict'
 
 const path = require('path')
-const { rootPath } = require('../libs/utils')
+const {
+  rootPath
+} = require('../libs/utils')
 
 const resolveOwn = relativePath => path.resolve(__dirname, '..', relativePath)
 
 module.exports = {
+  'wx-dist': rootPath('wx-dist'),
   app: rootPath('.'),
   dotenv: rootPath('.env'),
   entries: 'src/view/*/index.js',

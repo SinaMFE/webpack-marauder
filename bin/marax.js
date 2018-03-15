@@ -26,6 +26,8 @@ const paths = require('../config/paths')
 const args = process.argv.slice(2)
 
 const cmdMap = {
+	'wx-dev':'wx-dev-server',
+	'wx-build':'wx-build',
   dev: 'dev-server',
   test: 'test',
   build: 'build',
