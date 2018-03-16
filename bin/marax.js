@@ -45,9 +45,9 @@ const cmdArgs = args.slice(scriptIndex + 1)
 const mArgs = require('minimist')(args)
 
 if (mArgs.wap) {
-  process.env.HYBRID_TARGET = 'wap'
+  process.env.jsbridgeBuildType = 'wap'
 } else if (mArgs.app) {
-  process.env.HYBRID_TARGET = 'app'
+  process.env.jsbridgeBuildType = 'app'
 }
 
 if (!equalsCmd(script)) {
