@@ -7,7 +7,7 @@ var FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 
 var path = require('path')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
-var CopyWebpackPlugin = require('copy-webpack-plugin')
+var CopyWebpackPlugin = require('copy-webpack-plugin-hash')
 var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 
 
