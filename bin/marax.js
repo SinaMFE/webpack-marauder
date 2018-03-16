@@ -42,6 +42,13 @@ const nodeArgs = scriptIndex > 0 ? args.slice(0, scriptIndex) : []
 // cmd 之后的内容为 cmdArgs
 // marax build index，cmdArgs: ['index']
 const cmdArgs = args.slice(scriptIndex + 1)
+const mArgs = require('minimist')(args)
+
+if (mArgs.wap) {
+  process.env.HYBRID_TARGET = 'wap'
+} else if (mArgs.app) {
+  process.env.HYBRID_TARGET = 'app'
+}
 
 if (!equalsCmd(script)) {
   console.log('Unknown script "' + script + '".')
