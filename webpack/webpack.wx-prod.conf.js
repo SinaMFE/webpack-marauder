@@ -91,8 +91,8 @@ module.exports = function(entry) {
       }),
       // copy custom static assets
       new CopyWebpackPlugin([{
-        from: path.join(config.paths.src, './wx/static'),
-        to: path.join(config.paths.src,'./wx-dist/static'),
+        from: config.paths['wx-assets'],
+        to: config.paths['wx-assets-dist'],
         ignore: ['.*']
       }])
     ]

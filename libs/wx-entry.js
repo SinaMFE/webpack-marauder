@@ -3,9 +3,10 @@
 var path = require('path')
 var fs = require('fs')
 var utils = require('./utils');
+var config = require('../config');
 
 function resolve(dir) {
-  return path.join(utils.rootPath('src'), 'wx',dir)
+  return path.join(config.paths['wx-src'], dir)
 }
 
 const appEntry = {
