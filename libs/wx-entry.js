@@ -2,16 +2,12 @@
 
 var path = require('path')
 var fs = require('fs')
+const fsE = require('fs-extra');
 var utils = require('./utils');
 
 function resolve(dir) {
   return path.join(utils.rootPath('src'), 'wx',dir)
 }
-
-const appEntry = {
-  app: resolve('main.js')
-}
-const pagesEntry = getPageList(resolve('pages'), 'main.js')
 
 function getPageList(dir, entryFile) {
   const files = fs.readdirSync(dir)
@@ -25,6 +21,15 @@ function getPageList(dir, entryFile) {
 }
 
 async function getEntry() {
+  const wxDir = path.join(utils.rootPath('src'), 'wx');
+  // 判断微信目录是否存在
+  if(!fs.existsSync(wxDir)){
+    await fsE.copy(path.resolve(__dirname, '../wx-template'), wxDir);
+  }
+  const appEntry = {
+    app: resolve('main.js')
+  }
+  const pagesEntry = getPageList(resolve('pages'), 'main.js')
   return Object.assign({}, appEntry, pagesEntry)
 }
 
