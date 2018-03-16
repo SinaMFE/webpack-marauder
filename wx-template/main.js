@@ -12,7 +12,7 @@ app.$mount();
 // 小程序配置
 export default {
 	config:{
-		pages:['^pages/index/index'],
+		pages:['^pages/index/index','pages/test/test'],
 		window:{
 			backgroundTextStyle:'light',
 			navigationBarBackgroundColor:'#fff',
