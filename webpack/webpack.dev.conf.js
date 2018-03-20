@@ -127,7 +127,7 @@ module.exports = function({ entry }) {
         template: `${
           config.paths.page
         }/${entry}/index.html`,
-        inject: false,
+        inject: true,
         // 每个html引用的js模块，也可以在这里加上vendor等公用模块
         chunks: [entry]
       })

@@ -126,7 +126,7 @@ module.exports = function({ entry }) {
           }/${entry}/index.html`,
           minify: false,
           // 自动将引用插入html
-          inject: false,
+          inject: true,
           // 模块排序，common > entry > servant
           chunksSortMode(a, b) {
             const chunkNames = Object.keys(chunksEntry).sort()
