@@ -1,6 +1,6 @@
 {
     "name": "webpack-marauder",
-    "version": "1.7.6-hy",
+    "version": "1.7.6-hy.1",
     "description": "marauder 脚本库，支持打包 React，Vue 及 Vanilla JS ",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -61,6 +61,7 @@
         "jest": "^22.1.2",
         "marauder-ejs-loader": "^1.0.0",
         "md5": "^2.2.1",
+        "minimist": "^1.2.0",
         "object-assign": "^4.1.1",
         "optimize-css-assets-webpack-plugin": "^3.2.0",
         "ora": "^1.4.0",
