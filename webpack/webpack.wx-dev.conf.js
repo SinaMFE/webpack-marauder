@@ -13,7 +13,7 @@ var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 
 module.exports = function(entry) {
   return merge(baseWebpackConfig, {
-		entry:entry,
+    entry: entry,
     module: {
       rules: utils.styleLoaders({
         sourceMap: config.dev.cssSourceMap,

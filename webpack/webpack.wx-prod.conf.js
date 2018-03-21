@@ -18,7 +18,7 @@ module.exports = function(entry) {
     entry: entry,
     module: {
       rules: utils.styleLoaders({
-				sourceMap: shouldUseSourceMap ? 'source-map' : false,
+        sourceMap: shouldUseSourceMap ? 'source-map' : false,
         extract: true
       })
     },

@@ -9,7 +9,7 @@ function resolve(dir) {
 }
 
 module.exports = {
-	target: require('mpvue-webpack-target'),
+  target: require('mpvue-webpack-target'),
   output: {
     path: config.paths['wx-dist'],
     filename: '[name].js',
@@ -18,7 +18,7 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.vue', '.json', ".ts", ".tsx"],
     alias: {
-			'vuex':'vuex/dist/vuex.js',
+      'vuex': 'vuex/dist/vuex.js',
       'vue': 'mpvue',
       //代表src
       '@': resolve('./')
