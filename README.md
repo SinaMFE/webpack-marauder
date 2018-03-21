@@ -113,6 +113,7 @@ npm run dll --ftp
 
 npm-script 中配置
 
+
 ```json
 "build": "marax lib"
 ```
@@ -124,6 +125,28 @@ npm run build
 ```
 
 打包后文件将在 `lib` 目录中输出
+
+### 启动微信小程序mpvue开发环境
+
+`webpack-marauder` 除了可以做普通web开发，也支持小程序mpvue的开发环境，详情mpvue的使用方法见：`http://mpvue.com/`
+
+```json
+"wx-dev": "marax wx-dev"
+```
+
+```
+npm run wx-dev
+```
+
+在项目 `src` 中会创建wx目录装载基本的mpvue的初始脚本，然后会在根目录生成`wx-dist`目录，使用微信开发者工具直接调试此目录即可。
+
+### 微信小程序mpvue打包
+
+``json
+"wx-build": "marax wx-build"
+``
+
+功能同`wx-dev`，会一次性在`wx-dist`下打包好mpvue构建的小程序代码。
 
 ## 教程
 
