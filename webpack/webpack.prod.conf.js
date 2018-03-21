@@ -7,7 +7,7 @@ const chalk = require('chalk')
 const CopyWebpackPlugin = require('copy-webpack-plugin-hash')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackPlugin = require('sina-html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const marauderDebug = require('sinamfe-marauder-debug')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
@@ -49,7 +49,7 @@ module.exports = function({ entry }) {
       // 使作作用域提升(scope hoisting)
       // https://medium.com/webpack/brief-introduction-to-scope-hoisting-in-webpack-8435084c171f
       new webpack.optimize.ModuleConcatenationPlugin(),
-      new marauderDebug(),
+      config.debug && new marauderDebug(),
       // Minify the code.
       new UglifyJsPlugin({
         uglifyOptions: {

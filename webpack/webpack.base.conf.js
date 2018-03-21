@@ -82,7 +82,8 @@ module.exports = function(entry) {
       loaders: [{ test: /\.html$/, loader: 'html-withimg-loader' }],
       rules: [
         // Disable require.ensure as it's not a standard language feature.
-        { parser: { requireEnsure: false } },
+        // 为了兼容  bundle-loader 暂时不启用
+        // { parser: { requireEnsure: false } },
         {
           oneOf: [
             ...styleLoaders({

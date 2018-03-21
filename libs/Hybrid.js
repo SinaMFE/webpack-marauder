@@ -129,6 +129,7 @@ class Hybrid {
       let { stdout, stderr } = await execAsync('git remote -v')
       if (stdout && !stderr) {
         let [fullname, name] = stdout.match(/([\w-]*)\.git/)
+        name=name.toLowerCase()
         this.name = name
       }
     } catch (e) {
