@@ -1,6 +1,6 @@
 {
     "name": "webpack-marauder",
-    "version": "1.7.7",
+    "version": "1.7.8",
     "description": "marauder 脚本库，支持打包 React，Vue 及 Vanilla JS ",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -94,7 +94,8 @@
         "webpack-merge": "^4.1.2",
         "yargs": "^10.1.2",
         "zip-webpack-plugin": "^2.1.0",
-        "sina-html-webpack-plugin":"latest"
+        "sina-html-webpack-plugin":"latest",
+        "marauder-umd-loader": "latest"
     },
     "license": "MIT",
     "devDependencies": {
