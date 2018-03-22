@@ -147,16 +147,16 @@ module.exports = function(entry) {
               options: {
                 name: path.join(ASSETS, 'media/[name].[hash:8].[ext]')
               }
-            },
-            {
-              test: /\.(html)$/,
-              use: {
-                loader: "html-loader",
-                options: {
-                  attrs: [":src",":data-src"]
-                }
-              }
             }
+            // {
+            //   test: /\.(html)$/,
+            //   use: {
+            //     loader: "html-loader",
+            //     options: {
+            //       attrs: [":src",":data-src"]
+            //     }
+            //   }
+            // }
           ]
         }
       ]
