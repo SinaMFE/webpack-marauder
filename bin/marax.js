@@ -19,13 +19,17 @@ if (!semver.satisfies(process.version, requiredVersion)) {
 
 // https://www.npmjs.com/package/cross-spawn
 const spawn = require('react-dev-utils/crossSpawn')
-const { buffer2String } = require('../libs/utils')
+const {
+  buffer2String
+} = require('../libs/utils')
 const paths = require('../config/paths')
-// args 是当前 bin 脚本的参数，为 bin 以后的内容
-// 如 marax build index，args: ['build', 'index']
+  // args 是当前 bin 脚本的参数，为 bin 以后的内容
+  // 如 marax build index，args: ['build', 'index']
 const args = process.argv.slice(2)
 
 const cmdMap = {
+  'wx-dev': 'wx-dev-server',
+  'wx-build': 'wx-build',
   dev: 'dev-server',
   test: 'test',
   build: 'build',
@@ -36,11 +40,11 @@ const cmdMap = {
 const equalsCmd = cmd => cmdMap.hasOwnProperty(cmd)
 const scriptIndex = args.findIndex(equalsCmd)
 const script = scriptIndex === -1 ? args[0] : args[scriptIndex]
-// bin 命令与 cmd 之间的内容为 nodeArgs
-// 如 marax x build index，nodeArgs: ['x']
+  // bin 命令与 cmd 之间的内容为 nodeArgs
+  // 如 marax x build index，nodeArgs: ['x']
 const nodeArgs = scriptIndex > 0 ? args.slice(0, scriptIndex) : []
-// cmd 之后的内容为 cmdArgs
-// marax build index，cmdArgs: ['index']
+  // cmd 之后的内容为 cmdArgs
+  // marax build index，cmdArgs: ['index']
 const cmdArgs = args.slice(scriptIndex + 1)
 
 if (!equalsCmd(script)) {
@@ -73,22 +77,23 @@ if (script === '-v') {
   const result = spawn.sync(
     'node',
     nodeArgs
-      .concat(require.resolve('../build/' + cmdMap[script]))
-      .concat(cmdArgs),
-    { stdio: 'inherit' }
+    .concat(require.resolve('../build/' + cmdMap[script]))
+    .concat(cmdArgs), {
+      stdio: 'inherit'
+    }
   )
   if (result.signal) {
     if (result.signal === 'SIGKILL') {
       console.log(
         'The build failed because the process exited too early. ' +
-          'This probably means the system ran out of memory or someone called ' +
-          '`kill -9` on the process.'
+        'This probably means the system ran out of memory or someone called ' +
+        '`kill -9` on the process.'
       )
     } else if (result.signal === 'SIGTERM') {
       console.log(
         'The build failed because the process exited too early. ' +
-          'Someone might have called `kill` or `killall`, or the system could ' +
-          'be shutting down.'
+        'Someone might have called `kill` or `killall`, or the system could ' +
+        'be shutting down.'
       )
     }
     process.exit(1)
