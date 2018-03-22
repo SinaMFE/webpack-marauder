@@ -13,6 +13,10 @@ const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
 
+const defaultLoaders=[
+  { test: /\.html$/, loader: 'html-withimg-loader' }
+]
+
 function babelExternalMoudles(esm) {
   if (!(esm && esm.length)) return nodeModulesRegExp(config.esm)
 
@@ -79,7 +83,7 @@ module.exports = function(entry) {
     module: {
       // makes missing exports an error instead of warning
       strictExportPresence: false,
-      loaders: [{ test: /\.html$/, loader: 'html-withimg-loader' }],
+      loaders: maraConf.loaders?maraConf.loaders:defaultLoaders,
       rules: [
         // Disable require.ensure as it's not a standard language feature.
         // 为了兼容  bundle-loader 暂时不启用
