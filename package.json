@@ -96,7 +96,8 @@
         "yargs": "^10.1.2",
         "zip-webpack-plugin": "^2.1.0",
         "sina-html-webpack-plugin":"latest",
-        "marauder-umd-loader": "latest"
+        "marauder-umd-loader": "latest",
+        "html-loader": "^0.5.5"
     },
     "license": "MIT",
     "devDependencies": {
