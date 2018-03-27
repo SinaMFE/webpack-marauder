@@ -53,7 +53,8 @@ module.exports = function({ entry }) {
       // Minify the code.
       new UglifyJsPlugin({
         uglifyOptions: {
-          ecma: 8,
+          // 强制使用 es5 压缩输出，避免 es6 优化导致兼容性问题
+          ecma: 5,
           compress: {
             warnings: false,
             // Disabled because of an issue with Uglify breaking seemingly valid code:
