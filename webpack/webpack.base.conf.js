@@ -32,8 +32,11 @@ module.exports = function(entry) {
     entry: getEntries(entryGlob, require.resolve('./polyfills')),
     output: {
       path: paths.dist,
-      filename: path.join(ASSETS, 'js/[name].js'),
-      chunkFilename: path.join(ASSETS, 'js/[name].async.js')
+      // 统一使用 POSIX 风格拼接路径
+      // webpack 将会处理平台差异
+      // 如果使用 path.join 在 Windows 上会出现路径异常
+      filename: path.posix.join(ASSETS, 'js/[name].js'),
+      chunkFilename: path.posix.join(ASSETS, 'js/[name].async.js')
     },
     resolve: {
       extensions: [
@@ -96,7 +99,7 @@ module.exports = function(entry) {
               loader: 'url-loader',
               options: {
                 limit: 10000,
-                name: path.join(ASSETS, 'img/[name].[hash:8].[ext]')
+                name: path.posix.join(ASSETS, 'img/[name].[hash:8].[ext]')
               }
             },
             {
@@ -135,7 +138,7 @@ module.exports = function(entry) {
               test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
               loader: 'file-loader',
               options: {
-                name: path.join(ASSETS, 'fonts/[name].[hash:8].[ext]')
+                name: path.posix.join(ASSETS, 'fonts/[name].[hash:8].[ext]')
               }
             },
             {
@@ -146,7 +149,7 @@ module.exports = function(entry) {
               loader: 'file-loader',
               exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
               options: {
-                name: path.join(ASSETS, 'media/[name].[hash:8].[ext]')
+                name: path.posix.join(ASSETS, 'media/[name].[hash:8].[ext]')
               }
             }
           ]

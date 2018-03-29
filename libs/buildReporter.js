@@ -35,7 +35,8 @@ function reporter(assetsData, maxBundleGzipSize, maxChunkGzipSize) {
     let sizeLabel = info.sizeLabel
     const sizeLength = stripAnsi(sizeLabel).length
     const longestSizeLabelLength = Math.max.apply(null, labelLengthArr)
-    let assetPath = chalk.dim(info.folder + path.sep) + chalk.cyan(info.name)
+    // path.normalize 跨平台格式化路径
+    let assetPath = chalk.dim(info.folder + path.sep) + chalk.cyan(path.normalize(info.name))
 
     if (isJS(info.name)) {
       // 脚本文件添加模块格式标识

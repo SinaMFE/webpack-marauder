@@ -32,9 +32,10 @@ function wrapLoader(options, loaders) {
   }
 
   const assets = options.library ? '' : `${config.assetsDir}/css`
+  // 统一使用 POSIX 风格拼接路径，方便基于 / 做逻辑判断
   const cssFilename = maraConf.hash
-    ? path.join(assets, '[name].[contenthash:8].css')
-    : path.join(assets, '[name].min.css')
+    ? path.posix.join(assets, '[name].[contenthash:8].css')
+    : path.posix.join(assets, '[name].min.css')
 
   // ExtractTextPlugin expects the build output to be flat.
   // (See https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/27)
