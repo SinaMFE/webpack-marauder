@@ -26,7 +26,7 @@ function progressHandler(percentage, msg, ...args) {
     for (let detail of details) {
       if (!detail) continue
       if (detail.length > 40) {
-        detail = `...${detail.substr(detail.length - 37)}`
+        detail = '...'
       }
       msg += ` ${detail}`
     }
