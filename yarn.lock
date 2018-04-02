@@ -404,7 +404,7 @@ async@1.5.2, async@^1.4.0, async@^1.5.2:
   version "1.5.2"
   resolved "https://registry.npmjs.org/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
 
-async@^2.1.2, async@^2.1.4, async@^2.4.1, async@^2.6.0:
+async@^2.1.2, async@^2.1.4, async@^2.4.1:
   version "2.6.0"
   resolved "https://registry.npmjs.org/async/-/async-2.6.0.tgz#61a29abb6fcc026fea77e56d1c6ec53a795951f4"
   dependencies:
@@ -7512,12 +7512,9 @@ sinamfe-marauder-ensure-ls@0.0.10:
   version "0.0.10"
   resolved "https://registry.npmjs.org/sinamfe-marauder-ensure-ls/-/sinamfe-marauder-ensure-ls-0.0.10.tgz#fe22b3a63cc4bba9e76ea32b9957e64c9b0efc92"
 
-sinamfe-webpack-module_dependency@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.npmjs.org/sinamfe-webpack-module_dependency/-/sinamfe-webpack-module_dependency-1.2.1.tgz#ff80c341d314da4e9a63d29274dfc8140a08fb82"
-  dependencies:
-    async "^2.6.0"
-    webpack "^3.11.0"
+sinamfe-webpack-module_dependency@^1.2.2-rc.3:
+  version "1.2.2-rc.3"
+  resolved "https://registry.npmjs.org/sinamfe-webpack-module_dependency/-/sinamfe-webpack-module_dependency-1.2.2-rc.3.tgz#6f20af62caa6db8744305407144516aa38122c0c"
 
 slash@^1.0.0:
   version "1.0.0"
@@ -8724,7 +8721,7 @@ webpack@^3.10.0:
     webpack-sources "^1.0.1"
     yargs "^8.0.2"
 
-webpack@^3.11.0, webpack@^3.4.0:
+webpack@^3.4.0:
   version "3.11.0"
   resolved "https://registry.npmjs.org/webpack/-/webpack-3.11.0.tgz#77da451b1d7b4b117adaf41a1a93b5742f24d894"
   dependencies:
