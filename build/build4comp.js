@@ -12,6 +12,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
 const ora = require('ora')
+const glob = require('glob')
 const webpack = require('webpack')
 const { getPageList } = require('../libs/utils')
 const config = require('../config')
@@ -122,6 +123,27 @@ function success(output) {
   buildReporter(compAssets)
 }
 
+// 旧版脚手架 umd 文件输出为 dist/main.min.js
+// 通过 --old 配置开启兼容模式
+async function backwards() {
+  if (!process.argv.slice(2).includes('--old')) return
+
+  const umdLibs = glob.sync(path.join(paths.lib, 'index?(.min).js'))
+
+  return Promise.all(
+    umdLibs.map(file => {
+      const name = path.basename(file).replace('index', 'main')
+      return fs.copy(file, path.join(paths.dist, name))
+    })
+  ).then(() => {
+    console.log(
+      chalk.green(
+        '\nSynchronized umd libs to dist for backwards compatibility.'
+      )
+    )
+  })
+}
+
 function error(err) {
   console.log(chalk.red('Failed to compile.\n'))
   printBuildError(err)
@@ -134,4 +156,5 @@ clean({
 })
   .then(build)
   .then(success)
+  .then(backwards)
   .catch(error)
