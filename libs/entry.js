@@ -46,7 +46,7 @@ async function getEntry() {
 }
 
 function result(entry = '') {
-  return Promise.resolve({ entry, trunk: args[1] })
+  return Promise.resolve({ entry, ftpBranch: args[1] })
 }
 
 function chooseOne() {
