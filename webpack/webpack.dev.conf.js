@@ -124,7 +124,7 @@ module.exports = function({ entry }) {
         // 以页面文件夹名作为模板名称
         filename: `${entry}.html`,
         // 生成各自的 html 模板
-        template: `html-withimg-loader?min=false!${
+        template: `${
           config.paths.page
         }/${entry}/index.html`,
         inject: true,
