@@ -1,6 +1,7 @@
 'use strict'
 
 const path = require('path')
+const fs = require('fs')
 const cwd = process.cwd()
 
 const packageConfig = require(path.resolve(cwd, 'package.json'))
@@ -73,10 +74,7 @@ http
     console.log(
       chalk.red(
         '静态资源上线cnpm-mjs通知失败\n请手动重试如下链接：' +
-          'http://exp.smfe.sina.cn/componentUmd?name=' +
-          packageConfig.name +
-          '&version=' +
-          packageConfig.version
+        url
       )
     )
   })
