@@ -4,20 +4,31 @@ const chalk = require('chalk')
 const { prompt, Separator } = require('inquirer')
 const config = require('../config')
 const { getPageList } = require('./utils')
-
-const args = process.argv.slice(2)
+const args = require('minimist')(process.argv.slice(2))
 const pages = getPageList(config.paths.entries)
-
-// console.log(args)
+const cmdInput = args._
+let ftpBranch = args.ftp === true ? '' : args.ftp
 
 // TL
 // 识别 entry, branch
+// 兼容 yarn 与 npm
 // 可指定输入页面名，或选择页面名
 
 // npm run build
 // npm run build --ftp
-// npm run build index --ftp
+// npm run build --ftp test
+// yarn build
+// yarn build index --ftp
+// yarn build index --ftp test
 // 输入出错
+
+if (args.ftp) {
+  config.build.uploadFtp = true
+} else if (config.build.uploadFtp) {
+  // 默认的 config.build.uploadFtp 为 process.env.npm_config_ftp
+  // 兼容 npm
+  ftpBranch = cmdInput[1]
+}
 
 function empty() {
   console.log(`😂  ${chalk.red('请创建入口文件')}\n`)
@@ -46,11 +57,11 @@ async function getEntry() {
 }
 
 function result(entry = '') {
-  return Promise.resolve({ entry, ftpBranch: args[1] })
+  return Promise.resolve({ entry, ftpBranch })
 }
 
 function chooseOne() {
-  const illegalInput = args.length && !validEntry(args[0])
+  const illegalInput = cmdInput.length && !validEntry(cmdInput[0])
 
   if (illegalInput) {
     return chooseEntry('您输入的页面有误, 请选择:')
@@ -60,9 +71,9 @@ function chooseOne() {
 }
 
 function chooseMany() {
-  if (validEntry(args[0])) return result(args[0])
+  if (validEntry(cmdInput[0])) return result(cmdInput[0])
 
-  return chooseEntry(args.length && '您输入的页面有误, 请选择:')
+  return chooseEntry(cmdInput.length && '您输入的页面有误, 请选择:')
 }
 
 function validEntry(entry) {
