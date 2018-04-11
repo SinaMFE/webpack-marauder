@@ -6,6 +6,7 @@ const defConf = require('./default')
 const maraConf = require(paths.marauder)
 
 const NODE_ENV = process.env.NODE_ENV
+
 if (!NODE_ENV) {
   throw new Error(
     'The NODE_ENV environment variable is required but was not specified.'
@@ -51,6 +52,18 @@ dotenvFiles.forEach(dotenvFile => {
   }
 })
 
+// hybrid 两端统一用，特别优待 jsbridgeBuildType 装载到 node 环境
+function loadHybridEnv() {
+  const HYBRID_ENV = 'jsbridgeBuildType'
+
+  // 确保通过命令参数 --app 或 --wap 设置的 env 优先级最高
+  if (process.env[HYBRID_ENV] || !maraConf.globalEnv) return
+
+  if (HYBRID_ENV in maraConf.globalEnv) {
+    process.env[HYBRID_ENV] = maraConf.globalEnv[HYBRID_ENV]
+  }
+}
+
 function getEnv(publicUrl) {
   // NODE_ENV，PUBLIC_URL 环境变量为脚手架运行依赖
   // 这里放在 assign 尾部表示顶级含义，不可被覆盖
@@ -80,6 +93,8 @@ function getEnv(publicUrl) {
       return env
     }, {})
   }
+
+  loadHybridEnv()
 
   // raw 给 InterpolateHtmlPlugin 插件使用
   return { raw, stringified }
