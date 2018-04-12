@@ -24,13 +24,13 @@ const spinner = ora('开始上线umd资源到mjs...');
 // }
 let noticeAfterPublish =false,noticeLevel="minor";
 if(fs.existsSync(path.resolve(cwd, 'marauder.config.js'))){
-  const maraConf = require(path.resolve(cwd, 'marauder.config.js'))
-  if(maraConf.noticeAfterPublish==true){
-    noticeAfterPublish=maraConf.noticeAfterPublish;
-    noticeLevel=maraConf.noticeLevel||"minor";
+  const maraConf = require(path.resolve(cwd, 'marauder.config.js'));
+
+  if(maraConf&&maraConf.pkgConfig&&maraConf.pkgConfig.noticeAfterPublish==true){
+    noticeAfterPublish=maraConf.pkgConfig.noticeAfterPublish;
+    noticeLevel=maraConf.pkgConfig.noticeLevel||"minor";
   }
 }
-
 
 console.log('开始上线umd资源到mjs...')
 
