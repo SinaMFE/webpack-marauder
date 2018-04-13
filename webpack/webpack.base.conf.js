@@ -6,21 +6,21 @@ const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
 const { getEntries, nodeModulesRegExp } = require('../libs/utils')
 const { styleLoaders } = require('./loaders/style-loader')
-const babelLoader = require('./loaders/babel-loader')
+const { babelLoader, babelExternalMoudles } = require('./loaders/babel-loader')
 const paths = config.paths
 
 const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
 
-function babelExternalMoudles(esm) {
-  if (!(esm && esm.length)) return nodeModulesRegExp(config.esm)
+// function babelExternalMoudles(esm) {
+//   if (!(esm && esm.length)) return nodeModulesRegExp(config.esm)
 
-  // 当 esm 为 all 时，编译 node_modules 下所有模块
-  if (esm === 'all') esm = ''
+//   // 当 esm 为 all 时，编译 node_modules 下所有模块
+//   if (esm === 'all') esm = ''
 
-  return nodeModulesRegExp([].concat(config.esm, esm))
-}
+//   return nodeModulesRegExp([].concat(config.esm, esm))
+// }
 
 module.exports = function(entry) {
   const isLib = entry == '__LIB__'
@@ -126,9 +126,7 @@ module.exports = function(entry) {
               // require.resolve 将会检查模块是否存在
               // ts-loader 为可选配置，所以这里不使用 require.resolve
               loader: 'ts-loader',
-              include: [paths.src, paths.test].concat(
-                babelExternalMoudles(maraConf.esm)
-              ),
+              include: babelExternalMoudles,
               options: {
                 appendTsSuffixTo: [/\.vue$/]
               }
@@ -154,9 +152,9 @@ module.exports = function(entry) {
             {
               test: /\.(html)$/,
               use: {
-                loader: "html-loader",
+                loader: 'html-loader',
                 options: {
-                  attrs: [":src",":data-src"]
+                  attrs: [':src', ':data-src']
                 }
               }
             }

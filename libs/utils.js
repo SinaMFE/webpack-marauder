@@ -130,11 +130,13 @@ function banner() {
   )
 }
 
-function nodeModulesRegExp(modules = []) {
+function nodeModulesRegExp(modules = '') {
   // path.sep 指定平台特定的分隔符
   // Windows: \   POSIX: /
   // 参考：http://nodejs.cn/api/path.html#path_path_sep
-  return modules.map(mod => new RegExp(`node_modules\\${path.sep}${mod}?`))
+  return []
+    .concat(modules)
+    .map(mod => new RegExp(`node_modules\\${path.sep}${mod}?`))
 }
 
 function isNotEmptyArray(target) {
@@ -174,12 +176,11 @@ function write(dest, code) {
   })
 }
 
-
 function assetsPath(_path) {
   return path.posix.join('static', _path)
 }
 
-function cssLoaders (options) {
+function cssLoaders(options) {
   options = options || {}
 
   var cssLoader = {
@@ -206,7 +207,7 @@ function cssLoaders (options) {
   }
 
   // generate loader string to be used with extract text plugin
-  function generateLoaders (loader, loaderOptions) {
+  function generateLoaders(loader, loaderOptions) {
     var loaders = [cssLoader, postcssLoader, px2rpxLoader]
     if (loader) {
       loaders.push({
@@ -242,7 +243,7 @@ function cssLoaders (options) {
 }
 
 // Generate loaders for standalone style files (outside of .vue)
-function styleLoaders (options) {
+function styleLoaders(options) {
   var output = []
   var loaders = cssLoaders(options)
   for (var extension in loaders) {
@@ -256,9 +257,9 @@ function styleLoaders (options) {
 }
 
 module.exports = {
-	styleLoaders,
-	cssLoaders,
-	assetsPath,
+  styleLoaders,
+  cssLoaders,
+  assetsPath,
   isObject,
   write,
   getPageList,
