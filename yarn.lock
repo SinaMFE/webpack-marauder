@@ -5247,7 +5247,7 @@ marauder-ejs-loader@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/marauder-ejs-loader/-/marauder-ejs-loader-1.0.0.tgz#c4d6085fced5ac02a09b09ebed309b653318b621"
 
-marauder-umd-loader@latest:
+marauder-umd-loader@^0.0.5:
   version "0.0.5"
   resolved "https://registry.npmjs.org/marauder-umd-loader/-/marauder-umd-loader-0.0.5.tgz#4a92a0b9c9d3ec8490abfa117f758582e0c1a45f"
   dependencies:
@@ -7561,7 +7561,7 @@ simple-swizzle@^0.2.2:
   dependencies:
     is-arrayish "^0.3.1"
 
-sina-html-webpack-plugin@latest:
+sina-html-webpack-plugin@^0.0.5:
   version "0.0.5"
   resolved "https://registry.npmjs.org/sina-html-webpack-plugin/-/sina-html-webpack-plugin-0.0.5.tgz#322f56eeba6c015b530c1ddda00e92143675f59a"
   dependencies:
@@ -7582,9 +7582,9 @@ sinamfe-marauder-ensure-ls@0.0.10:
   version "0.0.10"
   resolved "http://registry.npm.taobao.org/sinamfe-marauder-ensure-ls/download/sinamfe-marauder-ensure-ls-0.0.10.tgz#fe22b3a63cc4bba9e76ea32b9957e64c9b0efc92"
 
-sinamfe-webpack-module_dependency@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.npmjs.org/sinamfe-webpack-module_dependency/-/sinamfe-webpack-module_dependency-1.3.0.tgz#0cf62da62f2f9124137b0c2e68cd1bddf3c44d0a"
+sinamfe-webpack-module_dependency@^1.3.3:
+  version "1.3.3"
+  resolved "https://registry.npmjs.org/sinamfe-webpack-module_dependency/-/sinamfe-webpack-module_dependency-1.3.3.tgz#a548a7d348be6968ecc7976696fee66009b96e48"
 
 slash@^1.0.0:
   version "1.0.0"

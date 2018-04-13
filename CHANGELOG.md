@@ -1,11 +1,5 @@
 # Changelog
 
-## v1.10.0
-
-* 支持 yarn 使用 `--ftp` 功能
-* 支持 ejs 编译时读取 globalEnv 中 `jsbridgeBuildType` 变量
-* 改变 默认打包所有模块，除非在 marauder.config 中配置 esm
-
 ## v1.9.0
 
 * 支持 hybrid 两端统一
