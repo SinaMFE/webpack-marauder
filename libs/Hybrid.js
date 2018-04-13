@@ -6,7 +6,7 @@ const fs = require('fs')
 const md5 = require('md5')
 const execAsync = require('../libs/execAsync')
 const config = require('../config')
-
+const { rootPath } = require('../libs/utils')
 let ftpOption = config.ftp
 
 function logResult({ configUrl, module }) {
@@ -26,10 +26,11 @@ class Hybrid {
 
   async changeHybridConfig() {
     await this.getOption({ entry: this.entry, ftpBranch: this.ftpBranch })
+
     if (!this.name) {
-      console.log('获取git工程名失败，请检查是否设置远程git仓库')
-      return
+      return console.log('获取git工程名失败，请检查是否设置远程git仓库')
     }
+
     let config = {}
     await this.ftp.connect(ftpOption)
     let configPath = `/wap_front/hybrid/config/${this.zip_config_name}.json`
@@ -40,10 +41,7 @@ class Hybrid {
       console.log(`测试服务器上没有${configPath},将新创建该文件`)
     }
     let moduleName = `${this.name}/${this.viewname}`
-    let local_pkg_path = path.resolve(
-      cwd,
-      `dist/${this.viewname}/${this.viewname}.php`
-    )
+    let local_pkg_path = rootPath(`dist/${this.viewname}/${this.viewname}.php`)
     let pkgmd5 = md5(fs.readFileSync(local_pkg_path))
     // let pkg_url = `http://wap_front.dev.sina.cn/marauder/${this.name}/${
     //   this.isPathVersion ? this.version + "/" : ""
@@ -80,8 +78,7 @@ class Hybrid {
       config.data.modules.push(module)
     }
 
-    let localConfigPath = path.resolve(
-      cwd,
+    let localConfigPath = rootPath(
       `dist/${this.viewname}/${this.zip_config_name}.json`
     )
 
@@ -121,23 +118,20 @@ class Hybrid {
     } else {
       this.zip_config_name = 'default'
     }
-    let packageJson = JSON.parse(
-      fs.readFileSync(path.resolve(cwd, './package.json'))
-    )
 
     try {
       let { stdout, stderr } = await execAsync('git remote -v')
       if (stdout && !stderr) {
+        // @FIXME 对 http 协议地址不可用
         let [fullname, name] = stdout.match(/([\w-]*)\.git/)
-        name=name.toLowerCase()
+        name = name.toLowerCase()
         this.name = name
       }
     } catch (e) {
       console.error(e)
     }
 
-    let { version } = packageJson
-    this.version = version
+    this.version = process.env.npm_package_version
   }
 }
 

@@ -6,6 +6,7 @@ const { ensureSlash, camelName } = require('../libs/utils')
 const defConf = require('./default')
 const maraConf = require(paths.marauder)
 const pkgName = require(paths.packageJson).name
+const maraVersion = require(paths.ownPackageJson).version
 
 function getServedPath(publicUrl) {
   // 强制以 / 结尾，为了兼容 publicPath: '.'
@@ -23,6 +24,7 @@ module.exports = {
     chunk: true,
     assets: true
   },
+  version: maraVersion,
   debug: maraConf.debug,
   library: {
     root: 'MyLibrary',

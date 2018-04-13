@@ -31,7 +31,6 @@ async function getCompiler(webpackConf, { entry, port } = {}) {
   const openBrowser = require('react-dev-utils/openBrowser')
   const hostUri = getServerHostUri(webpackConf.devServer.host, port)
   const compiler = webpack(webpackConf)
-  let lineCaretPosition = 0
   let isFirstCompile = true
 
   compiler.apply(
