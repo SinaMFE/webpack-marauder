@@ -38,7 +38,9 @@ class Hybrid {
       config = await this.ftp.get(configPath)
       config = JSON.parse(config)
     } catch (e) {
-      console.log(`测试服务器上没有${configPath},将新创建该文件`)
+      console.log(`测试服务器上没有${configPath},或者当前网络问题以及config被人工修改不能被识别，请联系管理员或者重新尝试！`);
+      //这里强制处理，如果parse失败，则不重新创建该文件，终止请管理员排查或者重新执行自查。
+      return;
     }
     let moduleName = `${this.name}/${this.viewname}`
     let local_pkg_path = rootPath(`dist/${this.viewname}/${this.viewname}.php`)
