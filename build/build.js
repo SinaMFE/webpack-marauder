@@ -39,15 +39,8 @@ function build(dist) {
   const compiler = webpack(webpackConfig)
 
   compiler.plugin('compilation', compilation => {
-    if (!maraConf.hybrid) return
-
-    const hyConf = Object.assign({}, config, maraConf.hybrid)
-    const hyVersionFile = ''
-
-    compilation.assets[VERSION] = {
-      source: () => hyVersionFile,
-      size: () => hyVersionFile.length
-    }
+    genHybridVer(compilation)
+    genBuildJson(compilation)
   })
 
   return new Promise((resolve, reject) => {
@@ -151,6 +144,29 @@ function error(err) {
 function setup(entry) {
   entryInput = entry
   spinner.start()
+}
+
+function genHybridVer(compilation) {
+  if (!maraConf.hybrid) return
+
+  const hyConf = Object.assign({}, config, maraConf.hybrid)
+  const hyVersionFile = ''
+
+  compilation.assets[VERSION] = {
+    source: () => hyVersionFile,
+    size: () => hyVersionFile.length
+  }
+}
+
+function genBuildJson(compilation) {
+  const source = JSON.stringify({
+    target: process.env.jsbridgeBuildType === 'app' ? 'app' : 'wap'
+  })
+
+  compilation.assets['build.json'] = {
+    source: () => source,
+    size: () => source.length
+  }
 }
 
 getEntry()
