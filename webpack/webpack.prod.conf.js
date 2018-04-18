@@ -122,9 +122,7 @@ module.exports = function({ entry }) {
           // 生成出来的html文件名
           filename: rootPath(`dist/${entry}/index.html`),
           // 每个html的模版，这里多个页面使用同一个模版
-          template: `${
-            config.paths.page
-          }/${entry}/index.html`,
+          template: `${config.paths.page}/${entry}/index.html`,
           minify: false,
           // 自动将引用插入html
           inject: true,
@@ -242,6 +240,7 @@ module.exports = function({ entry }) {
           /dependencyGraph.json$/,
           /debug.js$/,
           /debug.css$/,
+          /build.json$/,
           /js.map$/,
           /css.map$/
         ],
