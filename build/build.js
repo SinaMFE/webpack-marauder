@@ -160,7 +160,7 @@ function genHybridVer(compilation) {
 
 function genBuildJson(compilation) {
   const source = JSON.stringify({
-    target: process.env.jsbridgeBuildType === 'app' ? 'app' : 'wap'
+    target: process.env.jsbridgeBuildType === 'app' ? 'app' : 'web'
   })
 
   compilation.assets['build.json'] = {
