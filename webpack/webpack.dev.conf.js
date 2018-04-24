@@ -10,6 +10,7 @@ const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
 const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMiddleware')
+const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
 const ignoredFiles = require('react-dev-utils/ignoredFiles')
 const { localIp, getChunks, rootPath } = require('../libs/utils')
 const config = require('../config')
@@ -101,6 +102,15 @@ module.exports = function({ entry }) {
       // 在 dev 环境下为空字符串
       new InterpolateHtmlPlugin(config.dev.env.raw),
       new webpack.NamedModulesPlugin(),
+      new DuplicatePackageCheckerPlugin({
+        // show details
+        verbose: true,
+        showHelp: false,
+        // show warning
+        emitError: false,
+        // check major version
+        strict: true
+      }),
       // https://github.com/glenjamin/webpack-hot-middleware#installation--usage
       new webpack.HotModuleReplacementPlugin(),
       // 出错时只打印错误，但不重新加载页面
@@ -124,9 +134,7 @@ module.exports = function({ entry }) {
         // 以页面文件夹名作为模板名称
         filename: `${entry}.html`,
         // 生成各自的 html 模板
-        template: `${
-          config.paths.page
-        }/${entry}/index.html`,
+        template: `${config.paths.page}/${entry}/index.html`,
         inject: true,
         // 每个html引用的js模块，也可以在这里加上vendor等公用模块
         chunks: [entry]

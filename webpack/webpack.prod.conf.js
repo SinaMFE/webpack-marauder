@@ -12,6 +12,8 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const marauderDebug = require('sinamfe-marauder-debug')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
+const { SinaHybridPlugin } = require('../libs/hybrid')
 
 const config = require('../config')
 const { banner, rootPath, getChunks, isObject } = require('../libs/utils')
@@ -21,7 +23,13 @@ const shouldUseSourceMap = !!maraConf.sourceMap
 // 压缩配置
 const compress = Object.assign(config.compress, maraConf.compress)
 
-module.exports = function({ entry }) {
+/**
+ * 生成生产配置
+ * @param  {String} options.entry 页面名称
+ * @param  {String} options.cmd   当前命令
+ * @return {Object}               webpack 配置对象
+ */
+module.exports = function({ entry, cmd }) {
   const distPageDir = `${config.paths.dist}/${entry}`
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
   const hasHtml = fs.existsSync(`${config.paths.page}/${entry}/index.html`)
@@ -140,40 +148,26 @@ module.exports = function({ entry }) {
           removeStyleLinkTypeAttributes: true,
           keepClosingSlash: true
         }),
-      new moduleDependency()
+      // 【争议】：lib 模式禁用依赖分析?
+      // 确保在 copy Files 之前
+      maraConf.hybrid && new SinaHybridPlugin({ entry }),
+      new moduleDependency(),
+      new DuplicatePackageCheckerPlugin({
+        // show details
+        verbose: true,
+        showHelp: false,
+        // throwt error
+        emitError: true,
+        // check major version
+        strict: true
+      }),
+      ...copyPublicFiles(entry, distPageDir)
     ].filter(Boolean)
   })
 
   if (maraConf.ensurels) {
     const ensure_ls = require('sinamfe-marauder-ensure-ls')
     webpackConfig.plugins.push(new ensure_ls())
-  }
-
-  // copy project public assets
-  if (fs.existsSync(config.paths.public)) {
-    webpackConfig.plugins.push(
-      new CopyWebpackPlugin([
-        {
-          from: config.paths.public,
-          to: distPageDir + '/static',
-          ignore: ['.*']
-        }
-      ])
-    )
-  }
-
-  // copy page public assets
-  const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
-  if (fs.existsSync(pagePublicDir)) {
-    webpackConfig.plugins.push(
-      new CopyWebpackPlugin([
-        {
-          from: pagePublicDir,
-          to: distPageDir,
-          ignore: ['.*']
-        }
-      ])
-    )
   }
 
   const vendorConf = maraConf.vendor || []
@@ -216,9 +210,17 @@ module.exports = function({ entry }) {
     webpackConfig.plugins.push(new BundleAnalyzerPlugin())
   }
 
+  // @TODO publish npm module
+  // 生成serviceworker
+  // if (maraConf.sw) {
+  //   const webpackWS = require('@mfelibs/webpack-create-serviceworker')
+  //   const swConfig = maraConf.sw_config || {}
+  //   webpackConfig.plugins.push(new webpackWS(swConfig))
+  // }
+
+  // 重要：确保 zip plugin 在插件列表末尾
   if (maraConf.zip === true || maraConf.hybrid) {
     const ZipPlugin = require('zip-webpack-plugin')
-
     webpackConfig.plugins.push(
       new ZipPlugin({
         // OPTIONAL: defaults to the Webpack output filename (above) or,
@@ -261,13 +263,30 @@ module.exports = function({ entry }) {
     )
   }
 
-  // @TODO publish npm module
-  // 生成serviceworker
-  // if (maraConf.sw) {
-  //   const webpackWS = require('@mfelibs/webpack-create-serviceworker')
-  //   const swConfig = maraConf.sw_config || {}
-  //   webpackConfig.plugins.push(new webpackWS(swConfig))
-  // }
-
   return webpackConfig
+}
+
+function copyPublicFiles(entry, distPageDir) {
+  const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
+  const plugins = []
+
+  function getCopyOption(src) {
+    return {
+      from: src,
+      to: distPageDir + '/static',
+      ignore: ['.*']
+    }
+  }
+
+  // 全局 public
+  if (fs.existsSync(config.paths.public)) {
+    plugins.push(new CopyWebpackPlugin([getCopyOption(config.paths.public)]))
+  }
+
+  // 页面级 public，能够覆盖全局 public
+  if (fs.existsSync(pagePublicDir)) {
+    plugins.push(new CopyWebpackPlugin([getCopyOption(pagePublicDir)]))
+  }
+
+  return plugins
 }
