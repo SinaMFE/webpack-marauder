@@ -111,6 +111,7 @@ async function server(entryInput) {
     entry: entryInput.entry,
     port
   })
+  // Ctrl + C 触发
   ;['SIGINT', 'SIGTERM'].forEach(sig => {
     process.on(sig, () => {
       devServer.close()

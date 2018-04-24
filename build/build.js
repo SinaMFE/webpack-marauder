@@ -20,11 +20,10 @@ const paths = config.paths
 const getWebpackConfig = require('../webpack/webpack.prod.conf')
 const maraConf = require(paths.marauder)
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const Hybrid = require('../libs/hybrid')
+const { HybridDevPublish } = require('../libs/hybrid')
 const printBuildError = require('../libs/printBuildError')
 const buildReporter = require('../libs/buildReporter')
 const prehandleConfig = require('../libs/prehandleConfig')
-const VERSION = process.env.npm_package_version
 
 // These sizes are pretty large. We'll warn for bundles exceeding them.
 const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
@@ -39,7 +38,7 @@ function build(dist) {
   const compiler = webpack(webpackConfig)
 
   compiler.plugin('compilation', compilation => {
-    genHybridVer(compilation)
+    // genHybridVer(compilation)
     genBuildJson(compilation)
   })
 
@@ -130,9 +129,9 @@ async function hybrid(remotePath) {
   if (!maraConf.hybrid || !config.build.uploadFtp) return
 
   const { entry, ftpBranch } = entryInput
-  const hybridInstance = new Hybrid({ entry, ftpBranch, remotePath })
+  const hyPublish = new HybridDevPublish({ entry, ftpBranch, remotePath })
 
-  return hybridInstance.changeHybridConfig()
+  return hyPublish.changeHybridConfig()
 }
 
 function error(err) {
@@ -144,18 +143,6 @@ function error(err) {
 function setup(entry) {
   entryInput = entry
   spinner.start()
-}
-
-function genHybridVer(compilation) {
-  if (!maraConf.hybrid) return
-
-  const hyConf = Object.assign({}, config, maraConf.hybrid)
-  const hyVersionFile = ''
-
-  compilation.assets[VERSION] = {
-    source: () => hyVersionFile,
-    size: () => hyVersionFile.length
-  }
 }
 
 function genBuildJson(compilation) {

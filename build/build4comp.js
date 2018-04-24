@@ -49,7 +49,7 @@ const libs = [
 const webpackConfs = libs.concat(pages).map(target => {
   return typeof target === 'object'
     ? getWebpackLibConf(target)
-    : getWebpackProdConf({ entry: target })
+    : getWebpackProdConf({ entry: target, cmd: 'lib' })
 })
 
 function build(dists) {
