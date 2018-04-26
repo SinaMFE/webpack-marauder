@@ -273,7 +273,8 @@ function copyPublicFiles(entry, distPageDir) {
   function getCopyOption(src) {
     return {
       from: src,
-      to: distPageDir + '/static',
+      // 放置于根路径
+      to: distPageDir,
       ignore: ['.*']
     }
   }
