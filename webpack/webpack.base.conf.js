@@ -39,17 +39,8 @@ module.exports = function(entry) {
       chunkFilename: path.posix.join(ASSETS, 'js/[name].async.js')
     },
     resolve: {
-      extensions: [
-        '.mjs',
-        '.tsx',
-        '.ts',
-        '.jsx',
-        '.js',
-        '.web.js',
-        '.web.jsx',
-        '.vue',
-        '.json'
-      ],
+      // js first
+      extensions: ['.js', '.ts', '.jsx', '.tsx', '.vue', '.json', '.mjs'],
       // https://doc.webpack-china.org/configuration/resolve/#resolve-mainfields
       // source 为自定义拓展属性，表示源码入口
       mainFields: ['source', 'browser', 'module', 'main'],
