@@ -113,9 +113,6 @@
         "prettier": "^1.10.2"
     },
     "lint-staged": {
-        "**/*.{js,json}": [
-            "prettier",
-            "git add"
-        ]
+        "**/*.{js,json}": ["prettier", "git add"]
     }
 }
