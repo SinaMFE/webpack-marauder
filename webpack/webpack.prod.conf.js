@@ -236,7 +236,15 @@ module.exports = function({ entry, cmd }) {
         // OPTIONAL: defaults to excluding nothing
         // can be a string, a RegExp, or an array of strings and RegExps
         // if a file matches both include and exclude, exclude takes precedence
-        exclude: [
+        exclude: maraConf.enableDebugInHtml?[
+          /__MACOSX$/,
+          /.DS_Store$/,
+          /dependencyGraph.json$/,
+          /debug.css$/,
+          /build.json$/,
+          /js.map$/,
+          /css.map$/
+        ]:[
           /__MACOSX$/,
           /.DS_Store$/,
           /dependencyGraph.json$/,
