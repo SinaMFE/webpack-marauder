@@ -18,13 +18,16 @@ module.exports = function printBuildError(err) {
   // Add more helpful message for loader error
   if (typeof message === 'string' && message.indexOf(`Can't resolve`) > -1) {
     const matched = message.match(/Can't resolve '(.*loader)'/)
-    if (matched) {
-      console.log(`Failed to resolve loader: ${chalk.yellow(matched[1])}`)
-      console.log('\nYou may need to install the missing loader.')
-    }
 
-    // Add more helpful message for UglifyJs error
-  } else if (
+    if (matched) {
+      console.log(`Failed to resolve loader: ${chalk.yellow(matched[1])}\n`)
+      console.log('You may need to install the missing loader.\n')
+      return
+    }
+  }
+
+  // Add more helpful message for UglifyJs error
+  if (
     stack &&
     typeof message === 'string' &&
     message.indexOf('from UglifyJs') !== -1
