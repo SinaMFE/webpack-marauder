@@ -53,9 +53,9 @@ if (mArgs.wap) {
   process.env.jsbridgeBuildType = 'app'
 }
 
-process.env.compileModel = 'build'
+process.env.MARA_compileModel = 'build'
 if (mArgs.dev) {
-  process.env.compileModel = 'dev'
+  process.env.MARA_compileModel = 'dev'
 } 
 
 
