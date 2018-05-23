@@ -53,6 +53,12 @@ if (mArgs.wap) {
   process.env.jsbridgeBuildType = 'app'
 }
 
+process.env.compileModel = 'build'
+if (mArgs.dev) {
+  process.env.compileModel = 'dev'
+} 
+
+
 if (!equalsCmd(script)) {
   console.log('\nUnknown script "' + script + '".')
   console.log('Perhaps you need to update webpack-marauder?')
