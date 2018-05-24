@@ -147,7 +147,7 @@ function setup(entry) {
 
 function genBuildJson(compilation) {
   const source = JSON.stringify({
-    debug:maraConf.debug,
+    debug:maraConf.debug==true||process.env.MARA_compileModel =="dev",
     target: process.env.jsbridgeBuildType === 'app' ? 'app' : 'web'
   })
 
