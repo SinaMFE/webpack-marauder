@@ -30,9 +30,8 @@ const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
 const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024
 
 const spinner = ora('building for production...')
-let entryInput = null
 
-function build(dist) {
+function build({ entryInput, dist }) {
   let webpackConfig = getWebpackConfig(entryInput)
   webpackConfig = prehandleConfig('build', webpackConfig)
   const compiler = webpack(webpackConfig)
@@ -59,43 +58,41 @@ function build(dist) {
       }
 
       return resolve({
+        entryInput,
         stats,
         publicPath: webpackConfig.output.publicPath,
-        path: webpackConfig.output.path,
+        outputPath: webpackConfig.output.path,
         warnings: messages.warnings
       })
     })
   })
 }
 
-function clean() {
+function clean(entryInput) {
   const dist = path.join(paths.dist, entryInput.entry)
-  return fs.emptyDir(dist).then(() => dist)
+
+  return fs.emptyDir(dist).then(() => ({
+    entryInput,
+    dist
+  }))
 }
 
-function ftp() {
-  // ftp upload
-  return (
-    config.build.uploadFtp && ftpUpload(entryInput.entry, entryInput.ftpBranch)
-  )
-}
-
-function success(output) {
-  const stats = output.stats.toJson({
+function success({ entryInput, stats, publicPath, outputPath }) {
+  const result = stats.toJson({
     hash: false,
     chunks: false,
     modules: false,
     chunkModules: false
   })
 
-  console.log(chalk.green(`Build complete in ${stats.time}ms\n`))
+  console.log(chalk.green(`Build complete in ${result.time}ms\n`))
   console.log('File sizes after gzip:\n')
 
-  stats.assets['__dist'] = output.path
+  result.assets['__dist'] = outputPath
 
   buildReporter(
     // page 为数组
-    { page: [stats.assets] },
+    { page: [result.assets] },
     WARN_AFTER_BUNDLE_GZIP_SIZE,
     WARN_AFTER_CHUNK_GZIP_SIZE
   )
@@ -107,7 +104,7 @@ function success(output) {
     )} directory is ready to be deployed.\n`
   )
 
-  if (output.publicPath === '/') {
+  if (publicPath === '/') {
     console.log(
       chalk.yellow(
         `The app is built assuming that it will be deployed at the root of a domain.`
@@ -123,12 +120,13 @@ function success(output) {
       )
     )
   }
+
+  return entryInput
 }
 
-async function hybrid(remotePath) {
-  if (!maraConf.hybrid || !config.build.uploadFtp) return
+async function hybrid({ entry, ftpBranch, remotePath }) {
+  if (!maraConf.hybrid || !remotePath) return
 
-  const { entry, ftpBranch } = entryInput
   const hyPublish = new HybridDevPublish({ entry, ftpBranch, remotePath })
 
   return hyPublish.changeHybridConfig()
@@ -140,14 +138,9 @@ function error(err) {
   process.exit(1)
 }
 
-function setup(entry) {
-  entryInput = entry
-  spinner.start()
-}
-
 function genBuildJson(compilation) {
   const source = JSON.stringify({
-    debug:maraConf.debug==true||process.env.MARA_compileModel =="dev",
+    debug: maraConf.debug || process.env.MARA_compileModel == 'dev',
     target: process.env.jsbridgeBuildType === 'app' ? 'app' : 'web'
   })
 
@@ -157,11 +150,33 @@ function genBuildJson(compilation) {
   }
 }
 
-getEntry()
-  .then(setup)
-  .then(clean)
-  .then(build)
-  .then(success)
-  .then(ftp)
-  .then(hybrid)
-  .catch(error)
+function ftp({ entry, ftpBranch }) {
+  if (ftpBranch === null)
+    return {
+      entry,
+      ftpBranch
+    }
+
+  return ftpUpload(entry, ftpBranch).then(remotePath => ({
+    entry,
+    ftpBranch,
+    remotePath
+  }))
+}
+
+function setup(entryInput) {
+  spinner.start()
+
+  return entryInput
+}
+
+module.exports = args => {
+  return getEntry(args)
+    .then(setup)
+    .then(clean)
+    .then(build)
+    .then(success)
+    .then(ftp)
+    .then(hybrid)
+    .catch(error)
+}

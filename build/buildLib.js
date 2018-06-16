@@ -150,11 +150,13 @@ function error(err) {
   process.exit(1)
 }
 
-clean({
-  distDir: paths.dist,
-  libDir: paths.lib
-})
-  .then(build)
-  .then(success)
-  .then(backwards)
-  .catch(error)
+module.exports = args => {
+  return clean({
+    distDir: paths.dist,
+    libDir: paths.lib
+  })
+    .then(build)
+    .then(success)
+    .then(backwards)
+    .catch(error)
+}

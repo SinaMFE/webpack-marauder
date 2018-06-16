@@ -93,24 +93,26 @@ function errorLog(err) {
   process.exit(1)
 }
 
-build()
-  .then(output => {
-    // webpack 打包结果统计
-    process.stdout.write(
-      output.stats.toString({
-        colors: true,
-        modules: false,
-        children: false,
-        chunks: false,
-        chunkModules: false
-      }) + '\n\n'
-    )
+export default function() {
+  return build()
+    .then(output => {
+      // webpack 打包结果统计
+      process.stdout.write(
+        output.stats.toString({
+          colors: true,
+          modules: false,
+          children: false,
+          chunks: false,
+          chunkModules: false
+        }) + '\n\n'
+      )
 
-    console.log(chalk.cyan('  DLL Build complete.\n'))
+      console.log(chalk.cyan('  DLL Build complete.\n'))
 
-    console.log(
-      chalk.yellow('  Tip: DLL bundle is change, please rebuild your app.\n')
-    )
-  })
-  .then(ftp)
-  .catch(errorLog)
+      console.log(
+        chalk.yellow('  Tip: DLL bundle is change, please rebuild your app.\n')
+      )
+    })
+    .then(ftp)
+    .catch(errorLog)
+}

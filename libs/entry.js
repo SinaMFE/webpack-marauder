@@ -4,10 +4,7 @@ const chalk = require('chalk')
 const { prompt, Separator } = require('inquirer')
 const config = require('../config')
 const { getPageList } = require('./utils')
-const args = require('minimist')(process.argv.slice(2))
 const pages = getPageList(config.paths.entries)
-const cmdInput = args._
-let ftpBranch = args.ftp === true ? '' : args.ftp
 
 // TL
 // 识别 entry, branch
@@ -22,65 +19,76 @@ let ftpBranch = args.ftp === true ? '' : args.ftp
 // yarn build index --ftp test
 // 输入出错
 
-if (args.ftp) {
-  config.build.uploadFtp = true
-} else if (config.build.uploadFtp) {
-  // 默认的 config.build.uploadFtp 为 process.env.npm_config_ftp
-  // 兼容 npm
-  ftpBranch = cmdInput[1]
-}
-
 function empty() {
-  console.log(`😂  ${chalk.red('请创建入口文件')}\n`)
+  console.log(`😶 ${chalk.red('请按如下结构创建入口文件')}`)
   console.log(
-    `src
-└── view
-    ├── page1
-    │   ├── ${chalk.green('index.html')}
-    │   └── ${chalk.green('index.js')}
-    └── page2
-        ├── ${chalk.green('index.html')}
-        └── ${chalk.green('index.js')}`,
+    `
+  src
+  └── view
+      ├── page1
+      │   ├── ${chalk.green('index.html')}
+      │   └── ${chalk.green('index.js')}
+      └── page2
+          ├── ${chalk.green('index.html')}
+          └── ${chalk.green('index.js')}`,
     '\n'
   )
   process.exit(1)
 }
 
-async function getEntry() {
+async function getEntry(args) {
   if (!pages.length) {
     empty()
   } else if (pages.length === 1) {
-    return chooseOne()
+    return chooseOne(args)
   } else {
-    return chooseMany()
+    return chooseMany(args)
   }
 }
 
-function result(entry = '') {
+function result(entry = '', args) {
+  // 未启用 ftp 上传时，返回 null
+  let ftpBranch = null
+
+  // npx marax build --ftp
+  // yarn run build --ftp
+  if (args.ftp) {
+    ftpBranch = args.ftp === true ? '' : args.ftp
+    config.build.uploadFtp = true
+  } else if (config.build.uploadFtp) {
+    // 兼容 npm run build --ftp xxx
+    // 默认的 config.build.uploadFtp 为 process.env.npm_config_ftp
+    // 当无分支名时，返回 ''
+    ftpBranch = args._[2] || ''
+  }
+
   return Promise.resolve({ entry, ftpBranch })
 }
 
-function chooseOne() {
-  const illegalInput = cmdInput.length && !validEntry(cmdInput[0])
+function chooseOne(args) {
+  const entry = args._[1]
 
-  if (illegalInput) {
-    return chooseEntry('您输入的页面有误, 请选择:')
+  if (entry && !validEntry(entry)) {
+    return chooseEntry('您输入的页面有误, 请选择:', args)
   } else {
-    return result(pages[0])
+    // 无输入时返回默认页
+    return result(pages[0], args)
   }
 }
 
-function chooseMany() {
-  if (validEntry(cmdInput[0])) return result(cmdInput[0])
+function chooseMany(args) {
+  const entry = args._[1]
 
-  return chooseEntry(cmdInput.length && '您输入的页面有误, 请选择:')
+  if (validEntry(entry)) return result(entry, args)
+
+  return chooseEntry(entry && '您输入的页面有误, 请选择:', args)
 }
 
 function validEntry(entry) {
   return pages.includes(entry)
 }
 
-async function chooseEntry(msg) {
+async function chooseEntry(msg, args) {
   const list = [...pages]
   // const list = [...pages, new Separator(), { name: 'exit', value: '' }]
   const question = {
@@ -89,14 +97,14 @@ async function chooseEntry(msg) {
     choices: list,
     default: list.indexOf('index'),
     // message 不可为空串
-    message: msg || '请选择您的目标页面:'
+    message: msg || '请选择目标页面:'
   }
   const { entry } = await prompt(question)
 
   if (!entry) process.exit(0)
   console.log()
 
-  return result(entry)
+  return result(entry, args)
 }
 
 module.exports = getEntry

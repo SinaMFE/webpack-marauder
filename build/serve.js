@@ -125,4 +125,6 @@ async function server(entryInput) {
   })
 }
 
-getEntry().then(server)
+module.exports = args => {
+  return getEntry(args).then(server)
+}

@@ -5,7 +5,9 @@
 const chalk = require('chalk')
 const semver = require('semver')
 const requiredVersion = require('../package.json').engines.node
+const paths = require('../config/paths')
 
+// node >= 8.0.0
 if (!semver.satisfies(process.version, requiredVersion)) {
   console.log(
     chalk.red(
@@ -17,50 +19,42 @@ if (!semver.satisfies(process.version, requiredVersion)) {
   process.exit(1)
 }
 
-// https://www.npmjs.com/package/cross-spawn
-const spawn = require('react-dev-utils/crossSpawn')
-const { buffer2String } = require('../libs/utils')
-const paths = require('../config/paths')
-// args 是当前 bin 脚本的参数，为 bin 以后的内容
-// 如 marax build index，args: ['build', 'index']
-const args = process.argv.slice(2)
+// rawArgv 是当前 bin 脚本的参数，为 bin 以后的内容
+// 如 marax build index => rawArgv: ['build', 'index']
+const rawArgv = process.argv.slice(2)
 
+// npm run dev page_a => {"_":["dev","page_a"]}
+// npm run dev page_a --ftp => {"_":["dev","page_a"]}
+// npm run dev page_a --ftp sss => {"_":["dev","page_a","ssss"]}
+// marax dev page_a => {"_":["dev","page_a"]}
+// marax dev page_a --ftp => {"_":["dev","page_a"],"ftp":true}
+// npx marax dev page_a --ftp sss => {"_":["dev","page_a"],"ftp":"sss"}
+const args = require('minimist')(rawArgv)
 const cmdMap = {
-  'wx-dev': 'wx-dev-server',
-  'wx-build': 'wx-build',
-  dev: 'dev-server',
+  dev: 'serve',
   test: 'test',
   build: 'build',
-  lib: 'build4comp',
+  lib: 'buildLib',
+  'wx-dev': 'wx-dev-server',
+  'wx-build': 'wx-build',
   dll: 'dll',
-  '-V': 'version',
   '-v': 'version'
 }
-const equalsCmd = cmd => cmdMap.hasOwnProperty(cmd)
-const scriptIndex = args.findIndex(equalsCmd)
-const script = scriptIndex === -1 ? args[0] : args[scriptIndex]
-// bin 命令与 cmd 之间的内容为 nodeArgs
-// 如 marax x build index，nodeArgs: ['x']
-const nodeArgs = scriptIndex > 0 ? args.slice(0, scriptIndex) : []
-// cmd 之后的内容为 cmdArgs
-// marax build index，cmdArgs: ['index']
-const cmdArgs = args.slice(scriptIndex + 1)
-const mArgs = require('minimist')(args)
+const cmd = cmdMap[args._[0]]
 
-if (mArgs.wap) {
+if (args.wap || args.web) {
   process.env.jsbridgeBuildType = 'wap'
-} else if (mArgs.app) {
+} else if (args.app) {
   process.env.jsbridgeBuildType = 'app'
 }
 
 process.env.MARA_compileModel = 'build'
-if (mArgs.dev) {
+if (args.dev) {
   process.env.MARA_compileModel = 'dev'
-} 
+}
 
-
-if (!equalsCmd(script)) {
-  console.log('\nUnknown script "' + script + '".')
+if (!cmd) {
+  console.log('\nUnknown script "' + cmd + '".')
   console.log('Perhaps you need to update webpack-marauder?')
   console.log(
     'See: https://github.com/SinaMFE/webpack-marauder/blob/master/README.md'
@@ -68,53 +62,8 @@ if (!equalsCmd(script)) {
   process.exit(0)
 }
 
-function version(output) {
+if (cmd === '-v') {
   console.log(require(paths.ownPackageJson).version, '\n')
-
-  if (output !== 'all') return
-
-  const npm = spawn('npm', ['info', 'webpack-marauder', 'dist-tags'])
-  const res = new Promise((resolve, reject) => {
-    npm.stdout.on('data', data => resolve(buffer2String(data)))
-    npm.stderr.on('data', data => reject(buffer2String(data)))
-  })
-
-  console.log('dist-tags:')
-  return res.then(data => {
-    const arr = data.replace(/[{}]/g, '').split(',')
-    return arr.map(tag => console.log(`  ${tag}`))
-  })
-}
-
-if (script === '-v') {
-  version()
-} else if (script === '-V') {
-  version('all')
 } else {
-  const result = spawn.sync(
-    'node',
-    nodeArgs
-      .concat(require.resolve('../build/' + cmdMap[script]))
-      .concat(cmdArgs),
-    {
-      stdio: 'inherit'
-    }
-  )
-  if (result.signal) {
-    if (result.signal === 'SIGKILL') {
-      console.log(
-        'The build failed because the process exited too early. ' +
-          'This probably means the system ran out of memory or someone called ' +
-          '`kill -9` on the process.'
-      )
-    } else if (result.signal === 'SIGTERM') {
-      console.log(
-        'The build failed because the process exited too early. ' +
-          'Someone might have called `kill` or `killall`, or the system could ' +
-          'be shutting down.'
-      )
-    }
-    process.exit(1)
-  }
-  process.exit(result.status)
+  require(`../build/${cmd}`)(args)
 }
