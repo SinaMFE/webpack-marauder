@@ -111,6 +111,10 @@ acorn@^5.0.0, acorn@^5.0.3, acorn@^5.1.1, acorn@^5.2.1, acorn@^5.3.0:
   version "5.3.0"
   resolved "https://registry.npmjs.org/acorn/-/acorn-5.3.0.tgz#7446d39459c54fb49a80e6ee6478149b940ec822"
 
+acorn@^5.5.3:
+  version "5.5.3"
+  resolved "http://registry.npm.taobao.org/acorn/download/acorn-5.5.3.tgz#f473dd47e0277a08e28e9bec5aeeb04751f0b8c9"
+
 address@1.0.3, address@^1.0.1:
   version "1.0.3"
   resolved "https://registry.npmjs.org/address/-/address-1.0.3.tgz#b5f50631f8d6cec8bd20c963963afb55e06cbce9"
@@ -7574,9 +7578,9 @@ simple-swizzle@^0.2.2:
   dependencies:
     is-arrayish "^0.3.1"
 
-sina-html-webpack-plugin@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.npmjs.org/sina-html-webpack-plugin/-/sina-html-webpack-plugin-0.0.5.tgz#322f56eeba6c015b530c1ddda00e92143675f59a"
+sina-html-webpack-plugin@^0.0.7:
+  version "0.0.7"
+  resolved "http://registry.npm.taobao.org/sina-html-webpack-plugin/download/sina-html-webpack-plugin-0.0.7.tgz#4df35fc681356e467931990cb1b5577a05b95ec1"
   dependencies:
     ejs "^2.5.8"
     html-minifier "^3.2.3"
@@ -7587,9 +7591,9 @@ sina-html-webpack-plugin@^0.0.5:
     toposort "^1.0.0"
     util.promisify "1.0.0"
 
-sinamfe-marauder-debug@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/sinamfe-marauder-debug/-/sinamfe-marauder-debug-1.0.0.tgz#c78336852e73b0ae694a2c018d81c7e3da57c988"
+sinamfe-marauder-debug@^1.0.1:
+  version "1.0.2"
+  resolved "http://registry.npm.taobao.org/sinamfe-marauder-debug/download/sinamfe-marauder-debug-1.0.2.tgz#c365b9266e1df3d0cf54a5bc5f24bf825790ab57"
 
 sinamfe-marauder-ensure-ls@0.0.10:
   version "0.0.10"
