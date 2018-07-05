@@ -38,7 +38,10 @@ function babelExternalMoudles(esm) {
 //读取marauder.config.js中的babelPlugins
 const plugins = [];
 maraConf.babelPlugins&&plugins.join(maraConf.babelPlugins);
+
 plugins.push('transform-decorators-legacy');
+//加入了 inline-json，用于去除编译时的引入json（非全量引入）。
+plugins.push(["inline-json", {"matchPattern": "."}]);
 module.exports.babelLoader = isProd => ({
   test: /\.(js|jsx|mjs)$/,
   include: externalMoudles,
