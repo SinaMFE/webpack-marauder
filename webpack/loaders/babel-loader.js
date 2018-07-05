@@ -35,7 +35,13 @@ function babelExternalMoudles(esm) {
 //   // 仅编译 @mfelibs 下及 maraConf.esm 指定模块
 //   return nodeModulesRegExp([config.esm, esm])
 // }
+//读取marauder.config.js中的babelPlugins
+const plugins = [];
+maraConf.babelPlugins&&plugins.join(maraConf.babelPlugins);
 
+plugins.push('transform-decorators-legacy');
+//加入了 inline-json，用于去除编译时的引入json（非全量引入）。
+plugins.push(["inline-json", {"matchPattern": "."}]);
 module.exports.babelLoader = isProd => ({
   test: /\.(js|jsx|mjs)$/,
   include: externalMoudles,
@@ -43,7 +49,7 @@ module.exports.babelLoader = isProd => ({
   options: {
     babelrc: false,
     presets: ['babel-preset-react-app'],
-    plugins: ['transform-decorators-legacy'],
+    plugins: plugins,
     compact: isProd,
     // `babel-loader` 特性
     // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
