@@ -2,7 +2,7 @@
 
 const { cssLoaders } = require('./style-loader')
 const config = require('../../config')
-const babelLoader = require('./babel-loader')
+const { babelLoader } = require('./babel-loader')
 const maraConf = require(config.paths.marauder)
 const isProd = process.env.NODE_ENV === 'production'
 

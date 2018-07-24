@@ -1,5 +1,38 @@
 # Changelog
 
+## v1.10.0
+
+* 支持重复依赖检查
+* hybrid manifest.json 自动写入版本号
+
+## v1.9.3
+
+* hybrid 发布 ftp 环境中如果索引文件不能识别则终止操作，请联系管理员进行排查。不用自动重新创建。
+
+## v1.9.0
+
+* 支持 hybrid 两端统一
+* 支持 组件的  发布时通知机制。
+
+## v1.8.0
+
+* 支持 集成 `mpvue`
+* 支持 两端统一打包
+* 修复 Windows 平台兼容问题
+* 修复 uglify 输出 es5 格式
+
+## v1.7.0
+
+* 支持 静态代码分割
+* 支持 默认 browserlist
+* 支持 拓展自定义 webpack 插件([#7](https://github.com/SinaMFE/webpack-marauder/pull/7))
+* 支持 交互式选择构建目标
+* 支持 组件输出 CommonJS 模块
+* 优化 `uglify` 开启多线程加速
+* 优化 升级自身依赖版本
+* 优化 使用 `postcss-env` 代替 `cssnext`
+* 优化 格式化构建结果
+
 ## v1.6.0
 
 * 支持 启用作用域提升插件（`ModuleConcatenationPlugin`）

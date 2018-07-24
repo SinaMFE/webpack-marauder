@@ -1,11 +1,12 @@
 'use strict'
 
-const browserslist = require('browserslist')
 const paths = require('./paths')
 const getEnv = require('./env')
 const { ensureSlash, camelName } = require('../libs/utils')
+const defConf = require('./default')
 const maraConf = require(paths.marauder)
 const pkgName = require(paths.packageJson).name
+const maraVersion = require(paths.ownPackageJson).version
 
 function getServedPath(publicUrl) {
   // 强制以 / 结尾，为了兼容 publicPath: '.'
@@ -23,30 +24,28 @@ module.exports = {
     chunk: true,
     assets: true
   },
+  version: maraVersion,
+  debug: maraConf.debug,
   library: {
     root: 'MyLibrary',
     amd: pkgName,
     commonjs: pkgName
   },
-  keyword: {
-    // 组件 entry 关键字，用于作为 umd 组件传递进来的参数
-    UMDCOMPILE: 'UMDCOMPILE'
-  },
+  assetsDir: 'static',
   // 压缩配置
   compress: {
     // 移除 console
     drop_console: false
   },
-  entry: 'src/view/*/index.js',
+  entry: defConf.esm.entry,
   // 通知 babel 编译 node_module 里额外的模块
-  esm: ['@mfelibs'],
+  esm: defConf.esm,
   // 打包 dll
   vendor: [],
   paths: paths,
   build: {
     env: getEnv(publicPath.slice(0, -1)),
     assetsPublicPath: publicPath,
-    productionGzipExtensions: ['js', 'css'],
     // Run the build command with an extra argument to
     // View the bundle analyzer report after build finishes:
     // `npm run build --report`
@@ -59,7 +58,7 @@ module.exports = {
   },
   dev: {
     env: getEnv(publicDevPath.slice(0, -1)),
-    port: 3022,
+    port: defConf.dev.port,
     assetsPublicPath: publicDevPath,
     proxyTable: {},
     // CSS Sourcemaps off by default because relative paths are "buggy"
@@ -69,34 +68,8 @@ module.exports = {
     // just be aware of this issue when enabling this option.
     cssSourceMap: false
   },
-  ftp: Object.assign(
-    {
-      host: '', // 主机
-      port: 0,
-      user: '',
-      password: '',
-      reload: true, // 刷新缓存
-      openBrowser: true, // 上传完毕后自动打开浏览器
-      remotePath: {
-        version: true // 添加 version 路径
-      }
-    },
-    maraConf.ftp
-  ),
+  ftp: Object.assign({}, defConf.ftp, maraConf.ftp),
   // hybrid 项目配置，存在此属性时，将会生成 zip 包
-  hybrid: {},
-  postcss: {
-    // browsers: [
-    //   '> 1%',
-    //   'last 4 versions',
-    //   'ios >= 8',
-    //   'android >= 4.1',
-    //   'not ie < 9'
-    // ],
-    flexbox: 'no-2009',
-    features: {
-      // 与雪碧图使用时存在 bug，在此禁用
-      imageSet: false
-    }
-  }
+  hybrid: defConf.hybrid,
+  postcss: defConf.postcss
 }

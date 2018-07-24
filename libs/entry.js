@@ -1,44 +1,110 @@
 'use strict'
 
-const yargs = require('yargs')
 const chalk = require('chalk')
+const { prompt, Separator } = require('inquirer')
 const config = require('../config')
 const { getPageList } = require('./utils')
-
 const pages = getPageList(config.paths.entries)
-let input = []
 
-// 存在多页面文件夹时，必须指定页面名（短路操作）
-if (pages.length > 1) {
-  input = yargs
-    .command('npm run build <page> [--ftp] [namespace]')
-    .demandCommand(
-      1,
-      `😂  ${chalk.red('请指定页面名')}  ${chalk.green(
-        `可选值:【${pages}】\n`
-      )}`
-    ).argv._
-} else {
-  // 只有一个页面文件夹时，页面名参数不做必传校验
-  input = yargs.argv._
-}
+// TL
+// 识别 entry, branch
+// 兼容 yarn 与 npm
+// 可指定输入页面名，或选择页面名
 
-let entry = input[0]
+// npm run build
+// npm run build --ftp
+// npm run build --ftp test
+// yarn build
+// yarn build index --ftp
+// yarn build index --ftp test
+// 输入出错
 
-if (!entry) {
-  // 无页面名输入，将唯一的页面作为输入名
-  entry = pages[0]
-} else if (!pages.includes(entry)) {
+function empty() {
+  console.log(`😶 ${chalk.red('请按如下结构创建入口文件')}`)
   console.log(
-    `😂  ${chalk.red(`页面 ${entry} 输入有误`)}  ${chalk.green(
-      `可选值：【${pages}】`
-    )}\n`
+    `
+  src
+  └── view
+      ├── page1
+      │   ├── ${chalk.green('index.html')}
+      │   └── ${chalk.green('index.js')}
+      └── page2
+          ├── ${chalk.green('index.html')}
+          └── ${chalk.green('index.js')}`,
+    '\n'
   )
   process.exit(1)
 }
 
-module.exports = {
-  input,
-  entry,
-  ftpBranch: input[1]
+async function getEntry(args) {
+  if (!pages.length) {
+    empty()
+  } else if (pages.length === 1) {
+    return chooseOne(args)
+  } else {
+    return chooseMany(args)
+  }
 }
+
+function result(entry = '', args) {
+  // 未启用 ftp 上传时，返回 null
+  let ftpBranch = null
+
+  // npx marax build --ftp
+  // yarn run build --ftp
+  if (args.ftp) {
+    ftpBranch = args.ftp === true ? '' : args.ftp
+    config.build.uploadFtp = true
+  } else if (config.build.uploadFtp) {
+    // 兼容 npm run build --ftp xxx
+    // 默认的 config.build.uploadFtp 为 process.env.npm_config_ftp
+    // 当无分支名时，返回 ''
+    ftpBranch = args._[2] || ''
+  }
+
+  return Promise.resolve({ entry, ftpBranch })
+}
+
+function chooseOne(args) {
+  const entry = args._[1]
+
+  if (entry && !validEntry(entry)) {
+    return chooseEntry('您输入的页面有误, 请选择:', args)
+  } else {
+    // 无输入时返回默认页
+    return result(pages[0], args)
+  }
+}
+
+function chooseMany(args) {
+  const entry = args._[1]
+
+  if (validEntry(entry)) return result(entry, args)
+
+  return chooseEntry(entry && '您输入的页面有误, 请选择:', args)
+}
+
+function validEntry(entry) {
+  return pages.includes(entry)
+}
+
+async function chooseEntry(msg, args) {
+  const list = [...pages]
+  // const list = [...pages, new Separator(), { name: 'exit', value: '' }]
+  const question = {
+    type: 'list',
+    name: 'entry',
+    choices: list,
+    default: list.indexOf('index'),
+    // message 不可为空串
+    message: msg || '请选择目标页面:'
+  }
+  const { entry } = await prompt(question)
+
+  if (!entry) process.exit(0)
+  console.log()
+
+  return result(entry, args)
+}
+
+module.exports = getEntry

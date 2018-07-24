@@ -10,35 +10,35 @@ process.on('unhandledRejection', err => {
 
 const fs = require('fs-extra')
 const chalk = require('chalk')
+const path = require('path')
 const ora = require('ora')
 const webpack = require('webpack')
-const { entry, ftpBranch } = require('../libs/entry')
+const getEntry = require('../libs/entry')
 const ftpUpload = require('../libs/ftp')
 const config = require('../config')
 const paths = config.paths
-const webpackConfig = require('../webpack/webpack.prod.conf')({ entry })
+const getWebpackConfig = require('../webpack/webpack.prod.conf')
 const maraConf = require(paths.marauder)
-const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const VERSION = process.env.npm_package_version
-const Hybrid = require('../libs/hybrid')
+const { HybridDevPublish } = require('../libs/hybrid')
+const printBuildError = require('../libs/printBuildError')
+const buildReporter = require('../libs/buildReporter')
+const prehandleConfig = require('../libs/prehandleConfig')
+
+// These sizes are pretty large. We'll warn for bundles exceeding them.
+const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
+const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024
 
 const spinner = ora('building for production...')
-spinner.start()
 
-function build() {
+function build({ entryInput, dist }) {
+  let webpackConfig = getWebpackConfig(entryInput)
+  webpackConfig = prehandleConfig('build', webpackConfig)
   const compiler = webpack(webpackConfig)
 
   compiler.plugin('compilation', compilation => {
-    if (!maraConf.hybrid) return
-
-    const hyConf = Object.assign({}, config, maraConf.hybrid)
-    const hyVersionFile = ''
-
-    compilation.assets[VERSION] = {
-      source: () => hyVersionFile,
-      size: () => hyVersionFile.length
-    }
+    // genHybridVer(compilation)
+    genBuildJson(compilation)
   })
 
   return new Promise((resolve, reject) => {
@@ -58,50 +58,78 @@ function build() {
       }
 
       return resolve({
+        entryInput,
         stats,
+        publicPath: webpackConfig.output.publicPath,
+        outputPath: webpackConfig.output.path,
         warnings: messages.warnings
       })
     })
   })
 }
 
-function clean() {
-  return fs.emptyDir(paths.dist + '/' + entry)
+function clean(entryInput) {
+  const dist = path.join(paths.dist, entryInput.entry)
+
+  return fs.emptyDir(dist).then(() => ({
+    entryInput,
+    dist
+  }))
 }
 
-function ftp() {
-  // ftp upload
-  return config.build.uploadFtp && ftpUpload(entry, ftpBranch)
-}
+function success({ entryInput, stats, publicPath, outputPath }) {
+  const result = stats.toJson({
+    hash: false,
+    chunks: false,
+    modules: false,
+    chunkModules: false
+  })
 
-function success(output) {
-  // webpack 打包结果统计
-  process.stdout.write(
-    output.stats.toString({
-      hash: false,
-      colors: true,
-      modules: false,
-      children: false, // if you are using ts-loader, setting this to true will make typescript errors show up during build
-      chunks: false,
-      chunkModules: false
-    }) + '\n\n'
+  console.log(chalk.green(`Build complete in ${result.time}ms\n`))
+  console.log('File sizes after gzip:\n')
+
+  result.assets['__dist'] = outputPath
+
+  buildReporter(
+    // page 为数组
+    { page: [result.assets] },
+    WARN_AFTER_BUNDLE_GZIP_SIZE,
+    WARN_AFTER_CHUNK_GZIP_SIZE
   )
 
-  console.log(chalk.cyan('  Build complete.\n'))
-
+  console.log()
   console.log(
-    chalk.yellow(
-      "  Tip: built files are meant to be served over an HTTP server.\n  Opening index.html over file:// won't work.\n"
-    )
+    `The ${chalk.cyan(
+      'dist/' + entryInput.entry
+    )} directory is ready to be deployed.\n`
   )
+
+  if (publicPath === '/') {
+    console.log(
+      chalk.yellow(
+        `The app is built assuming that it will be deployed at the root of a domain.`
+      )
+    )
+    console.log(
+      chalk.yellow(
+        `If you intend to deploy it under a subpath, update the ${chalk.green(
+          'publicPath'
+        )} option in your project config (${chalk.cyan(
+          `marauder.config.js`
+        )}).\n`
+      )
+    )
+  }
+
+  return entryInput
 }
 
-async function hybrid(remotePath) {
-  if (!maraConf.hybrid || !config.build.uploadFtp) {
-    return
-  }
-  let hybridInstance = new Hybrid({ entry, ftpBranch, remotePath })
-  await hybridInstance.changeHybridConfig()
+async function hybrid({ entry, ftpBranch, remotePath }) {
+  if (!maraConf.hybrid || !remotePath) return
+
+  const hyPublish = new HybridDevPublish({ entry, ftpBranch, remotePath })
+
+  return hyPublish.changeHybridConfig()
 }
 
 function error(err) {
@@ -110,9 +138,45 @@ function error(err) {
   process.exit(1)
 }
 
-clean()
-  .then(build)
-  .then(success)
-  .then(ftp)
-  .then(hybrid)
-  .catch(error)
+function genBuildJson(compilation) {
+  const source = JSON.stringify({
+    debug: maraConf.debug || process.env.MARA_compileModel == 'dev',
+    target: process.env.jsbridgeBuildType === 'app' ? 'app' : 'web'
+  })
+
+  compilation.assets['build.json'] = {
+    source: () => source,
+    size: () => source.length
+  }
+}
+
+function ftp({ entry, ftpBranch }) {
+  if (ftpBranch === null)
+    return {
+      entry,
+      ftpBranch
+    }
+
+  return ftpUpload(entry, ftpBranch).then(remotePath => ({
+    entry,
+    ftpBranch,
+    remotePath
+  }))
+}
+
+function setup(entryInput) {
+  spinner.start()
+
+  return entryInput
+}
+
+module.exports = args => {
+  return getEntry(args)
+    .then(setup)
+    .then(clean)
+    .then(build)
+    .then(success)
+    .then(ftp)
+    .then(hybrid)
+    .catch(error)
+}

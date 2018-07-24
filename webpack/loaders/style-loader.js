@@ -1,33 +1,27 @@
 'use strict'
 
+const path = require('path')
 const autoprefixer = require('autoprefixer')
-const browserslist = require('browserslist')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const config = require('../../config')
 const maraConf = require(config.paths.marauder)
-
-const cssFilename = maraConf.hash
-  ? 'static/css/[name].[contenthash:8].css'
-  : 'static/css/[name].min.css'
 const shouldUseRelativeAssetPaths = maraConf.publicPath === './'
 
 const postcssPlugin = [
+  require('postcss-flexbugs-fixes'),
+  autoprefixer(config.postcss)
+]
+
+// css 语法增强
+const postcssPluginAdvanced = [
   // 提供代码段引入，为了保证引入的代码段能够享受后续的配置
   // 应确保此插件在插件列表中处于第一位
   // https://github.com/postcss/postcss-import
   require('postcss-import')(),
   // 辅助 postcss-import 插件， 解决嵌套层级的图片资源路径问题
   require('postcss-url')(),
-  require('postcss-flexbugs-fixes'),
-  require('postcss-cssnext')(config.postcss)
-]
-
-// 与预处理器集成
-// 由于预处理器拥有自定义语法
-// 所以这里不使用 cssnext import 等 postcss 语法增强插件
-const postcssWithPreProcessors = [
-  autoprefixer(config.postcss),
-  require('postcss-flexbugs-fixes')
+  require('postcss-preset-env')(config.postcss),
+  ...postcssPlugin
 ]
 
 // Extract CSS when that option is specified
@@ -36,6 +30,12 @@ function wrapLoader(options, loaders) {
   if (!options.extract) {
     return ['vue-style-loader'].concat(loaders)
   }
+
+  const assets = options.library ? '' : `${config.assetsDir}/css`
+  // 统一使用 POSIX 风格拼接路径，方便基于 / 做逻辑判断
+  const cssFilename = maraConf.hash
+    ? path.posix.join(assets, '[name].[contenthash:8].css')
+    : path.posix.join(assets, '[name].min.css')
 
   // ExtractTextPlugin expects the build output to be flat.
   // (See https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/27)
@@ -77,7 +77,7 @@ function cssLoaders(options = {}) {
     const postcssLoader = {
       loader: 'postcss-loader',
       options: {
-        plugins: loader ? postcssWithPreProcessors : postcssPlugin,
+        plugins: loader ? postcssPlugin : postcssPluginAdvanced,
         sourceMap: options.sourceMap
       }
     }

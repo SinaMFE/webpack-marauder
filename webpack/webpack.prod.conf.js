@@ -7,38 +7,40 @@ const chalk = require('chalk')
 const CopyWebpackPlugin = require('copy-webpack-plugin-hash')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackPlugin = require('sina-html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const marauderDebug = require('sinamfe-marauder-debug')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
+const { SinaHybridPlugin } = require('../libs/hybrid')
 
 const config = require('../config')
-const { banner, rootPath, isObject } = require('../libs/utils')
+const { banner, rootPath, getChunks, isObject } = require('../libs/utils')
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
 // 压缩配置
 const compress = Object.assign(config.compress, maraConf.compress)
 
-// let configvendor = maraConf.vendor
-// if (configvendor == null || configvendor.length == 0) {
-//   configvendor = {}
-// } else {
-//   configvendor = {
-//     vendor: configvendor
-//   }
-// }
-
-module.exports = function({ entry }) {
+/**
+ * 生成生产配置
+ * @param  {String} options.entry 页面名称
+ * @param  {String} options.cmd   当前命令
+ * @return {Object}               webpack 配置对象
+ */
+module.exports = function({ entry, cmd }) {
   const distPageDir = `${config.paths.dist}/${entry}`
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
+  const hasHtml = fs.existsSync(`${config.paths.page}/${entry}/index.html`)
+  const chunksEntry = getChunks(`src/view/${entry}/index.*.js`)
 
+  // https://github.com/survivejs/webpack-merge
   const webpackConfig = merge(baseWebpackConfig, {
     // 在第一个错误出错时抛出，而不是无视错误
     bail: true,
-    // entry: Object.assign(configvendor, baseWebpackConfig.entry),
     devtool: shouldUseSourceMap ? 'source-map' : false,
+    entry: chunksEntry,
     output: {
       path: distPageDir,
       publicPath: config.build.assetsPublicPath,
@@ -46,8 +48,8 @@ module.exports = function({ entry }) {
         ? 'static/js/[name].[chunkhash:8].min.js'
         : 'static/js/[name].min.js',
       chunkFilename: maraConf.chunkHash
-        ? 'static/js/[name].[chunkhash:8].chunk.js'
-        : 'static/js/[name].chunk.js'
+        ? 'static/js/[name].[chunkhash:8].async.js'
+        : 'static/js/[name].async.js'
     },
     plugins: [
       new InterpolateHtmlPlugin(config.build.env.raw),
@@ -55,11 +57,12 @@ module.exports = function({ entry }) {
       // 使作作用域提升(scope hoisting)
       // https://medium.com/webpack/brief-introduction-to-scope-hoisting-in-webpack-8435084c171f
       new webpack.optimize.ModuleConcatenationPlugin(),
-      new marauderDebug(),
+      config.debug && new marauderDebug(),
       // Minify the code.
       new UglifyJsPlugin({
         uglifyOptions: {
-          ecma: 8,
+          // 强制使用 es5 压缩输出，避免 es6 优化导致兼容性问题
+          ecma: 5,
           compress: {
             warnings: false,
             // Disabled because of an issue with Uglify breaking seemingly valid code:
@@ -121,79 +124,50 @@ module.exports = function({ entry }) {
       // solution that requires the user to opt into importing specific locales.
       // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
       // You can remove this if you don't use Moment.js:
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
-    ].concat(
-      Object.keys(baseWebpackConfig.entry)
-        // 只针对有 index.html 页面的 page 应用生成 dist html
-        .filter(name =>
-          fs.existsSync(`${config.paths.page}/${name}/index.html`)
-        )
-        .map(name => {
-          // 每个页面生成一个html
-          return new HtmlWebpackPlugin({
-            // 生成出来的html文件名
-            filename: rootPath(`dist/${name}/index.html`),
-            // 每个html的模版，这里多个页面使用同一个模版
-            template: `html-withimg-loader?min=false!${
-              config.paths.page
-            }/${name}/index.html`,
-            minify: false,
-            // 自动将引用插入html
-            inject: true,
-            // 每个html引用的js模块，也可以在这里加上vendor等公用模块
-            chunks: [name],
-            collapseWhitespace: true,
-            removeRedundantAttributes: true,
-            useShortDoctype: true,
-            removeEmptyAttributes: true,
-            removeStyleLinkTypeAttributes: true,
-            keepClosingSlash: true
-          })
-        })
-    )
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+      hasHtml &&
+        new HtmlWebpackPlugin({
+          // 生成出来的html文件名
+          filename: rootPath(`dist/${entry}/index.html`),
+          // 每个html的模版，这里多个页面使用同一个模版
+          template: `${config.paths.page}/${entry}/index.html`,
+          minify: false,
+          // 自动将引用插入html
+          inject: true,
+          // 模块排序，common > entry > servant
+          chunksSortMode(a, b) {
+            const chunkNames = Object.keys(chunksEntry).sort()
+            const order = ['common', entry].concat(chunkNames)
+
+            return order.indexOf(a.names[0]) - order.indexOf(b.names[0])
+          },
+          collapseWhitespace: true,
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          keepClosingSlash: true
+        }),
+      // 【争议】：lib 模式禁用依赖分析?
+      // 确保在 copy Files 之前
+      maraConf.hybrid && new SinaHybridPlugin({ entry }),
+      new moduleDependency(),
+      new DuplicatePackageCheckerPlugin({
+        // show details
+        verbose: true,
+        showHelp: false,
+        // throwt error
+        emitError: true,
+        // check major version
+        strict: true
+      }),
+      ...copyPublicFiles(entry, distPageDir)
+    ].filter(Boolean)
   })
-
-  webpackConfig.plugins.push(new moduleDependency())
-
-  // if (maraConf.vendor && maraConf.vendor.length) {
-  //   webpackConfig.plugins.push(
-  //     new webpack.optimize.CommonsChunkPlugin({
-  //       name: 'vendor',
-  //       minChunks: Infinity
-  //     })
-  //   )
-  // }
 
   if (maraConf.ensurels) {
     const ensure_ls = require('sinamfe-marauder-ensure-ls')
     webpackConfig.plugins.push(new ensure_ls())
-  }
-
-  // copy project public assets
-  if (fs.existsSync(config.paths.public)) {
-    webpackConfig.plugins.push(
-      new CopyWebpackPlugin([
-        {
-          from: config.paths.public,
-          to: distPageDir + '/static',
-          ignore: ['.*']
-        }
-      ])
-    )
-  }
-
-  // copy page public assets
-  const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
-  if (fs.existsSync(pagePublicDir)) {
-    webpackConfig.plugins.push(
-      new CopyWebpackPlugin([
-        {
-          from: pagePublicDir,
-          to: distPageDir,
-          ignore: ['.*']
-        }
-      ])
-    )
   }
 
   const vendorConf = maraConf.vendor || []
@@ -236,9 +210,17 @@ module.exports = function({ entry }) {
     webpackConfig.plugins.push(new BundleAnalyzerPlugin())
   }
 
+  // @TODO publish npm module
+  // 生成serviceworker
+  // if (maraConf.sw) {
+  //   const webpackWS = require('@mfelibs/webpack-create-serviceworker')
+  //   const swConfig = maraConf.sw_config || {}
+  //   webpackConfig.plugins.push(new webpackWS(swConfig))
+  // }
+
+  // 重要：确保 zip plugin 在插件列表末尾
   if (maraConf.zip === true || maraConf.hybrid) {
     const ZipPlugin = require('zip-webpack-plugin')
-
     webpackConfig.plugins.push(
       new ZipPlugin({
         // OPTIONAL: defaults to the Webpack output filename (above) or,
@@ -254,12 +236,21 @@ module.exports = function({ entry }) {
         // OPTIONAL: defaults to excluding nothing
         // can be a string, a RegExp, or an array of strings and RegExps
         // if a file matches both include and exclude, exclude takes precedence
-        exclude: [
+        exclude: maraConf.debug?[
+          /__MACOSX$/,
+          /.DS_Store$/,
+          /dependencyGraph.json$/,
+          /debug.css$/,
+          /build.json$/,
+          /js.map$/,
+          /css.map$/
+        ]:[
           /__MACOSX$/,
           /.DS_Store$/,
           /dependencyGraph.json$/,
           /debug.js$/,
           /debug.css$/,
+          /build.json$/,
           /js.map$/,
           /css.map$/
         ],
@@ -280,13 +271,31 @@ module.exports = function({ entry }) {
     )
   }
 
-  // @TODO publish npm module
-  // 生成serviceworker
-  // if (maraConf.sw) {
-  //   const webpackWS = require('@mfelibs/webpack-create-serviceworker')
-  //   const swConfig = maraConf.sw_config || {}
-  //   webpackConfig.plugins.push(new webpackWS(swConfig))
-  // }
-
   return webpackConfig
+}
+
+function copyPublicFiles(entry, distPageDir) {
+  const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
+  const plugins = []
+
+  function getCopyOption(src) {
+    return {
+      from: src,
+      // 放置于根路径
+      to: distPageDir,
+      ignore: ['.*']
+    }
+  }
+
+  // 全局 public
+  if (fs.existsSync(config.paths.public)) {
+    plugins.push(new CopyWebpackPlugin([getCopyOption(config.paths.public)]))
+  }
+
+  // 页面级 public，能够覆盖全局 public
+  if (fs.existsSync(pagePublicDir)) {
+    plugins.push(new CopyWebpackPlugin([getCopyOption(pagePublicDir)]))
+  }
+
+  return plugins
 }

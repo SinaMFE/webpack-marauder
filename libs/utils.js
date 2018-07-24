@@ -5,6 +5,7 @@ const path = require('path')
 const glob = require('glob')
 const devIp = require('dev-ip')
 const portscanner = require('portscanner')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
 // 【注意】utils.js 为纯工具库，请不要依赖 config/index.js
 
@@ -59,16 +60,35 @@ async function getFreePort(defPort) {
  */
 function getEntries(globPath, preDep = []) {
   const files = glob.sync(rootPath(globPath))
-  const entries = {}
-
-  files.forEach(filepath => {
-    let dirname = path.dirname(path.relative('src/view/', filepath))
+  const getPageName = filepath => {
+    const dirname = path.dirname(path.relative('src/view/', filepath))
     // 兼容组件，src/index.js
-    dirname = dirname === '..' ? 'index' : dirname
-    entries[dirname] = [].concat(preDep, filepath)
-  })
+    return dirname === '..' ? 'index' : dirname
+  }
 
-  return entries
+  return files.reduce((entries, filepath) => {
+    const name = getPageName(filepath)
+    // preDep 支持数组或字符串。所以这里使用 concat 方法
+    entries[name] = [].concat(preDep, filepath)
+
+    return entries
+  }, {})
+}
+
+function getChunks(globPath, preDep = []) {
+  const files = glob.sync(rootPath(globPath))
+  const getTrunkName = filepath => {
+    const basename = path.posix.basename(filepath, '.js')
+    return basename.replace(/^index\./, '') + '.servant'
+  }
+
+  return files.reduce((trunks, filepath) => {
+    const name = getTrunkName(filepath)
+    // preDep 支持数组或字符串。所以这里使用 concat 方法
+    trunks[name] = [].concat(preDep, filepath)
+
+    return trunks
+  }, {})
 }
 
 /**
@@ -110,11 +130,13 @@ function banner() {
   )
 }
 
-function nodeModulesRegExp(modules = []) {
+function nodeModulesRegExp(modules = '') {
   // path.sep 指定平台特定的分隔符
   // Windows: \   POSIX: /
   // 参考：http://nodejs.cn/api/path.html#path_path_sep
-  return modules.map(mod => new RegExp(`node_modules\\${path.sep}${mod}?`))
+  return []
+    .concat(modules)
+    .map(mod => new RegExp(`node_modules\\${path.sep}${mod}?`))
 }
 
 function isNotEmptyArray(target) {
@@ -140,12 +162,111 @@ function camelName(name) {
   return name
 }
 
+// https://stackoverflow.com/questions/20270973/nodejs-spawn-stdout-string-format
+function buffer2String(data) {
+  return data.toString().replace(/[\n\r]/g, '')
+}
+
+function write(dest, code) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(dest, code, err => {
+      if (err) return reject(err)
+      resolve()
+    })
+  })
+}
+
+function assetsPath(_path) {
+  return path.posix.join('static', _path)
+}
+
+function cssLoaders(options) {
+  options = options || {}
+
+  var cssLoader = {
+    loader: 'css-loader',
+    options: {
+      minimize: process.env.NODE_ENV === 'production',
+      sourceMap: options.sourceMap
+    }
+  }
+
+  var postcssLoader = {
+    loader: 'postcss-loader',
+    options: {
+      sourceMap: true
+    }
+  }
+
+  var px2rpxLoader = {
+    loader: 'px2rpx-loader',
+    options: {
+      baseDpr: 1,
+      rpxUnit: 0.5
+    }
+  }
+
+  // generate loader string to be used with extract text plugin
+  function generateLoaders(loader, loaderOptions) {
+    var loaders = [cssLoader, postcssLoader, px2rpxLoader]
+    if (loader) {
+      loaders.push({
+        loader: loader + '-loader',
+        options: Object.assign({}, loaderOptions, {
+          sourceMap: options.sourceMap
+        })
+      })
+    }
+
+    // Extract CSS when that option is specified
+    // (which is the case during production build)
+    if (options.extract) {
+      return ExtractTextPlugin.extract({
+        use: loaders,
+        fallback: 'vue-style-loader'
+      })
+    } else {
+      return ['vue-style-loader'].concat(loaders)
+    }
+  }
+
+  // https://vue-loader.vuejs.org/en/configurations/extract-css.html
+  return {
+    css: generateLoaders(),
+    postcss: generateLoaders(),
+    less: generateLoaders('less'),
+    sass: generateLoaders('sass', { indentedSyntax: true }),
+    scss: generateLoaders('sass'),
+    stylus: generateLoaders('stylus'),
+    styl: generateLoaders('stylus')
+  }
+}
+
+// Generate loaders for standalone style files (outside of .vue)
+function styleLoaders(options) {
+  var output = []
+  var loaders = cssLoaders(options)
+  for (var extension in loaders) {
+    var loader = loaders[extension]
+    output.push({
+      test: new RegExp('\\.' + extension + '$'),
+      use: loader
+    })
+  }
+  return output
+}
+
 module.exports = {
+  styleLoaders,
+  cssLoaders,
+  assetsPath,
   isObject,
+  write,
   getPageList,
   localIp,
   getFreePort,
   getEntries,
+  getChunks,
   rootPath,
   parseDate,
   pubDate,
@@ -153,5 +274,6 @@ module.exports = {
   isNotEmptyArray,
   nodeModulesRegExp,
   ensureSlash,
-  camelName
+  camelName,
+  buffer2String
 }

@@ -13,16 +13,18 @@ const webpack = require('webpack')
 const ftpUpload = require('../libs/ftp')
 const config = require('../config')
 const paths = config.paths
-const webpackConfig = require('../webpack/webpack.prod.conf')(entry)
+let webpackConfig = require('../webpack/webpack.prod.conf')(entry)
 const maraConf = require(paths.marauder)
 const printBuildError = require('react-dev-utils/printBuildError')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
 const VERSION = process.env.npm_package_version
+const prehandleConfig = require('../libs/prehandleConfig');
 
 const spinner = ora('building for production...')
 spinner.start()
 
 function build() {
+	webpackConfig = prehandleConfig('test',webpackConfig);
   const compiler = webpack(webpackConfig)
 
   compiler.plugin('compilation', compilation => {
@@ -61,9 +63,7 @@ function build() {
   })
 }
 
-fs.emptyDirSync(
-  paths.dist + (config.keyword.UMDCOMPILE == entry ? '' : '/' + entry)
-)
+fs.emptyDirSync(paths.dist + '/' + entry)
 
 build()
   .then(output => {

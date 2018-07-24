@@ -6,51 +6,51 @@ const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
 const { getEntries, nodeModulesRegExp } = require('../libs/utils')
 const { styleLoaders } = require('./loaders/style-loader')
-const babelLoader = require('./loaders/babel-loader')
+const { babelLoader, babelExternalMoudles } = require('./loaders/babel-loader')
 const paths = config.paths
 
 const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
 
-function babelExternalMoudles(esm) {
-  if (!(esm && esm.length)) return nodeModulesRegExp(config.esm)
+// function babelExternalMoudles(esm) {
+//   if (!(esm && esm.length)) return nodeModulesRegExp(config.esm)
 
-  // 当 esm 为 all 时，编译 node_modules 下所有模块
-  if (esm === 'all') esm = ''
+//   // 当 esm 为 all 时，编译 node_modules 下所有模块
+//   if (esm === 'all') esm = ''
 
-  return nodeModulesRegExp([].concat(config.esm, esm))
-}
+//   return nodeModulesRegExp([].concat(config.esm, esm))
+// }
 
 module.exports = function(entry) {
-  let entryGlob = `src/view/${entry || '*'}/index.js`
-  const entries = getEntries(entryGlob, require.resolve('./polyfills'))
+  const isLib = entry == '__LIB__'
+  const ASSETS = isLib ? '' : config.assetsDir
+  const entryGlob = `src/view/${entry}/index.js`
 
   return {
-    entry: entries,
+    // dev, build 环境依赖 base.entry，务必提供
+    entry: getEntries(entryGlob, require.resolve('./polyfills')),
     output: {
       path: paths.dist,
-      filename: 'static/js/[name].js',
-      chunkFilename: 'static/js/[name].chunk.js'
+      // 统一使用 POSIX 风格拼接路径
+      // webpack 将会处理平台差异
+      // 如果使用 path.join 在 Windows 上会出现路径异常
+      filename: path.posix.join(ASSETS, 'js/[name].js'),
+      chunkFilename: path.posix.join(ASSETS, 'js/[name].async.js')
     },
     resolve: {
-      extensions: [
-        '.mjs',
-        '.tsx',
-        '.ts',
-        '.jsx',
-        '.js',
-        '.web.js',
-        '.web.jsx',
-        '.vue',
-        '.json'
-      ],
+      // js first
+      extensions: ['.js', '.ts', '.jsx', '.tsx', '.vue', '.json', '.mjs'],
+      // https://doc.webpack-china.org/configuration/resolve/#resolve-mainfields
+      // source 为自定义拓展属性，表示源码入口
+      mainFields: ['source', 'browser', 'module', 'main'],
       modules: ['node_modules'],
       alias: {
         // 使用 `~` 作为 src 别名
         // 使用特殊符号防止与 npm 包冲突
         // import '~/css/style.css'
         '~': paths.src,
+        vue$: 'vue/dist/vue.esm.js',
         'babel-runtime': path.dirname(
           require.resolve('babel-runtime/package.json')
         ),
@@ -73,22 +73,23 @@ module.exports = function(entry) {
     module: {
       // makes missing exports an error instead of warning
       strictExportPresence: false,
-      loaders: [{ test: /\.html$/, loader: 'html-withimg-loader' }],
       rules: [
         // Disable require.ensure as it's not a standard language feature.
-        { parser: { requireEnsure: false } },
+        // 为了兼容  bundle-loader 暂时不启用
+        // { parser: { requireEnsure: false } },
         {
           oneOf: [
             ...styleLoaders({
               sourceMap: shouldUseSourceMap,
-              extract: isProd
+              extract: isProd,
+              library: isLib
             }),
             {
               test: /\.(bmp|png|jpe?g|gif|svg)(\?.*)?$/,
               loader: 'url-loader',
               options: {
                 limit: 10000,
-                name: `static/img/[name].[hash:8].[ext]`
+                name: path.posix.join(ASSETS, 'img/[name].[hash:8].[ext]')
               }
             },
             {
@@ -105,6 +106,10 @@ module.exports = function(entry) {
               loader: 'vue-loader',
               options: vueLoaderConfig
             },
+            {
+              test: /\.mustache$/,
+              loader: 'mustache-loader'
+            },
             // Process JS with Babel.
             babelLoader(isProd),
             {
@@ -112,9 +117,7 @@ module.exports = function(entry) {
               // require.resolve 将会检查模块是否存在
               // ts-loader 为可选配置，所以这里不使用 require.resolve
               loader: 'ts-loader',
-              include: [paths.src, paths.test].concat(
-                babelExternalMoudles(maraConf.esm)
-              ),
+              include: babelExternalMoudles,
               options: {
                 appendTsSuffixTo: [/\.vue$/]
               }
@@ -123,7 +126,7 @@ module.exports = function(entry) {
               test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
               loader: 'file-loader',
               options: {
-                name: `static/fonts/[name].[hash:8].[ext]`
+                name: path.posix.join(ASSETS, 'fonts/[name].[hash:8].[ext]')
               }
             },
             {
@@ -134,7 +137,16 @@ module.exports = function(entry) {
               loader: 'file-loader',
               exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
               options: {
-                name: `static/media/[name].[hash:8].[ext]`
+                name: path.posix.join(ASSETS, 'media/[name].[hash:8].[ext]')
+              }
+            },
+            {
+              test: /\.(html)$/,
+              use: {
+                loader: 'html-loader',
+                options: {
+                  attrs: [':src', ':data-src']
+                }
               }
             }
           ]
