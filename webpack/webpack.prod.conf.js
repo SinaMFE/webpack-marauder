@@ -11,6 +11,7 @@ const HtmlWebpackPlugin = require('sina-html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const marauderDebug = require('sinamfe-marauder-debug')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
+const HybridCommonPlugin = require('../libs/hybrid/HybridCommonPlugin')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
 const { SinaHybridPlugin } = require('../libs/hybrid')
@@ -104,7 +105,9 @@ module.exports = function({ entry, cmd }) {
           ? 'static/css/[name].[contenthash:8].css'
           : 'static/css/[name].min.css'
       }),
-
+      // hybrid 共享包
+      // 创建 maraContext
+      new HybridCommonPlugin(),
       new OptimizeCssAssetsPlugin({
         // cssnano 中自带 autoprefixer，在压缩时会根据配置去除无用前缀
         // 为保持统一，将其禁用，在 4.0 版本后将会默认禁用
@@ -236,24 +239,26 @@ module.exports = function({ entry, cmd }) {
         // OPTIONAL: defaults to excluding nothing
         // can be a string, a RegExp, or an array of strings and RegExps
         // if a file matches both include and exclude, exclude takes precedence
-        exclude: maraConf.debug?[
-          /__MACOSX$/,
-          /.DS_Store$/,
-          /dependencyGraph.json$/,
-          /debug.css$/,
-          /build.json$/,
-          /js.map$/,
-          /css.map$/
-        ]:[
-          /__MACOSX$/,
-          /.DS_Store$/,
-          /dependencyGraph.json$/,
-          /debug.js$/,
-          /debug.css$/,
-          /build.json$/,
-          /js.map$/,
-          /css.map$/
-        ],
+        exclude: maraConf.debug
+          ? [
+              /__MACOSX$/,
+              /.DS_Store$/,
+              /dependencyGraph.json$/,
+              /debug.css$/,
+              /build.json$/,
+              /js.map$/,
+              /css.map$/
+            ]
+          : [
+              /__MACOSX$/,
+              /.DS_Store$/,
+              /dependencyGraph.json$/,
+              /debug.js$/,
+              /debug.css$/,
+              /build.json$/,
+              /js.map$/,
+              /css.map$/
+            ],
 
         // yazl Options
         // OPTIONAL: see https://github.com/thejoshwolfe/yazl#addfilerealpath-metadatapath-options

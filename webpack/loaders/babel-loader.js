@@ -4,6 +4,8 @@ const path = require('path')
 const config = require('../../config')
 const paths = config.paths
 const maraConf = require(paths.marauder)
+const inlineJson = require.resolve('../../libs/babelInlineJson')
+
 const externalMoudles = [paths.src, paths.test].concat(
   babelExternalMoudles(maraConf.esm)
 )
@@ -35,13 +37,14 @@ function babelExternalMoudles(esm) {
 //   // 仅编译 @mfelibs 下及 maraConf.esm 指定模块
 //   return nodeModulesRegExp([config.esm, esm])
 // }
-//读取marauder.config.js中的babelPlugins
-const plugins = [];
-maraConf.babelPlugins&&plugins.join(maraConf.babelPlugins);
+// 读取marauder.config.js中的babelPlugins
+const plugins = []
+maraConf.babelPlugins && plugins.join(maraConf.babelPlugins)
 
-plugins.push('transform-decorators-legacy');
-//加入了 inline-json，用于去除编译时的引入json（非全量引入）。
-plugins.push(["inline-json", {"matchPattern": "."}]);
+plugins.push('transform-decorators-legacy')
+// 加入了 inline-json，用于去除编译时的引入json（非全量引入）。
+plugins.push(['inline-json', { matchPattern: '.' }])
+
 module.exports.babelLoader = isProd => ({
   test: /\.(js|jsx|mjs)$/,
   include: externalMoudles,
