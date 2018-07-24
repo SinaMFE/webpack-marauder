@@ -4,6 +4,8 @@ const path = require('path')
 const config = require('../../config')
 const paths = config.paths
 const maraConf = require(paths.marauder)
+const inlineJson = require.resolve('../../libs/babelInlineJson')
+
 const externalMoudles = [paths.src, paths.test].concat(
   babelExternalMoudles(maraConf.esm)
 )
@@ -36,21 +38,25 @@ function babelExternalMoudles(esm) {
 //   return nodeModulesRegExp([config.esm, esm])
 // }
 
-module.exports.babelLoader = isProd => ({
-  test: /\.(js|jsx|mjs)$/,
-  include: externalMoudles,
-  loader: 'babel-loader',
-  options: {
-    babelrc: false,
-    presets: ['babel-preset-react-app'],
-    plugins: ['transform-decorators-legacy'],
-    compact: isProd,
-    // `babel-loader` 特性
-    // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
-    // 提升性能
-    cacheDirectory: !isProd,
-    highlightCode: true
+module.exports.babelLoader = isProd => {
+  return {
+    test: /\.(js|jsx|mjs)$/,
+    include: externalMoudles,
+    loader: 'babel-loader',
+    options: {
+      babelrc: false,
+      presets: ['babel-preset-react-app'],
+      // 使用装饰器
+      // 内联 package.json 字段
+      plugins: ['transform-decorators-legacy'],
+      compact: isProd,
+      // `babel-loader` 特性
+      // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
+      // 提升性能
+      cacheDirectory: !isProd,
+      highlightCode: true
+    }
   }
-})
+}
 
 module.exports.babelExternalMoudles = externalMoudles
