@@ -1,5 +1,6 @@
 'use strict'
 
+const path = require('path')
 const fs = require('fs')
 const webpack = require('webpack')
 const merge = require('webpack-merge')
@@ -14,6 +15,10 @@ const moduleDependency = require('sinamfe-webpack-module_dependency')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
 const { SinaHybridPlugin } = require('../libs/hybrid')
+
+const PrerenderSPAPlugin = require('prerender-html-plugin')
+const Renderer = PrerenderSPAPlugin.PuppeteerRenderer
+
 
 const config = require('../config')
 const { banner, rootPath, getChunks, isObject } = require('../libs/utils')
@@ -147,6 +152,30 @@ module.exports = function({ entry, cmd }) {
           removeEmptyAttributes: true,
           removeStyleLinkTypeAttributes: true,
           keepClosingSlash: true
+        }),
+
+        //预加载
+        maraConf.prerender && new PrerenderSPAPlugin({
+            // 生成文件的路径，也可以与webpakc打包的一致。
+            // 这个目录只能有一级，如果目录层次大于一级，在生成的时候不会有任何错误提示，在预渲染的时候只会卡着不动。
+            entry:`${entry}`,
+
+            staticDir: path.join(rootPath(`dist`),`${entry}`),
+
+            outputDir: path.join(rootPath(`dist`),`${entry}`),
+            
+            // 对应自己的路由文件，比如index有参数，就需要写成 /index/param1。
+            routes: ['/'],
+            
+            // 这个很重要，如果没有配置这段，也不会进行预编译
+            renderer: new Renderer({
+                inject: {
+                  foo: 'bar'
+                },
+                headless: false,
+                // 在 main.js 中 document.dispatchEvent(new Event('render-event'))，两者的事件名称要对应上。
+                renderAfterDocumentEvent: 'render-event'
+            })
         }),
       // 【争议】：lib 模式禁用依赖分析?
       // 确保在 copy Files 之前
