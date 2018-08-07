@@ -3,8 +3,8 @@
 const fs = require('fs')
 const md5 = require('md5')
 const path = require('path')
-const uploadftp = require('uploadftp/uploadftp')
-const Ftp = require('uploadftp/ftp')
+const uploadftp = require('../uploadftp/uploadftp')
+const Ftp = require('../uploadftp/ftp')
 const execAsync = require('../../libs/execAsync')
 const { rootPath } = require('../../libs/utils')
 const ftpOption = require('../../config').ftp
