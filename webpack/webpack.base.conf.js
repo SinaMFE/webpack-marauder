@@ -40,7 +40,16 @@ module.exports = function(entry) {
     },
     resolve: {
       // js first
-      extensions: ['.js', '.ts', '.jsx', '.tsx', '.vue', '.json', '.mjs'],
+      extensions: [
+        '.js',
+        '.ts',
+        '.jsx',
+        '.tsx',
+        '.sn',
+        '.vue',
+        '.json',
+        '.mjs'
+      ],
       // https://doc.webpack-china.org/configuration/resolve/#resolve-mainfields
       // source 为自定义拓展属性，表示源码入口
       mainFields: ['source', 'browser', 'module', 'main'],
@@ -101,7 +110,7 @@ module.exports = function(entry) {
               loader: 'art-template-loader'
             },
             {
-              test: /\.vue$/,
+              test: /\.(vue|sn)$/,
 
               loader: 'vue-loader',
               options: vueLoaderConfig
