@@ -39,6 +39,8 @@ module.exports = function(entry) {
       chunkFilename: path.posix.join(ASSETS, 'js/[name].async.js')
     },
     resolve: {
+      // disable symlinks
+      symlinks: false,
       // js first
       extensions: [
         '.js',
