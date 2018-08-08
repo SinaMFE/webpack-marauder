@@ -1,28 +1,22 @@
 'use strict'
 
 const path = require('path')
-const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
 const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
-const { getEntries, nodeModulesRegExp } = require('../libs/utils')
-const { styleLoaders } = require('./loaders/style-loader')
-const { babelLoader, babelExternalMoudles } = require('./loaders/babel-loader')
+const { getEntries } = require('../libs/utils')
 const paths = config.paths
 
 const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
 
-// function babelExternalMoudles(esm) {
-//   if (!(esm && esm.length)) return nodeModulesRegExp(config.esm)
-
-//   // 当 esm 为 all 时，编译 node_modules 下所有模块
-//   if (esm === 'all') esm = ''
-
-//   return nodeModulesRegExp([].concat(config.esm, esm))
-// }
-
 module.exports = function(entry) {
+  const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
+  const { styleLoaders } = require('./loaders/style-loader')
+  const {
+    babelLoader,
+    babelExternalMoudles
+  } = require('./loaders/babel-loader')
   const isLib = entry == '__LIB__'
   const ASSETS = isLib ? '' : config.assetsDir
   const entryGlob = `src/view/${entry}/index.@(ts|js)`

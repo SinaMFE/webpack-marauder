@@ -121,5 +121,6 @@ function styleLoaders(options) {
 
 module.exports = {
   cssLoaders,
-  styleLoaders
+  styleLoaders,
+  postcssPlugin
 }

@@ -1,6 +1,6 @@
 'use strict'
 
-const { cssLoaders } = require('./style-loader')
+const { cssLoaders, postcssPlugin } = require('./style-loader')
 const config = require('../../config')
 const { babelLoader } = require('./babel-loader')
 const maraConf = require(config.paths.marauder)
@@ -17,6 +17,8 @@ module.exports = {
       js: babelLoader(isProd)
     }
   ),
+  postcss: postcssPlugin,
+  preserveWhitespace: false,
   transformToRequire: {
     video: ['src', 'poster'],
     source: 'src',
