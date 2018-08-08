@@ -25,7 +25,7 @@ const shouldUseSourceMap = isProd && !!maraConf.sourceMap
 module.exports = function(entry) {
   const isLib = entry == '__LIB__'
   const ASSETS = isLib ? '' : config.assetsDir
-  const entryGlob = `src/view/${entry}/index.js`
+  const entryGlob = `src/view/${entry}/index.@(ts|js)`
 
   return {
     // dev, build 环境依赖 base.entry，务必提供

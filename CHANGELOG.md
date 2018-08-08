@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.12.0
+
+- 支持 ts 文件作为构建入口
+- 优化 内置 ts-loader
+
 ## v1.10.9
 
 - 支持 hybrid 共享包

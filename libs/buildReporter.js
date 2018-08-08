@@ -36,7 +36,8 @@ function reporter(assetsData, maxBundleGzipSize, maxChunkGzipSize) {
     const sizeLength = stripAnsi(sizeLabel).length
     const longestSizeLabelLength = Math.max.apply(null, labelLengthArr)
     // path.normalize 跨平台格式化路径
-    let assetPath = chalk.dim(info.folder + path.sep) + chalk.cyan(path.normalize(info.name))
+    let assetPath =
+      chalk.dim(info.folder + path.sep) + chalk.cyan(path.normalize(info.name))
 
     if (isJS(info.name)) {
       // 脚本文件添加模块格式标识
@@ -103,7 +104,7 @@ function reporter(assetsData, maxBundleGzipSize, maxChunkGzipSize) {
   })
 
   assetList.forEach(item => {
-    if (item.type === 'demo') console.log('\nDEMO:')
+    if (item.type === 'demo' && item.output.length) console.log('\nDEMO:')
 
     item.output.forEach(assetsInfo => {
       if (item.type === 'demo') console.log()

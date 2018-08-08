@@ -66,7 +66,10 @@ function getEntries(globPath, preDep = []) {
     return dirname === '..' ? 'index' : dirname
   }
 
-  return files.reduce((entries, filepath) => {
+  // glob 按照字母顺序取 .js 与 .ts 文件
+  // 通过 reverse 强制使 js 文件在 ts 之后，达到覆盖目的
+  // 保证 index.js 优先原则
+  return files.reverse().reduce((entries, filepath) => {
     const name = getPageName(filepath)
     // preDep 支持数组或字符串。所以这里使用 concat 方法
     entries[name] = [].concat(preDep, filepath)

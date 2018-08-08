@@ -27,10 +27,10 @@ function empty() {
   └── view
       ├── page1
       │   ├── ${chalk.green('index.html')}
-      │   └── ${chalk.green('index.js')}
+      │   └── ${chalk.green('index.(js|ts)')}
       └── page2
           ├── ${chalk.green('index.html')}
-          └── ${chalk.green('index.js')}`,
+          └── ${chalk.green('index.(js|ts)')}`,
     '\n'
   )
   process.exit(1)

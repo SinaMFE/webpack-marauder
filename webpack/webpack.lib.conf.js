@@ -7,7 +7,7 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 const config = require('../config')
-const { banner, rootPath } = require('../libs/utils')
+const { banner, getEntries } = require('../libs/utils')
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
@@ -26,7 +26,7 @@ module.exports = function(options) {
   const webpackConfig = merge(baseWebpackConfig, {
     // 在第一个错误出错时抛出，而不是无视错误
     bail: true,
-    entry: rootPath('src/index.js'),
+    entry: getEntries(config.paths.libEntry),
     devtool: shouldUseSourceMap ? 'source-map' : false,
     output: {
       path: config.paths.lib,
