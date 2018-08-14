@@ -23,7 +23,8 @@ class SinaHybridPlugin {
     // zip plugin 会在 emit 时打包
     compiler.plugin('emit', (compilation, callback) => {
       this.genVersionFile(compilation)
-      this.updateManifestVersion(maraCtx.dataSource)
+      this.updateManifestVersion()
+      this.injectDataSource(maraCtx.dataSource)
 
       callback()
     })
@@ -38,13 +39,13 @@ class SinaHybridPlugin {
   }
 
   updateManifestVersion() {
-    rewriteField('version', this.version)
+    this.rewriteField('version', this.version)
   }
 
   injectDataSource(dataSource) {
     if (!dataSource) return
 
-    rewriteField('dataSource', dataSource)
+    this.rewriteField('dataSource', dataSource)
   }
 }
 

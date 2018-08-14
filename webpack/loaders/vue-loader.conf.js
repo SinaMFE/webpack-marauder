@@ -6,7 +6,8 @@ const { babelLoader } = require('./babel-loader')
 const maraConf = require(config.paths.marauder)
 const isProd = process.env.NODE_ENV === 'production'
 
-module.exports = {
+const options = {
+  preloaders: {},
   loaders: Object.assign(
     cssLoaders({
       sourceMap: isProd && maraConf.sourceMap,
@@ -26,3 +27,12 @@ module.exports = {
     image: 'xlink:href'
   }
 }
+
+// 超级页组件化，解析 data-source
+if (require('meta-loader')) {
+  options.preloaders = {
+    html: 'meta-loader'
+  }
+}
+
+module.exports = options
