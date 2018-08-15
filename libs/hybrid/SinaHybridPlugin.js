@@ -11,14 +11,21 @@ class SinaHybridPlugin {
   constructor(options) {
     this.options = options
     this.version = process.env.npm_package_version
+    this.rewriteField = genRewriteFn([
+      rootPath('public/manifest.json'),
+      rootPath(`src/view/${this.options.entry}/public/manifest.json`)
+    ])
   }
 
   apply(compiler) {
     // 确保在 emit 前调用
     // zip plugin 会在 emit 时打包
     compiler.plugin('emit', (compilation, callback) => {
+      const maraCtx = compiler['maraContext'] || {}
+
       this.genVersionFile(compilation)
       this.updateManifestVersion()
+      this.injectDataSource(maraCtx.dataSource)
 
       callback()
     })
@@ -33,13 +40,28 @@ class SinaHybridPlugin {
   }
 
   updateManifestVersion() {
-    rewriteVerField(
-      [
-        rootPath('public/manifest.json'),
-        rootPath(`src/view/${this.options.entry}/public/manifest.json`)
-      ],
-      this.version
-    )
+    this.rewriteField('version', this.version)
+  }
+
+  injectDataSource(dataSource) {
+    if (!dataSource) return
+
+    this.rewriteField('dataSource', dataSource)
+  }
+}
+
+function genRewriteFn(manPath) {
+  return function(field, value) {
+    ;[].concat(manPath).forEach(path => {
+      try {
+        const manifest = require(path)
+
+        // if (manifest.version === version) return
+
+        manifest[field] = value
+        fs.writeFileSync(path, JSON.stringify(manifest, null, 2))
+      } catch (e) {}
+    })
   }
 }
 
