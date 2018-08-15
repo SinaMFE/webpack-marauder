@@ -18,10 +18,11 @@ class SinaHybridPlugin {
   }
 
   apply(compiler) {
-    const maraCtx = compiler['maraContext'] || {}
     // 确保在 emit 前调用
     // zip plugin 会在 emit 时打包
     compiler.plugin('emit', (compilation, callback) => {
+      const maraCtx = compiler['maraContext'] || {}
+
       this.genVersionFile(compilation)
       this.updateManifestVersion()
       this.injectDataSource(maraCtx.dataSource)
