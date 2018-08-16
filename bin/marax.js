@@ -37,8 +37,7 @@ const cmdMap = {
   lib: 'buildLib',
   'wx-dev': 'wx-dev-server',
   'wx-build': 'wx-build',
-  dll: 'dll',
-  '-v': 'version'
+  dll: 'dll'
 }
 const cmd = cmdMap[args._[0]]
 
@@ -53,17 +52,15 @@ if (args.dev) {
   process.env.MARA_compileModel = 'dev'
 }
 
-if (!cmd) {
-  console.log('\nUnknown script "' + cmd + '".')
+if (args.v) {
+  console.log(require(paths.ownPackageJson).version, '\n')
+} else if (!cmd) {
+  console.log('\nUnknown script "' + rawArgv + '".')
   console.log('Perhaps you need to update webpack-marauder?')
   console.log(
     'See: https://github.com/SinaMFE/webpack-marauder/blob/master/README.md'
   )
   process.exit(0)
-}
-
-if (cmd === '-v') {
-  console.log(require(paths.ownPackageJson).version, '\n')
 } else {
   require(`../build/${cmd}`)(args)
 }

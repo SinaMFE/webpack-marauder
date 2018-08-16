@@ -1,9 +1,17 @@
 # Changelog
 
+## v1.12.3
+
+- 支持 共享包加载
+- 修复 marax 版本号无法打印问题
+
+## v1.12.2
+
+- 支持 超级页 dataSource 解析
+
 ## v1.12.0
 
 - 支持 ts 文件作为构建入口
-- 支持 超级页 dataSource 解析
 - 优化 内置 ts-loader
 - 修复 vue 模板 style 标签内样式自动前缀失效问题
 

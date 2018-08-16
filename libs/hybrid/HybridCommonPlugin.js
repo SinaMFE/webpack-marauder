@@ -10,21 +10,42 @@ module.exports = class HybridCommonPlugin {
     this.options = options
     this.debug = options.debug
     this.mod = new Map()
-    this.assets = require('@mfelibs/hybrid-common/assets')
+
+    try {
+      this.assets = require('@mfelibs/hybrid-common/assets')
+    } catch (e) {
+      this.assets = null
+    }
   }
 
   apply(compiler) {
-    const maraCtx = compiler['maraContext'] || {}
+    if (!this.assets) return
+
+    // const maraCtx = compiler['maraContext'] || {}
 
     compiler.plugin('compilation', (compilation, data) => {
       data.normalModuleFactory.plugin('parser', (parser, options) => {
         this.resolveImport(parser)
         this.resolveRequire(parser)
         this.resolveMemberRequire(parser)
-
-        this.writeMaraContext(compiler, maraCtx)
+        // this.writeMaraContext(compiler, maraCtx)
       })
+
+      this.injectCommonAssets2Html(compilation)
     })
+  }
+
+  injectCommonAssets2Html(compilation) {
+    compilation.plugin(
+      'html-webpack-plugin-before-html-generation',
+      (htmlData, callback) => {
+        const assets = htmlData.assets
+
+        // @TODO 支持 css, image, font...
+        assets.js = [...this.mod.values(), ...assets.js]
+        callback(null, htmlData)
+      }
+    )
   }
 
   writeMaraContext(compiler, maraCtx) {

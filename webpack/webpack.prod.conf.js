@@ -111,7 +111,7 @@ module.exports = function({ entry, cmd }) {
       }),
       // hybrid 共享包
       // 创建 maraContext
-      // new HybridCommonPlugin(),
+      new HybridCommonPlugin(),
       new OptimizeCssAssetsPlugin({
         // cssnano 中自带 autoprefixer，在压缩时会根据配置去除无用前缀
         // 为保持统一，将其禁用，在 4.0 版本后将会默认禁用
