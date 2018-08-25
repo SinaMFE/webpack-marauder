@@ -4,20 +4,30 @@ const fs = require('fs')
 const md5 = require('md5')
 const Vinyl = require('vinyl')
 const chalk = require('chalk')
+const config = require('../../config')
 const { getFile, uploadVinylFile } = require('../ftp')
 const { rootPath, execAsync, buffer2String } = require('../utils')
 const CONF_DIR = '/wap_front/hybrid/config/'
 const CONF_NAME = 'sina_news.json'
 const CONF_PATH = `${CONF_DIR}/${CONF_NAME}`
 
-async function hybridDevPublish(entry, remotePath) {
-  console.log('----------- hbConf updating ---------------\n')
+const publishStep = [
+  `${chalk.blue('🐝  [1/4]')} Fetching config...`,
+  // ✏️ 后面需要多补充一个空格
+  `${chalk.blue('✏️   [2/4]')} Updating config...`,
+  `${chalk.blue('🚀  [3/4]')} Pushing config...`,
+  `${chalk.blue('🎉  [4/4]')} ${chalk.green('Success')}\n`
+]
 
+async function hybridDevPublish(entry, remotePath) {
+  console.log('----------- Dev Hybrid Publish -----------\n')
+  console.log(publishStep[0])
+
+  const hbConf = await getHbConf(CONF_PATH)
   const repoName = await getGitRepoName()
-  const config = await getHbConf(CONF_PATH)
   const moduleName = `${repoName}/${entry}`
   const localPkgPath = rootPath(`dist/${entry}/${entry}.php`)
-  const moduleIdx = config.data.modules.findIndex(
+  const moduleIdx = hbConf.data.modules.findIndex(
     item => item.name === moduleName
   )
   const hbMod = {
@@ -28,28 +38,32 @@ async function hybridDevPublish(entry, remotePath) {
     md5: md5(fs.readFileSync(localPkgPath))
   }
 
+  console.log(publishStep[1])
   if (moduleIdx > -1) {
-    config.data.modules[moduleIdx] = hbMod
+    hbConf.data.modules[moduleIdx] = hbMod
   } else {
-    config.data.modules.push(hbMod)
+    hbConf.data.modules.push(hbMod)
   }
 
-  updateRemoteHbConf(config, hbMod)
+  console.log(publishStep[2])
+  await updateRemoteHbConf(hbConf)
+  console.log(publishStep[3])
+
+  logResult(hbMod)
 }
 
-async function updateRemoteHbConf(config, hbMod) {
+async function updateRemoteHbConf(hbConf) {
   // 创建虚拟文件
   const confFile = new Vinyl({
     path: rootPath(CONF_NAME),
-    contents: Buffer.from(JSON.stringify(config))
+    contents: Buffer.from(JSON.stringify(hbConf))
   })
 
   try {
     await uploadVinylFile(confFile, CONF_DIR)
-
-    logResult(hbMod)
   } catch (e) {
-    console.error('Hybrid config 上传失败', e)
+    console.log('Hybrid config 上传失败')
+    throw new Error(e)
   }
 }
 
@@ -78,17 +92,16 @@ async function getGitRepoName() {
 async function getHbConf(confPath) {
   try {
     const buffer = await getFile(CONF_PATH)
-    const config = JSON.parse(buffer2String(buffer))
-
-    return (
-      config || {
-        status: 0,
-        reqTime: Date.now(),
-        data: {
-          modules: []
-        }
+    const hbConf = JSON.parse(buffer2String(buffer))
+    const initConf = {
+      status: 0,
+      reqTime: Date.now(),
+      data: {
+        modules: []
       }
-    )
+    }
+
+    return hbConf || initConf
   } catch (e) {
     console.log(
       `测试服务器上没有${CONF_PATH},或者当前网络问题以及config被人工修改不能被识别，请联系管理员或者重新尝试！`
@@ -100,9 +113,9 @@ async function getHbConf(confPath) {
 function logResult(hbMod) {
   console.table(hbMod)
   console.log(
-    '\n',
-    chalk.bgYellow(' HbConf '),
-    chalk.yellow('http://wap_front.dev.sina.cn/hybrid/config/sina_news.json')
+    `\n${chalk.bgYellow(' CONF ')} ${chalk.yellow(
+      'http://wap_front.dev.sina.cn/hybrid/config/sina_news.json'
+    )}\n`
   )
 }
 

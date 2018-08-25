@@ -11,12 +11,13 @@ const { rootPath } = require('./utils')
 const isInteractive = process.stdout.isTTY
 const ftpConf = config.ftp
 const uploadStep = [
-  `${chalk.blue('🌝  [1/2]')} Connecting ${chalk.yellow(config.ftp.host)}...`,
-  `${chalk.blue('🚀  [2/2]')} Uploading package...`
+  `${chalk.blue('🌝  [1/3]')} Connecting ${chalk.yellow(config.ftp.host)}...`,
+  `${chalk.blue('🚀  [2/3]')} Uploading package...`,
+  `${chalk.blue('🎉  [3/3]')} ${chalk.green('Done')}\n`
 ]
 
 async function upload(filePath, remotePath) {
-  console.log('----------- Ftp uploading ---------------\n')
+  console.log('------------- Ftp uploading -------------\n')
   console.log(uploadStep[0])
   const conn = new Ftp(ftpConf)
 
@@ -76,19 +77,21 @@ module.exports.uploadDir = async function(page, namespace) {
 
   try {
     await upload(localPath, remotePath)
-    console.log(chalk.green('🎉  success!'))
+    console.log(uploadStep[2])
 
     const url = HOST + remotePath.replace('/wap_front', '')
-    console.log('\n', chalk.bgYellow(' URL '), chalk.yellow(`${url}`), '\n')
+    console.log(`${chalk.bgYellow(' URL ')} ${chalk.yellow(url)}\n`)
 
     ftpConf.openBrowser && isInteractive && openBrowser(url)
 
     return url
   } catch (err) {
-    console.log(`\n🌚  ${chalk.red(err)}`)
-    console.log(
-      chalk.red('   上传失败，请确保已在 marauder.config 中正确配置 ftp 信息')
-    )
+    const errMsg =
+      `🌚  ${err}\n` +
+      '    1) 请检查网络和 VPN 连接\n' +
+      '    2) 请检查 ftp 配置'
+
+    throw new Error(chalk.red(errMsg))
   }
 }
 
