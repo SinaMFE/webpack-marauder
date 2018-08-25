@@ -127,11 +127,11 @@ function success({ entryInput, stats, publicPath, outputPath }) {
 async function hybrid({ entry, ftpBranch, remotePath }) {
   if (!maraConf.hybrid || !remotePath) return
 
-  hybridDevPublish(entry, remotePath)
+  await hybridDevPublish(entry, remotePath)
 }
 
 function error(err) {
-  console.log(chalk.red('Failed to compile.\n'))
+  console.log(chalk.red('\n🕳   Failed to compile.\n'))
   printBuildError(err)
   process.exit(1)
 }
@@ -168,6 +168,11 @@ function setup(entryInput) {
   return entryInput
 }
 
+// finally fn
+function done() {
+  console.log(chalk.magenta('🤘  marauder loves you'))
+}
+
 module.exports = args => {
   return getEntry(args)
     .then(setup)
@@ -176,5 +181,6 @@ module.exports = args => {
     .then(success)
     .then(ftp)
     .then(hybrid)
+    .then(done)
     .catch(error)
 }
