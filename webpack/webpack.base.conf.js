@@ -107,7 +107,6 @@ module.exports = function(entry) {
             },
             {
               test: /\.(vue|sn)$/,
-
               loader: 'vue-loader',
               options: vueLoaderConfig
             },
