@@ -6835,9 +6835,9 @@ promise-limit@^2.5.0:
   version "2.0.0"
   resolved "http://registry.npm.taobao.org/promise-nodeify/download/promise-nodeify-2.0.0.tgz#14055f438cddc31c89775a132a06888b74e180b5"
 
-promise-polyfill@^6.1.0:
-  version "6.1.0"
-  resolved "http://registry.npm.taobao.org/promise-polyfill/download/promise-polyfill-6.1.0.tgz#dfa96943ea9c121fca4de9b5868cb39d3472e057"
+promise-polyfill@^8.1.0:
+  version "8.1.0"
+  resolved "http://registry.npm.taobao.org/promise-polyfill/download/promise-polyfill-8.1.0.tgz#30059da54d1358ce905ac581f287e184aedf995d"
 
 promise@^7.1.1:
   version "7.3.1"
