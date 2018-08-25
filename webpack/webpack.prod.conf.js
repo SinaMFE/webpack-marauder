@@ -113,8 +113,9 @@ module.exports = function({ entry, cmd }) {
         // cssnano 中自带 autoprefixer，在压缩时会根据配置去除无用前缀
         // 为保持统一，将其禁用，在 4.0 版本后将会默认禁用
         // safe: true 禁止计算 z-index
+        cssProcessor: require('cssnano'),
         cssProcessorOptions: Object.assign(
-          { autoprefixer: false, safe: true },
+          // { autoprefixer: false, safe: true },
           shouldUseSourceMap
             ? {
                 map: { inline: false }
