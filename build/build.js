@@ -14,13 +14,13 @@ const path = require('path')
 const ora = require('ora')
 const webpack = require('webpack')
 const getEntry = require('../libs/entry')
-const ftpUpload = require('../libs/ftp')
+const { uploadDir } = require('../libs/ftp')
 const config = require('../config')
 const paths = config.paths
 const getWebpackConfig = require('../webpack/webpack.prod.conf')
 const maraConf = require(paths.marauder)
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const { HybridDevPublish } = require('../libs/hybrid')
+const { hybridDevPublish } = require('../libs/hybrid')
 const printBuildError = require('../libs/printBuildError')
 const buildReporter = require('../libs/buildReporter')
 const prehandleConfig = require('../libs/prehandleConfig')
@@ -127,9 +127,7 @@ function success({ entryInput, stats, publicPath, outputPath }) {
 async function hybrid({ entry, ftpBranch, remotePath }) {
   if (!maraConf.hybrid || !remotePath) return
 
-  const hyPublish = new HybridDevPublish({ entry, ftpBranch, remotePath })
-
-  return hyPublish.changeHybridConfig()
+  hybridDevPublish(entry, remotePath)
 }
 
 function error(err) {
@@ -157,7 +155,7 @@ function ftp({ entry, ftpBranch }) {
       ftpBranch
     }
 
-  return ftpUpload(entry, ftpBranch).then(remotePath => ({
+  return uploadDir(entry, ftpBranch).then(remotePath => ({
     entry,
     ftpBranch,
     remotePath

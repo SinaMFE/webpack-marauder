@@ -5,6 +5,7 @@ const path = require('path')
 const glob = require('glob')
 const devIp = require('dev-ip')
 const portscanner = require('portscanner')
+const { exec } = require('child_process')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
 // 【注意】utils.js 为纯工具库，请不要依赖 config/index.js
@@ -16,6 +17,21 @@ const appDirectory = fs.realpathSync(process.cwd())
 
 function rootPath(relativePath) {
   return path.resolve(appDirectory, relativePath)
+}
+
+const execAsync = command => {
+  return new Promise((resolve, reject) => {
+    exec(command, (err, stdout, stderr) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      resolve({
+        stdout,
+        stderr
+      })
+    })
+  })
 }
 
 /**
@@ -264,6 +280,7 @@ module.exports = {
   cssLoaders,
   assetsPath,
   isObject,
+  execAsync,
   write,
   getPageList,
   localIp,

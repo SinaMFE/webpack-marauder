@@ -35,7 +35,7 @@ const fs = require('fs-extra')
 const input = require('yargs').argv._
 const ora = require('ora')
 const webpack = require('webpack')
-const ftpUpload = require('../libs/ftp')
+const { uploadDir } = require('../libs/ftp')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
 const printBuildError = require('../libs/printBuildError')
 const prehandleConfig = require('../libs/prehandleConfig')
@@ -84,7 +84,7 @@ fs.emptyDirSync(`${paths.dist}/${vendorDir}`)
 
 function ftp() {
   // ftp upload
-  config.build.uploadFtp && ftpUpload(vendorDir, input[0])
+  config.build.uploadFtp && uploadDir(vendorDir, input[0])
 }
 
 function errorLog(err) {

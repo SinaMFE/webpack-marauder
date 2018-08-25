@@ -12,7 +12,7 @@ const HtmlWebpackPlugin = require('sina-html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const marauderDebug = require('sinamfe-marauder-debug')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
-const HybridCommonPlugin = require('../libs/hybrid/HybridCommonPlugin')
+const { HybridCommonPlugin } = require('../libs/hybrid')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
 const { SinaHybridPlugin } = require('../libs/hybrid')
@@ -100,10 +100,7 @@ module.exports = function({ entry, cmd }) {
       //   'window.Zepto': 'zepto',
       //   'window.$': 'zepto'
       // }),
-      new webpack.BannerPlugin({
-        banner: banner(), // 其值为字符串，将作为注释存在
-        entryOnly: true // 如果值为 true，将只在入口 chunks 文件中添加
-      }),
+
       new ExtractTextPlugin({
         filename: maraConf.hash
           ? 'static/css/[name].[contenthash:8].css'
@@ -192,6 +189,10 @@ module.exports = function({ entry, cmd }) {
         emitError: true,
         // check major version
         strict: true
+      }),
+      new webpack.BannerPlugin({
+        banner: banner(), // 其值为字符串，将作为注释存在
+        entryOnly: true // 如果值为 true，将只在入口 chunks 文件中添加
       }),
       ...copyPublicFiles(entry, distPageDir)
     ].filter(Boolean)

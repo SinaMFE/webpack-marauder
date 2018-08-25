@@ -1,7 +1,6 @@
 'use strict'
 
 const t = require('@babel/types')
-const publicPath = 'sinanews://hbpkg/hb_common'
 
 /**
  * hybrid 共享包
@@ -11,8 +10,8 @@ module.exports = class HybridCommonPlugin {
     this.options = options
     this.debug = options.debug
     this.mod = {
-      style: new Map(),
-      script: new Map()
+      style: [],
+      script: []
     }
 
     try {
@@ -42,14 +41,27 @@ module.exports = class HybridCommonPlugin {
       (htmlData, callback) => {
         // assets props [ 'publicPath', 'chunks', 'js', 'css', 'manifest' ]
         const assets = htmlData.assets
+        const scripts = this.getAssetsUrlWithSort('script')
+        const styles = this.getAssetsUrlWithSort('style')
 
-        // @TODO 支持 css, image, font...
-        assets.js = [...this.mod.script.values(), ...assets.js]
-        assets.css = [...this.mod.style.values(), ...assets.css]
+        // @TODO 支持 image
+        assets.js = [...scripts, ...assets.js]
+        assets.css = [...styles, ...assets.css]
+
+        this.debug && console.log('common assets script', scripts)
+        this.debug && console.log('common assets style', styles)
 
         callback(null, htmlData)
       }
     )
+  }
+
+  getAssetsUrlWithSort(type) {
+    return this.mod[type]
+      .sort((a, b) => {
+        return a.sort - b.sort
+      })
+      .map(asset => asset.url)
   }
 
   // e.g. const all = require('@mfelibs/hybrid-common')
@@ -72,7 +84,7 @@ module.exports = class HybridCommonPlugin {
       if (this.assets[node.property.name]) {
         this.addMod(node.property.name)
 
-        this.debug && console.log('MemberExpression', this.mod)
+        this.debug && console.log('MemberExpression', node.property.name)
       }
     })
   }
@@ -83,7 +95,7 @@ module.exports = class HybridCommonPlugin {
       if (node.source.value !== '@mfelibs/hybrid-common') return
 
       this.addMod(exportName)
-      this.debug && console.log('Import', this.mod)
+      this.debug && console.log('Import', exportName)
     })
   }
 
@@ -99,10 +111,10 @@ module.exports = class HybridCommonPlugin {
   }
 
   addMod(name) {
-    const { type, url } = this.assets[name]
+    const { type, url, sort } = this.assets[name]
 
     if (this.mod[type]) {
-      this.mod[type].set(name, publicPath + url)
+      this.mod[type].push({ url, sort })
     }
   }
 }
