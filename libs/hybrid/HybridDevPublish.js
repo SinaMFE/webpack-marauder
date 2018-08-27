@@ -20,7 +20,7 @@ const publishStep = [
 ]
 
 async function hybridDevPublish(entry, remotePath) {
-  console.log('----------- Dev Hybrid Publish -----------\n')
+  console.log('----------- Hybrid Publish Dev -----------\n')
   console.log(publishStep[0])
 
   const hbConf = await getHbConf(CONF_PATH)
