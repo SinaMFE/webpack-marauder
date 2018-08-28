@@ -170,7 +170,10 @@ function setup(entryInput) {
 
 // finally fn
 function done() {
-  console.log(chalk.magenta('🤘  marauder loves you'))
+  const date = new Date()
+  const hour = date.getHours()
+
+  hour > 21 && console.log(chalk.magenta('🚜  marauder loves you'))
 }
 
 module.exports = args => {

@@ -7,7 +7,9 @@ const maraConf = require(paths.marauder)
 const inlineJson = require.resolve('../../libs/babelInlineJson')
 
 const externalMoudles = [paths.src, paths.test].concat(
-  babelExternalMoudles(maraConf.esm)
+  // 越来越多的库如 swiper 采用 es6 发布
+  // 将存在潜在的兼容问题，因此编译所有依赖
+  babelExternalMoudles('all')
 )
 
 function nodeModulesRegExp(...args) {
@@ -43,11 +45,13 @@ maraConf.babelPlugins && plugins.join(maraConf.babelPlugins)
 
 plugins.push('transform-decorators-legacy')
 // 加入了 inline-json，用于去除编译时的引入json（非全量引入）。
-plugins.push(['inline-json', { matchPattern: '.' }])
+// plugins.push(['inline-json', { matchPattern: '.' }])
 
 module.exports.babelLoader = isProd => ({
   test: /\.(js|jsx|mjs)$/,
   include: externalMoudles,
+  // 排除框架，加速构建
+  exclude: ['node_modules/vue', 'node_modules/react', 'node_modules/react-dom'],
   loader: 'babel-loader',
   options: {
     babelrc: false,
