@@ -7,8 +7,9 @@ const chalk = require('chalk')
 const config = require('../../config')
 const { getFile, uploadVinylFile } = require('../ftp')
 const { rootPath, execAsync, buffer2String } = require('../utils')
+const maraConf = require(config.paths.marauder)
 const CONF_DIR = '/wap_front/hybrid/config/'
-const CONF_NAME = 'sina_news.json'
+const CONF_NAME = getHbConfName(maraConf)
 const CONF_PATH = `${CONF_DIR}/${CONF_NAME}`
 
 const publishStep = [
@@ -18,6 +19,13 @@ const publishStep = [
   `${chalk.blue('🚀  [3/4]')} Pushing config...`,
   `${chalk.blue('🎉  [4/4]')} ${chalk.green('Success')}\n`
 ]
+
+function getHbConfName(config) {
+  const confName =
+    (config && config.ciConfig && config.ciConfig.zip_config_name) ||
+    'sina_news'
+  return `${confName}.json`
+}
 
 async function hybridDevPublish(entry, remotePath) {
   console.log('----------- Hybrid Publish Dev -----------\n')
@@ -114,7 +122,7 @@ function logResult(hbMod) {
   console.table(hbMod)
   console.log(
     `\n${chalk.bgYellow(' CONF ')} ${chalk.yellow(
-      'http://wap_front.dev.sina.cn/hybrid/config/sina_news.json'
+      'http://wap_front.dev.sina.cn/hybrid/config/' + CONF_NAME
     )}\n`
   )
 }
