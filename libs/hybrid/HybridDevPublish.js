@@ -4,6 +4,7 @@ const fs = require('fs')
 const md5 = require('md5')
 const Vinyl = require('vinyl')
 const chalk = require('chalk')
+const axios = require('axios')
 const config = require('../../config')
 const { getFile, uploadVinylFile } = require('../ftp')
 const { rootPath, execAsync, buffer2String } = require('../utils')
@@ -11,6 +12,7 @@ const maraConf = require(config.paths.marauder)
 const CONF_DIR = '/wap_front/hybrid/config/'
 const CONF_NAME = getHbConfName(maraConf)
 const CONF_PATH = `${CONF_DIR}/${CONF_NAME}`
+const CONF_URL = `http://wap_front.dev.sina.cn/hybrid/config/${CONF_NAME}`
 
 const publishStep = [
   `${chalk.blue('🐝  [1/4]')} Fetching config...`,
@@ -31,7 +33,7 @@ async function hybridDevPublish(entry, remotePath) {
   console.log('----------- Hybrid Publish Dev -----------\n')
   console.log(publishStep[0])
 
-  const hbConf = await getHbConf(CONF_PATH)
+  const hbConf = await getHbConf(CONF_URL)
   const repoName = await getGitRepoName()
   const moduleName = `${repoName}/${entry}`
   const localPkgPath = rootPath(`dist/${entry}/${entry}.php`)
@@ -99,8 +101,7 @@ async function getGitRepoName() {
 
 async function getHbConf(confPath) {
   try {
-    const buffer = await getFile(CONF_PATH)
-    const hbConf = JSON.parse(buffer2String(buffer))
+    const hbConf = await axios(confPath)
     const initConf = {
       status: 0,
       reqTime: Date.now(),
@@ -109,22 +110,16 @@ async function getHbConf(confPath) {
       }
     }
 
-    return hbConf || initConf
+    return hbConf.data || initConf
   } catch (e) {
-    console.log(
-      `测试服务器上没有${CONF_PATH},或者当前网络问题以及config被人工修改不能被识别，请联系管理员或者重新尝试！`
-    )
+    console.log(`请检查网络或联系管理员`)
     throw new Error(e)
   }
 }
 
 function logResult(hbMod) {
   console.table(hbMod)
-  console.log(
-    `\n${chalk.bgYellow(' CONF ')} ${chalk.yellow(
-      'http://wap_front.dev.sina.cn/hybrid/config/' + CONF_NAME
-    )}\n`
-  )
+  console.log(`\n${chalk.bgYellow(' CONF ')} ${chalk.yellow(CONF_URL)}\n`)
 }
 
 module.exports = hybridDevPublish
