@@ -2,6 +2,7 @@
 
 const fs = require('fs')
 const devalue = require('devalue')
+const chalk = require('chalk')
 const ConcatSource = require('webpack-sources/lib/ConcatSource')
 const { rootPath } = require('../../libs/utils')
 
@@ -17,6 +18,15 @@ class SinaHybridPlugin {
       rootPath('public/manifest.json'),
       rootPath(`src/view/${this.options.entry}/public/manifest.json`)
     ])
+    const pkgVersion = require(rootPath('package.json')).version
+
+    if (pkgVersion !== this.version) {
+      throw new Error(
+        chalk.red(
+          `package.json 版本号不合法，期望值：${chalk.yellow(this.version)}`
+        )
+      )
+    }
   }
 
   apply(compiler) {
