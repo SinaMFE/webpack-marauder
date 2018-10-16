@@ -4,6 +4,7 @@ const path = require('path')
 const config = require('../../config')
 const paths = config.paths
 const maraConf = require(paths.marauder)
+const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier')
 const inlineJson = require.resolve('../../libs/babelInlineJson')
 
 const externalMoudles = [paths.src, paths.test].concat(
@@ -47,23 +48,71 @@ plugins.push('transform-decorators-legacy')
 // 加入了 inline-json，用于去除编译时的引入json（非全量引入）。
 // plugins.push(['inline-json', { matchPattern: '.' }])
 
-module.exports.babelLoader = isProd => ({
-  test: /\.(js|jsx|mjs)$/,
-  include: externalMoudles,
-  // 排除框架，加速构建
-  exclude: ['node_modules/vue', 'node_modules/react', 'node_modules/react-dom'],
-  loader: 'babel-loader',
-  options: {
-    babelrc: false,
-    presets: ['babel-preset-react-app'],
-    plugins: plugins,
-    compact: isProd,
-    // `babel-loader` 特性
-    // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
-    // 提升性能
-    cacheDirectory: !isProd,
-    highlightCode: true
+module.exports.babelLoader = isProd => [
+  {
+    test: /\.(js|mjs|jsx)$/,
+    include: [paths.src, ...nodeModulesRegExp(config.esm)],
+    // 排除框架，加速构建
+    exclude: [
+      /@babel(?:\/|\\{1,2})runtime/,
+      'node_modules/vue',
+      'node_modules/react',
+      'node_modules/react-dom'
+    ],
+    loader: 'babel-loader',
+    options: {
+      customize: 'babel-preset-react-app/webpack-overrides',
+      babelrc: false,
+      configFile: false,
+      presets: ['babel-preset-react-app'],
+      // Make sure we have a unique cache identifier, erring on the
+      // side of caution.
+      cacheIdentifier: getCacheIdentifier(
+        isProd ? 'production' : 'development',
+        ['babel-preset-react-app', 'react-dev-utils', 'webpack-marauder']
+      ),
+      plugins: plugins,
+      // `babel-loader` 特性
+      // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
+      // 提升性能
+      cacheDirectory: true,
+      cacheCompression: isProd,
+      compact: isProd,
+      highlightCode: true
+    }
+  },
+  {
+    test: /\.(js|mjs)$/,
+    // 排除框架，加速构建
+    exclude: [
+      /@babel(?:\/|\\{1,2})runtime/,
+      ...nodeModulesRegExp(['vue', 'react', 'react-dom'])
+    ],
+    loader: 'babel-loader',
+    options: {
+      babelrc: false,
+      configFile: false,
+      presets: [
+        [
+          require.resolve('babel-preset-react-app/dependencies'),
+          { helpers: true }
+        ]
+      ],
+      // Make sure we have a unique cache identifier, erring on the
+      // side of caution.
+      cacheIdentifier: getCacheIdentifier(
+        isProd ? 'production' : 'development',
+        ['babel-preset-react-app', 'react-dev-utils', 'webpack-marauder']
+      ),
+      // `babel-loader` 特性
+      // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
+      // 提升性能
+      cacheDirectory: true,
+      cacheCompression: isProd,
+      compact: false,
+      sourceMaps: false
+    }
   }
-})
+]
 
 module.exports.babelExternalMoudles = externalMoudles

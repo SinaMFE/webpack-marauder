@@ -11,13 +11,16 @@ const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
 
 module.exports = function(entry) {
+  const webpack = require('webpack')
+  const PnpWebpackPlugin = require('pnp-webpack-plugin')
   const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
+  const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
   const { styleLoaders } = require('./loaders/style-loader')
   const {
     babelLoader,
     babelExternalMoudles
   } = require('./loaders/babel-loader')
-  const isLib = entry == '__LIB__'
+  const isLib = entry === '__LIB__'
   const ASSETS = isLib ? '' : config.assetsDir
   const entryGlob = `src/view/${entry}/index.@(ts|js)`
 
@@ -37,14 +40,14 @@ module.exports = function(entry) {
       symlinks: false,
       // js first
       extensions: [
+        '.mjs',
         '.js',
         '.ts',
         '.jsx',
         '.tsx',
         '.sn',
         '.vue',
-        '.json',
-        '.mjs'
+        '.json'
       ],
       // https://doc.webpack-china.org/configuration/resolve/#resolve-mainfields
       // source 为自定义拓展属性，表示源码入口
@@ -58,12 +61,12 @@ module.exports = function(entry) {
         vue$: 'vue/dist/vue.esm.js',
         'babel-runtime': path.dirname(
           require.resolve('babel-runtime/package.json')
-        ),
-        // Support React Native Web
-        // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
-        'react-native': 'react-native-web'
+        )
       },
       plugins: [
+        // Adds support for installing with Plug'n'Play, leading to faster installs and adding
+        // guards against forgotten dependencies and such.
+        PnpWebpackPlugin,
         // Prevents users from importing files from outside of src/ (or node_modules/).
         // This often causes confusion because we only process files within src/ with babel.
         // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
@@ -73,11 +76,14 @@ module.exports = function(entry) {
       ]
     },
     resolveLoader: {
-      modules: [paths.ownNodeModules, paths.nodeModules]
+      plugins: [
+        // Also related to Plug'n'Play, but this time it tells Webpack to load its loaders
+        // from the current package.
+        PnpWebpackPlugin.moduleLoader(module)
+      ]
     },
     module: {
-      // makes missing exports an error instead of warning
-      strictExportPresence: false,
+      strictExportPresence: true,
       rules: [
         // Disable require.ensure as it's not a standard language feature.
         // 为了兼容  bundle-loader 暂时不启用
@@ -110,12 +116,8 @@ module.exports = function(entry) {
               loader: 'vue-loader',
               options: vueLoaderConfig
             },
-            {
-              test: /\.mustache$/,
-              loader: 'mustache-loader'
-            },
             // Process JS with Babel.
-            babelLoader(isProd),
+            ...babelLoader(isProd),
             {
               test: /\.tsx?$/,
               // require.resolve 将会检查模块是否存在
@@ -134,17 +136,6 @@ module.exports = function(entry) {
               }
             },
             {
-              // Exclude `js` files to keep "css" loader working as it injects
-              // it's runtime that would otherwise processed through "file" loader.
-              // Also exclude `html` and `json` extensions so they get processed
-              // by webpacks internal loaders.
-              loader: 'file-loader',
-              exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
-              options: {
-                name: path.posix.join(ASSETS, 'media/[name].[hash:8].[ext]')
-              }
-            },
-            {
               test: /\.(html)$/,
               use: {
                 loader: 'html-loader',
@@ -152,11 +143,35 @@ module.exports = function(entry) {
                   attrs: [':src', ':data-src']
                 }
               }
+            },
+            {
+              // Exclude `js` files to keep "css" loader working as it injects
+              // it's runtime that would otherwise processed through "file" loader.
+              // Also exclude `html` and `json` extensions so they get processed
+              // by webpacks internal loaders.
+              loader: 'file-loader',
+              exclude: [/\.(js|mjs|jsx)$/, /\.html$/, /\.json$/],
+              options: {
+                name: path.posix.join(ASSETS, 'media/[name].[hash:8].[ext]')
+              }
             }
+            // ** STOP ** Are you adding a new loader?
+            // Make sure to add the new loader(s) before the "file" loader.
           ]
         }
       ]
     },
+    plugins: [
+      // This gives some necessary context to module not found errors, such as
+      // the requesting resource.
+      new ModuleNotFoundPlugin(paths.app),
+      // Moment.js is an extremely popular library that bundles large locale files
+      // by default due to how Webpack interprets its code. This is a practical
+      // solution that requires the user to opt into importing specific locales.
+      // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
+      // You can remove this if you don't use Moment.js:
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+    ],
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.
     node: {

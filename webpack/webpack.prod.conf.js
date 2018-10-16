@@ -6,27 +6,23 @@ const webpack = require('webpack')
 const merge = require('webpack-merge')
 const chalk = require('chalk')
 const CopyWebpackPlugin = require('copy-webpack-plugin-hash')
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const HtmlWebpackPlugin = require('sina-html-webpack-plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const safePostCssParser = require('postcss-safe-parser')
 const marauderDebug = require('sinamfe-marauder-debug')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
 const { HybridCommonPlugin } = require('../libs/hybrid')
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
 const { SinaHybridPlugin } = require('../libs/hybrid')
-
-const PrerenderSPAPlugin = require('prerender-html-plugin')
-const Renderer = PrerenderSPAPlugin.PuppeteerRenderer
 
 const config = require('../config')
 const { banner, rootPath, getChunks, isObject } = require('../libs/utils')
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
-// 压缩配置
-const compress = Object.assign(config.compress, maraConf.compress)
 
 /**
  * 生成生产配置
@@ -42,6 +38,7 @@ module.exports = function({ entry, cmd }) {
 
   // https://github.com/survivejs/webpack-merge
   const webpackConfig = merge(baseWebpackConfig, {
+    mode: 'production',
     // 在第一个错误出错时抛出，而不是无视错误
     bail: true,
     devtool: shouldUseSourceMap ? 'source-map' : false,
@@ -54,82 +51,101 @@ module.exports = function({ entry, cmd }) {
         : 'static/js/[name].min.js',
       chunkFilename: maraConf.chunkHash
         ? 'static/js/[name].[chunkhash:8].async.js'
-        : 'static/js/[name].async.js'
+        : 'static/js/[name].async.js',
+      // Point sourcemap entries to original disk location (format as URL on Windows)
+      devtoolModuleFilenameTemplate: info =>
+        path
+          .relative(config.paths.src, info.absoluteResourcePath)
+          .replace(/\\/g, '/')
+    },
+    optimization: {
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            parse: {
+              // we want terser to parse ecma 8 code. However, we don't want it
+              // to apply any minfication steps that turns valid ecma 5 code
+              // into invalid ecma 5 code. This is why the 'compress' and 'output'
+              // sections only apply transformations that are ecma 5 safe
+              // https://github.com/facebook/create-react-app/pull/4234
+              ecma: 8
+            },
+            compress: {
+              ecma: 5,
+              warnings: false,
+              // Disabled because of an issue with Uglify breaking seemingly valid code:
+              // https://github.com/facebook/create-react-app/issues/2376
+              // Pending further investigation:
+              // https://github.com/mishoo/UglifyJS2/issues/2011
+              comparisons: false,
+              // Disabled because of an issue with Terser breaking valid code:
+              // https://github.com/facebook/create-react-app/issues/5250
+              // Pending futher investigation:
+              // https://github.com/terser-js/terser/issues/120
+              inline: 2
+            },
+            mangle: {
+              safari10: true
+            },
+            output: {
+              ecma: 5,
+              comments: false,
+              // Turned on because emoji and regex is not minified properly using default
+              // https://github.com/facebook/create-react-app/issues/2488
+              ascii_only: true
+            }
+          },
+          // Use multi-process parallel running to improve the build speed
+          // Default number of concurrent runs: os.cpus().length - 1
+          parallel: true,
+          // Enable file caching
+          cache: true,
+          sourceMap: shouldUseSourceMap
+        }),
+        new OptimizeCSSAssetsPlugin({
+          cssProcessor: require('cssnano'),
+          cssProcessorOptions: {
+            parser: safePostCssParser,
+            map: shouldUseSourceMap
+              ? {
+                  // `inline: false` forces the sourcemap to be output into a
+                  // separate file
+                  inline: false,
+                  // `annotation: true` appends the sourceMappingURL to the end of
+                  // the css file, helping the browser find the sourcemap
+                  annotation: true
+                }
+              : false
+          },
+          canPrint: false // 不显示通知
+        })
+      ],
+      // Automatically split vendor and commons
+      // https://twitter.com/wSokra/status/969633336732905474
+      // https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
+      splitChunks: {
+        chunks: 'all',
+        name: false
+      },
+      // Keep the runtime chunk seperated to enable long term caching
+      // https://twitter.com/wSokra/status/969679223278505985
+      runtimeChunk: true
     },
     plugins: [
-      new InterpolateHtmlPlugin(config.build.env.raw),
+      new InterpolateHtmlPlugin(HtmlWebpackPlugin, config.build.env.raw),
       new webpack.DefinePlugin(config.build.env.stringified),
-      // 使作作用域提升(scope hoisting)
-      // https://medium.com/webpack/brief-introduction-to-scope-hoisting-in-webpack-8435084c171f
-      new webpack.optimize.ModuleConcatenationPlugin(),
       config.debug && new marauderDebug(),
-      // Minify the code.
-      new UglifyJsPlugin({
-        uglifyOptions: {
-          // 强制使用 es5 压缩输出，避免 es6 优化导致兼容性问题
-          ecma: 5,
-          compress: {
-            warnings: false,
-            // Disabled because of an issue with Uglify breaking seemingly valid code:
-            // https://github.com/facebook/create-react-app/issues/2376
-            // Pending further investigation:
-            // https://github.com/mishoo/UglifyJS2/issues/2011
-            comparisons: false,
-            drop_console: compress.drop_console
-          },
-          mangle: {
-            safari10: true
-          },
-          output: {
-            comments: false,
-            // Turned on because emoji and regex is not minified properly using default
-            // https://github.com/facebook/create-react-app/issues/2488
-            ascii_only: true
-          }
-        },
-        // Use multi-process parallel running to improve the build speed
-        // Default number of concurrent runs: os.cpus().length - 1
-        parallel: true,
-        // Enable file caching
-        cache: true,
-        sourceMap: shouldUseSourceMap
-      }),
-      // new webpack.ProvidePlugin({
-      //   $: 'zepto',
-      //   Zepto: 'zepto',
-      //   'window.Zepto': 'zepto',
-      //   'window.$': 'zepto'
-      // }),
-
-      new ExtractTextPlugin({
+      new MiniCssExtractPlugin({
         filename: maraConf.hash
           ? 'static/css/[name].[contenthash:8].css'
-          : 'static/css/[name].min.css'
+          : 'static/css/[name].min.css',
+        chunkFilename: maraConf.hash
+          ? 'static/css/[name].[contenthash:8].chunk.css'
+          : 'static/css/[name].chunk.min.css'
       }),
       // hybrid 共享包
       // 创建 maraContext
       new HybridCommonPlugin(),
-      new OptimizeCssAssetsPlugin({
-        // cssnano 中自带 autoprefixer，在压缩时会根据配置去除无用前缀
-        // 为保持统一，将其禁用，在 4.0 版本后将会默认禁用
-        // safe: true 禁止计算 z-index
-        cssProcessor: require('cssnano'),
-        cssProcessorOptions: Object.assign(
-          // { autoprefixer: false, safe: true },
-          shouldUseSourceMap
-            ? {
-                map: { inline: false }
-              }
-            : {}
-        ),
-        canPrint: false // 不显示通知
-      }),
-      // Moment.js is an extremely popular library that bundles large locale files
-      // by default due to how Webpack interprets its code. This is a practical
-      // solution that requires the user to opt into importing specific locales.
-      // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
-      // You can remove this if you don't use Moment.js:
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
       hasHtml &&
         new HtmlWebpackPlugin({
           // 生成出来的html文件名
@@ -154,34 +170,10 @@ module.exports = function({ entry, cmd }) {
           keepClosingSlash: true
         }),
 
-      //预加载
-      maraConf.prerender &&
-        new PrerenderSPAPlugin({
-          // 生成文件的路径，也可以与webpakc打包的一致。
-          // 这个目录只能有一级，如果目录层次大于一级，在生成的时候不会有任何错误提示，在预渲染的时候只会卡着不动。
-          entry: `${entry}`,
-
-          staticDir: path.join(rootPath(`dist`), `${entry}`),
-
-          outputDir: path.join(rootPath(`dist`), `${entry}`),
-
-          // 对应自己的路由文件，比如index有参数，就需要写成 /index/param1。
-          routes: ['/'],
-
-          // 这个很重要，如果没有配置这段，也不会进行预编译
-          renderer: new Renderer({
-            inject: {
-              foo: 'bar'
-            },
-            headless: false,
-            // 在 main.js 中 document.dispatchEvent(new Event('render-event'))，两者的事件名称要对应上。
-            renderAfterDocumentEvent: 'render-event'
-          })
-        }),
       // 【争议】：lib 模式禁用依赖分析?
       // 确保在 copy Files 之前
       maraConf.hybrid && new SinaHybridPlugin({ entry }),
-      new moduleDependency(),
+      // new moduleDependency(),
       new DuplicatePackageCheckerPlugin({
         // show details
         verbose: true,
@@ -202,6 +194,35 @@ module.exports = function({ entry, cmd }) {
   if (maraConf.ensurels) {
     const ensure_ls = require('sinamfe-marauder-ensure-ls')
     webpackConfig.plugins.push(new ensure_ls())
+  }
+
+  // 预加载
+  if (maraConf.prerender) {
+    const PrerenderSPAPlugin = require('prerender-html-plugin')
+    const Renderer = PrerenderSPAPlugin.PuppeteerRenderer
+
+    new PrerenderSPAPlugin({
+      // 生成文件的路径，也可以与webpakc打包的一致。
+      // 这个目录只能有一级，如果目录层次大于一级，在生成的时候不会有任何错误提示，在预渲染的时候只会卡着不动。
+      entry: `${entry}`,
+
+      staticDir: path.join(rootPath(`dist`), `${entry}`),
+
+      outputDir: path.join(rootPath(`dist`), `${entry}`),
+
+      // 对应自己的路由文件，比如index有参数，就需要写成 /index/param1。
+      routes: ['/'],
+
+      // 这个很重要，如果没有配置这段，也不会进行预编译
+      renderer: new Renderer({
+        inject: {
+          foo: 'bar'
+        },
+        headless: false,
+        // 在 main.js 中 document.dispatchEvent(new Event('render-event'))，两者的事件名称要对应上。
+        renderAfterDocumentEvent: 'render-event'
+      })
+    })
   }
 
   const vendorConf = maraConf.vendor || []

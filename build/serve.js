@@ -18,14 +18,11 @@ const isInteractive = process.stdout.isTTY
 
 const webpack = require('webpack')
 const getWebpackConfig = require('../webpack/webpack.dev.conf')
+const createDevServerConfig = require('../webpack/webpackDevServer.config')
 const prehandleConfig = require('../libs/prehandleConfig')
 const progressHandler = require('../libs/buildProgress')
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
 const PROTOCOL = maraConf.https === true ? 'https' : 'http'
-
-// Define HTTP proxies to your custom API backend
-// https://github.com/chimurai/http-proxy-middleware
-const proxyTable = config.dev.proxyTable
 
 async function getCompiler(webpackConf, { entry, port } = {}) {
   const openBrowser = require('react-dev-utils/openBrowser')
@@ -69,21 +66,19 @@ async function getCompiler(webpackConf, { entry, port } = {}) {
 function addHotDevClient(entry) {
   // client 在业务模块之前引入，以捕获初始化错误
   ;[].unshift.apply(entry, [
+    // 使用 CRA 提供的 client，展示更友好的错误信息
     require.resolve('react-dev-utils/webpackHotDevClient')
+    // 以下为官方 dev server client
     // require.resolve('webpack-dev-server/client') + '?/',
     // require.resolve('webpack/hot/dev-server')
   ])
 }
 
-async function createDevServer(webpackConf, opt) {
+async function createDevServer(webpackConf, opts) {
   const DevServer = require('webpack-dev-server')
-  const serverConf = webpackConf.devServer
-  const compiler = await getCompiler(webpackConf, opt)
-
-  serverConf.https = PROTOCOL === 'https'
-  // 安全原因，一般禁用 HostCheck
-  // https://github.com/webpack/webpack-dev-server/issues/887
-  serverConf.disableHostCheck = !proxyTable
+  const proxyConfig = maraConf.proxy
+  const serverConf = createDevServerConfig(opts.entry, proxyConfig, PROTOCOL)
+  const compiler = await getCompiler(webpackConf, opts)
 
   return new DevServer(compiler, serverConf)
 }

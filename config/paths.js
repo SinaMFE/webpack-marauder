@@ -14,6 +14,7 @@ module.exports = {
   dotenv: rootPath('.env'),
   entries: 'src/view/*/index.@(ts|js)',
   libEntry: 'src/index.@(ts|js)',
+  setupProxy: rootPath('src/setupProxy.js'),
   src: rootPath('src'),
   page: rootPath('src/view'),
   public: rootPath('public'),
