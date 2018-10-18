@@ -5,11 +5,27 @@ const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
 const { getEntries } = require('../libs/utils')
 const paths = config.paths
+const tsImportPluginFactory = require('ts-import-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
 
+let tsImportLibs= [[
+  {
+    libraryName: '@mfelibs/super-common-component',
+    libraryDirectory: './src/libs',
+    style: false
+  }
+]];
+if(maraConf.tsImportLibs){
+  if(Array.isArray(maraConf.tsImportLibs)){
+    tsImportLibs.concat(maraConf.tsImportLibs);
+  }
+  else{
+    throw Error("marauder.config.js中的tsImportLibs必须是Array类型！")
+  }
+}
 module.exports = function(entry) {
   const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
   const { styleLoaders } = require('./loaders/style-loader')
@@ -123,7 +139,16 @@ module.exports = function(entry) {
               loader: 'ts-loader',
               include: babelExternalMoudles,
               options: {
-                appendTsSuffixTo: [/\.vue$/]
+                appendTsSuffixTo: [/\.vue$/],
+                transpileOnly: true,
+                getCustomTransformers: () => ({
+                  before: [ tsImportPluginFactory(
+                    tsImportLibs
+                  ) ]
+                }),
+                compilerOptions: {
+                  module: 'ESNext'
+                }
               }
             },
             {
