@@ -11,16 +11,10 @@ const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
 
-let tsImportLibs= [[
-  {
-    libraryName: '@mfelibs/super-common-component',
-    libraryDirectory: './src/libs',
-    style: false
-  }
-]];
+let tsImportLibs= [];
 if(maraConf.tsImportLibs){
   if(Array.isArray(maraConf.tsImportLibs)){
-    tsImportLibs.concat(maraConf.tsImportLibs);
+    tsImportLibs=tsImportLibs.concat(maraConf.tsImportLibs);
   }
   else{
     throw Error("marauder.config.js中的tsImportLibs必须是Array类型！")
