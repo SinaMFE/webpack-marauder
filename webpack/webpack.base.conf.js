@@ -16,6 +16,7 @@ module.exports = function(entry) {
   const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
   const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
   const { styleLoaders } = require('./loaders/style-loader')
+  const VueLoaderPlugin = require('vue-loader/lib/plugin')
   const {
     babelLoader,
     babelExternalMoudles
@@ -33,22 +34,13 @@ module.exports = function(entry) {
       // webpack 将会处理平台差异
       // 如果使用 path.join 在 Windows 上会出现路径异常
       filename: path.posix.join(ASSETS, 'js/[name].js'),
-      chunkFilename: path.posix.join(ASSETS, 'js/[name].async.js')
+      chunkFilename: path.posix.join(ASSETS, 'js/[name].chunk.js')
     },
     resolve: {
       // disable symlinks
       symlinks: false,
       // js first
-      extensions: [
-        '.mjs',
-        '.js',
-        '.ts',
-        '.jsx',
-        '.tsx',
-        '.sn',
-        '.vue',
-        '.json'
-      ],
+      extensions: ['.js', '.ts', '.jsx', '.tsx', '.sn', '.vue', '.json'],
       // https://doc.webpack-china.org/configuration/resolve/#resolve-mainfields
       // source 为自定义拓展属性，表示源码入口
       mainFields: ['source', 'browser', 'module', 'main'],
@@ -171,6 +163,7 @@ module.exports = function(entry) {
       // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
       // You can remove this if you don't use Moment.js:
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+      // new VueLoaderPlugin()
     ],
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.

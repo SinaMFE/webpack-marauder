@@ -94,19 +94,19 @@ function getEntries(globPath, preDep = []) {
   }, {})
 }
 
-function getChunks(globPath, preDep = []) {
+function getEntryPoints(globPath, preDep = []) {
   const files = glob.sync(rootPath(globPath))
   const getTrunkName = filepath => {
     const basename = path.posix.basename(filepath, '.js')
     return basename.replace(/^index\./, '') + '.servant'
   }
 
-  return files.reduce((trunks, filepath) => {
+  return files.reduce((chunks, filepath) => {
     const name = getTrunkName(filepath)
     // preDep 支持数组或字符串。所以这里使用 concat 方法
-    trunks[name] = [].concat(preDep, filepath)
+    chunks[name] = [].concat(preDep, filepath)
 
-    return trunks
+    return chunks
   }, {})
 }
 
@@ -286,7 +286,7 @@ module.exports = {
   localIp,
   getFreePort,
   getEntries,
-  getChunks,
+  getEntryPoints,
   rootPath,
   parseDate,
   pubDate,

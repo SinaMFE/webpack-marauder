@@ -18,7 +18,7 @@ const isInteractive = process.stdout.isTTY
 
 const webpack = require('webpack')
 const getWebpackConfig = require('../webpack/webpack.dev.conf')
-const createDevServerConfig = require('../webpack/webpackDevServer.config')
+const createDevServerConfig = require('../webpack/webpackDevServer.conf')
 const prehandleConfig = require('../libs/prehandleConfig')
 const progressHandler = require('../libs/buildProgress')
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
@@ -51,7 +51,7 @@ async function getCompiler(webpackConf, { entry, port } = {}) {
     if (messages.errors.length) return
 
     if (isFirstCompile) {
-      console.log(`> Listening at ${hostUri}\n`)
+      console.log(`> Listening at ${hostUri}/\n`)
       openBrowser(getServerURL(hostUri, entry))
       isFirstCompile = false
     }

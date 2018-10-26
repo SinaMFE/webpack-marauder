@@ -2,7 +2,6 @@
 
 const { cssLoaders, postcssPlugin } = require('./style-loader')
 const config = require('../../config')
-const { babelLoader } = require('./babel-loader')
 const maraConf = require(config.paths.marauder)
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -13,14 +12,13 @@ const options = {
       sourceMap: isProd && maraConf.sourceMap,
       extract: isProd,
       vue: true
-    }),
-    {
-      js: babelLoader(isProd)
-    }
+    })
   ),
   postcss: postcssPlugin,
-  preserveWhitespace: false,
-  transformToRequire: {
+  compilerOptions: {
+    preserveWhitespace: false
+  },
+  transformAssetUrls: {
     video: ['src', 'poster'],
     source: 'src',
     img: 'src',

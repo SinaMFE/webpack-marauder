@@ -9,26 +9,26 @@ const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
-const { getChunks } = require('../libs/utils')
+const { getEntryPoints } = require('../libs/utils')
 const config = require('../config')
 
-function parseChunks(entry) {
-  const chunkObj = getChunks(`src/view/${entry}/index.*.js`)
-  const chunks = [].concat(...Object.values(chunkObj))
+function parseEntryPoint(page) {
+  const entryPoints = getEntryPoints(`src/view/${page}/index.*.js`)
+  const files = [].concat(...Object.values(entryPoints))
 
-  return { [entry]: chunks }
+  return { [page]: files }
 }
 
 module.exports = function({ entry }) {
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
-  const chunksEntry = parseChunks(entry)
+  const entryPoint = parseEntryPoint(entry)
   const { transformer, formatter } = require('../libs/resolveLoaderError')
 
   // https://github.com/survivejs/webpack-merge
   // 当 entry 为数组时，webpack-merge 默认执行 append
   const webpackConfig = merge(baseWebpackConfig, {
     devtool: 'cheap-module-source-map',
-    entry: chunksEntry,
+    entry: entryPoint,
     output: {
       publicPath: config.dev.assetsPublicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)

@@ -44,24 +44,20 @@ function babelExternalMoudles(esm) {
 const plugins = []
 maraConf.babelPlugins && plugins.join(maraConf.babelPlugins)
 
-plugins.push('transform-decorators-legacy')
+plugins.push([
+  '@babel/plugin-proposal-decorators',
+  { decoratorsBeforeExport: true }
+])
 // 加入了 inline-json，用于去除编译时的引入json（非全量引入）。
 // plugins.push(['inline-json', { matchPattern: '.' }])
 
 module.exports.babelLoader = isProd => [
   {
-    test: /\.(js|mjs|jsx)$/,
+    test: /\.(js|jsx)$/,
     include: [paths.src, ...nodeModulesRegExp(config.esm)],
-    // 排除框架，加速构建
-    exclude: [
-      /@babel(?:\/|\\{1,2})runtime/,
-      'node_modules/vue',
-      'node_modules/react',
-      'node_modules/react-dom'
-    ],
     loader: 'babel-loader',
     options: {
-      customize: 'babel-preset-react-app/webpack-overrides',
+      customize: require.resolve('babel-preset-react-app/webpack-overrides'),
       babelrc: false,
       configFile: false,
       presets: ['babel-preset-react-app'],
@@ -82,7 +78,7 @@ module.exports.babelLoader = isProd => [
     }
   },
   {
-    test: /\.(js|mjs)$/,
+    test: /\.js$/,
     // 排除框架，加速构建
     exclude: [
       /@babel(?:\/|\\{1,2})runtime/,

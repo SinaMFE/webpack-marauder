@@ -7,8 +7,9 @@ const merge = require('webpack-merge')
 const chalk = require('chalk')
 const CopyWebpackPlugin = require('copy-webpack-plugin-hash')
 const TerserPlugin = require('terser-webpack-plugin')
+const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
-const HtmlWebpackPlugin = require('sina-html-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const safePostCssParser = require('postcss-safe-parser')
 const marauderDebug = require('sinamfe-marauder-debug')
@@ -19,10 +20,11 @@ const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack
 const { SinaHybridPlugin } = require('../libs/hybrid')
 
 const config = require('../config')
-const { banner, rootPath, getChunks, isObject } = require('../libs/utils')
+const { banner, rootPath, getEntryPoints, isObject } = require('../libs/utils')
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
+const useTypeScript = fs.existsSync(config.paths.tsConfig)
 
 /**
  * 生成生产配置
@@ -34,7 +36,7 @@ module.exports = function({ entry, cmd }) {
   const distPageDir = `${config.paths.dist}/${entry}`
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
   const hasHtml = fs.existsSync(`${config.paths.page}/${entry}/index.html`)
-  const chunksEntry = getChunks(`src/view/${entry}/index.*.js`)
+  const entryPoints = getEntryPoints(`src/view/${entry}/index.*.js`)
 
   // https://github.com/survivejs/webpack-merge
   const webpackConfig = merge(baseWebpackConfig, {
@@ -42,7 +44,7 @@ module.exports = function({ entry, cmd }) {
     // 在第一个错误出错时抛出，而不是无视错误
     bail: true,
     devtool: shouldUseSourceMap ? 'source-map' : false,
-    entry: chunksEntry,
+    entry: entryPoints,
     output: {
       path: distPageDir,
       publicPath: config.build.assetsPublicPath,
@@ -50,8 +52,8 @@ module.exports = function({ entry, cmd }) {
         ? 'static/js/[name].[chunkhash:8].min.js'
         : 'static/js/[name].min.js',
       chunkFilename: maraConf.chunkHash
-        ? 'static/js/[name].[chunkhash:8].async.js'
-        : 'static/js/[name].async.js',
+        ? 'static/js/[name].[chunkhash:8].chunk.js'
+        : 'static/js/[name].chunk.js',
       // Point sourcemap entries to original disk location (format as URL on Windows)
       devtoolModuleFilenameTemplate: info =>
         path
@@ -129,10 +131,41 @@ module.exports = function({ entry, cmd }) {
       },
       // Keep the runtime chunk seperated to enable long term caching
       // https://twitter.com/wSokra/status/969679223278505985
-      runtimeChunk: true
+      // set false until https://github.com/webpack/webpack/issues/6598 be resolved
+      runtimeChunk: false
     },
     plugins: [
-      new InterpolateHtmlPlugin(HtmlWebpackPlugin, config.build.env.raw),
+      hasHtml &&
+        new HtmlWebpackPlugin({
+          // 生成出来的html文件名
+          filename: rootPath(`dist/${entry}/index.html`),
+          // 每个html的模版，这里多个页面使用同一个模版
+          template: `${config.paths.page}/${entry}/index.html`,
+          // 自动将引用插入html
+          inject: true,
+          // 模块排序，common > entry > servant
+          chunksSortMode(a, b) {
+            const chunkNames = Object.keys(entryPoints).sort()
+            const order = ['common', entry].concat(chunkNames)
+
+            return order.indexOf(a.names[0]) - order.indexOf(b.names[0])
+          },
+          minify: {
+            collapseWhitespace: true,
+            removeRedundantAttributes: true,
+            useShortDoctype: true,
+            removeEmptyAttributes: true,
+            removeStyleLinkTypeAttributes: true,
+            keepClosingSlash: true,
+            minifyJS: true,
+            minifyCSS: true,
+            minifyURLs: true
+          }
+        }),
+      hasHtml &&
+        new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime~.+[.]js/]),
+      hasHtml &&
+        new InterpolateHtmlPlugin(HtmlWebpackPlugin, config.build.env.raw),
       new webpack.DefinePlugin(config.build.env.stringified),
       config.debug && new marauderDebug(),
       new MiniCssExtractPlugin({
@@ -146,29 +179,6 @@ module.exports = function({ entry, cmd }) {
       // hybrid 共享包
       // 创建 maraContext
       new HybridCommonPlugin(),
-      hasHtml &&
-        new HtmlWebpackPlugin({
-          // 生成出来的html文件名
-          filename: rootPath(`dist/${entry}/index.html`),
-          // 每个html的模版，这里多个页面使用同一个模版
-          template: `${config.paths.page}/${entry}/index.html`,
-          minify: false,
-          // 自动将引用插入html
-          inject: true,
-          // 模块排序，common > entry > servant
-          chunksSortMode(a, b) {
-            const chunkNames = Object.keys(chunksEntry).sort()
-            const order = ['common', entry].concat(chunkNames)
-
-            return order.indexOf(a.names[0]) - order.indexOf(b.names[0])
-          },
-          collapseWhitespace: true,
-          removeRedundantAttributes: true,
-          useShortDoctype: true,
-          removeEmptyAttributes: true,
-          removeStyleLinkTypeAttributes: true,
-          keepClosingSlash: true
-        }),
 
       // 【争议】：lib 模式禁用依赖分析?
       // 确保在 copy Files 之前

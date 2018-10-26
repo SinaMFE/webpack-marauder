@@ -22,6 +22,7 @@ module.exports = {
   // 组件打包输出目录
   lib: rootPath('lib'),
   test: rootPath('test'),
+  tsConfig: rootPath('tsconfig.json'),
   nodeModules: rootPath('node_modules'),
   packageJson: rootPath('package.json'),
   // 配置文件
