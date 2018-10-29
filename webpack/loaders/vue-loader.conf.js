@@ -7,14 +7,6 @@ const isProd = process.env.NODE_ENV === 'production'
 
 const options = {
   preloaders: {},
-  loaders: Object.assign(
-    cssLoaders({
-      sourceMap: isProd && maraConf.sourceMap,
-      extract: isProd,
-      vue: true
-    })
-  ),
-  postcss: postcssPlugin,
   compilerOptions: {
     preserveWhitespace: false
   },

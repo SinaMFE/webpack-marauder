@@ -105,7 +105,6 @@ module.exports = function({ entry, cmd }) {
           sourceMap: shouldUseSourceMap
         }),
         new OptimizeCSSAssetsPlugin({
-          cssProcessor: require('cssnano'),
           cssProcessorOptions: {
             parser: safePostCssParser,
             map: shouldUseSourceMap

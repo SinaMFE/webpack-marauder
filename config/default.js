@@ -53,6 +53,7 @@ module.exports = {
     'not ie < 9'
   ],
   postcss: {
+    stage: 3,
     // 允许 flexbox 2009 以支持多行超出省略
     // https://github.com/jonathantneal/postcss-preset-env/blob/master/lib/plugins-by-specification-id.js
     features: {

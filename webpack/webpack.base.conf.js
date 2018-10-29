@@ -15,7 +15,7 @@ module.exports = function(entry) {
   const PnpWebpackPlugin = require('pnp-webpack-plugin')
   const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
   const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
-  const { styleLoaders } = require('./loaders/style-loader')
+  const getStyleLoaders = require('./loaders/style-loader')
   const VueLoaderPlugin = require('vue-loader/lib/plugin')
   const {
     babelLoader,
@@ -81,75 +81,77 @@ module.exports = function(entry) {
         // 为了兼容  bundle-loader 暂时不启用
         // { parser: { requireEnsure: false } },
         {
-          oneOf: [
-            ...styleLoaders({
-              sourceMap: shouldUseSourceMap,
-              extract: isProd,
-              library: isLib
-            }),
+          test: /\.css$/,
+          oneOf: getStyleLoaders({
+            importLoaders: 1
+          })
+        },
+        {
+          test: /\.less$/,
+          oneOf: getStyleLoaders(
             {
-              test: /\.(bmp|png|jpe?g|gif|svg)(\?.*)?$/,
-              loader: 'url-loader',
-              options: {
-                limit: 10000,
-                name: path.posix.join(ASSETS, 'img/[name].[hash:8].[ext]')
-              }
+              importLoaders: 1
             },
+            'less-loader'
+          )
+        },
+        {
+          test: /\.(scss|sass)$/,
+          oneOf: getStyleLoaders(
             {
-              test: /\.ejs$/,
-              loader: 'marauder-ejs-loader'
+              importLoaders: 1
             },
-            {
-              test: /\.art$/,
-              loader: 'art-template-loader'
-            },
-            {
-              test: /\.(vue|sn)$/,
-              loader: 'vue-loader',
-              options: vueLoaderConfig
-            },
-            // Process JS with Babel.
-            ...babelLoader(isProd),
-            {
-              test: /\.tsx?$/,
-              // require.resolve 将会检查模块是否存在
-              // ts-loader 为可选配置，所以这里不使用 require.resolve
-              loader: 'ts-loader',
-              include: babelExternalMoudles,
-              options: {
-                appendTsSuffixTo: [/\.vue$/]
-              }
-            },
-            {
-              test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-              loader: 'file-loader',
-              options: {
-                name: path.posix.join(ASSETS, 'fonts/[name].[hash:8].[ext]')
-              }
-            },
-            {
-              test: /\.(html)$/,
-              use: {
-                loader: 'html-loader',
-                options: {
-                  attrs: [':src', ':data-src']
-                }
-              }
-            },
-            {
-              // Exclude `js` files to keep "css" loader working as it injects
-              // it's runtime that would otherwise processed through "file" loader.
-              // Also exclude `html` and `json` extensions so they get processed
-              // by webpacks internal loaders.
-              loader: 'file-loader',
-              exclude: [/\.(js|mjs|jsx)$/, /\.html$/, /\.json$/],
-              options: {
-                name: path.posix.join(ASSETS, 'media/[name].[hash:8].[ext]')
-              }
+            'sass-loader'
+          )
+        },
+        {
+          test: /\.(bmp|png|jpe?g|gif|svg)(\?.*)?$/,
+          loader: 'url-loader',
+          options: {
+            limit: 10000,
+            name: path.posix.join(ASSETS, 'img/[name].[hash:8].[ext]')
+          }
+        },
+        {
+          test: /\.ejs$/,
+          loader: 'marauder-ejs-loader'
+        },
+        {
+          test: /\.art$/,
+          loader: 'art-template-loader'
+        },
+        {
+          test: /\.(vue|sn)$/,
+          loader: 'vue-loader',
+          options: vueLoaderConfig
+        },
+        // Process JS with Babel.
+        ...babelLoader(isProd),
+        {
+          test: /\.tsx?$/,
+          // require.resolve 将会检查模块是否存在
+          // ts-loader 为可选配置，所以这里不使用 require.resolve
+          loader: 'ts-loader',
+          include: babelExternalMoudles,
+          options: {
+            appendTsSuffixTo: [/\.vue$/]
+          }
+        },
+        {
+          test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+          loader: 'file-loader',
+          options: {
+            name: path.posix.join(ASSETS, 'fonts/[name].[hash:8].[ext]')
+          }
+        },
+        {
+          test: /\.(html)$/,
+          use: {
+            loader: 'html-loader',
+            options: {
+              attrs: [':src', ':data-src']
             }
-            // ** STOP ** Are you adding a new loader?
-            // Make sure to add the new loader(s) before the "file" loader.
-          ]
+          }
         }
       ]
     },
@@ -162,8 +164,8 @@ module.exports = function(entry) {
       // solution that requires the user to opt into importing specific locales.
       // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
       // You can remove this if you don't use Moment.js:
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
-      // new VueLoaderPlugin()
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+      new VueLoaderPlugin()
     ],
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.
