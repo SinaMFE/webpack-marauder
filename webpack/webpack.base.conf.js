@@ -17,6 +17,7 @@ module.exports = function(entry) {
   const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
   const getStyleLoaders = require('./loaders/style-loader')
   const VueLoaderPlugin = require('vue-loader/lib/plugin')
+  const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
   const {
     babelLoader,
     babelExternalMoudles
@@ -50,10 +51,7 @@ module.exports = function(entry) {
         // 使用特殊符号防止与 npm 包冲突
         // import '~/css/style.css'
         '~': paths.src,
-        vue$: 'vue/dist/vue.esm.js',
-        'babel-runtime': path.dirname(
-          require.resolve('babel-runtime/package.json')
-        )
+        vue$: 'vue/dist/vue.esm.js'
       },
       plugins: [
         // Adds support for installing with Plug'n'Play, leading to faster installs and adding
@@ -90,7 +88,7 @@ module.exports = function(entry) {
           test: /\.less$/,
           oneOf: getStyleLoaders(
             {
-              importLoaders: 1
+              importLoaders: 2
             },
             'less-loader'
           )
@@ -99,7 +97,7 @@ module.exports = function(entry) {
           test: /\.(scss|sass)$/,
           oneOf: getStyleLoaders(
             {
-              importLoaders: 1
+              importLoaders: 2
             },
             'sass-loader'
           )
@@ -121,7 +119,7 @@ module.exports = function(entry) {
           loader: 'art-template-loader'
         },
         {
-          test: /\.(vue|sn)$/,
+          test: /\.vue$/,
           loader: 'vue-loader',
           options: vueLoaderConfig
         },
@@ -165,7 +163,16 @@ module.exports = function(entry) {
       // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
       // You can remove this if you don't use Moment.js:
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-      new VueLoaderPlugin()
+      new VueLoaderPlugin(),
+      new DuplicatePackageCheckerPlugin({
+        // show details
+        verbose: true,
+        showHelp: false,
+        // show warning
+        emitError: isProd,
+        // check major version
+        strict: true
+      })
     ],
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.

@@ -1,14 +1,14 @@
 'use strict'
 
+const fs = require('fs')
 const path = require('path')
 const webpack = require('webpack')
 const merge = require('webpack-merge')
-const HtmlWebpackPlugin = require('sina-html-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
-const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
 const { getEntryPoints } = require('../libs/utils')
 const config = require('../config')
 
@@ -23,36 +23,50 @@ module.exports = function({ entry }) {
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
   const entryPoint = parseEntryPoint(entry)
   const { transformer, formatter } = require('../libs/resolveLoaderError')
+  const hasHtml = fs.existsSync(`${config.paths.page}/${entry}/index.html`)
 
   // https://github.com/survivejs/webpack-merge
   // 当 entry 为数组时，webpack-merge 默认执行 append
   const webpackConfig = merge(baseWebpackConfig, {
+    mode: 'development',
     devtool: 'cheap-module-source-map',
     entry: entryPoint,
     output: {
+      // Add /* filename */ comments to generated require()s in the output.
+      pathinfo: true,
       publicPath: config.dev.assetsPublicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
       devtoolModuleFilenameTemplate: info =>
-        path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
-      // Add /* filename */ comments to generated require()s in the output.
-      pathinfo: true
+        path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')
+    },
+    optimization: {
+      // Automatically split vendor and commons
+      // https://twitter.com/wSokra/status/969633336732905474
+      // https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
+      splitChunks: {
+        chunks: 'all',
+        name: false
+      },
+      // Keep the runtime chunk seperated to enable long term caching
+      // https://twitter.com/wSokra/status/969679223278505985
+      runtimeChunk: false
     },
     plugins: [
-      new webpack.DefinePlugin(config.dev.env.stringified),
+      hasHtml &&
+        new HtmlWebpackPlugin({
+          // 以页面文件夹名作为模板名称
+          filename: `${entry}.html`,
+          // 生成各自的 html 模板
+          template: `${config.paths.page}/${entry}/index.html`,
+          inject: true,
+          // 每个html引用的js模块，也可以在这里加上vendor等公用模块
+          chunks: [entry]
+        }),
       // 替换 html 内的环境变量
       // %PUBLIC% 转换为具体路径
       // 在 dev 环境下为空字符串
-      new InterpolateHtmlPlugin(config.dev.env.raw),
-      new webpack.NamedModulesPlugin(),
-      new DuplicatePackageCheckerPlugin({
-        // show details
-        verbose: true,
-        showHelp: false,
-        // show warning
-        emitError: false,
-        // check major version
-        strict: true
-      }),
+      new InterpolateHtmlPlugin(HtmlWebpackPlugin, config.dev.env.raw),
+      new webpack.DefinePlugin(config.dev.env.stringified),
       // https://github.com/glenjamin/webpack-hot-middleware#installation--usage
       new webpack.HotModuleReplacementPlugin(),
       // 出错时只打印错误，但不重新加载页面
@@ -65,22 +79,7 @@ module.exports = function({ entry }) {
         additionalTransformers: [transformer],
         additionalFormatters: [formatter]
       }),
-      new CaseSensitivePathsPlugin(),
-      // Moment.js is an extremely popular library that bundles large locale files
-      // by default due to how Webpack interprets its code. This is a practical
-      // solution that requires the user to opt into importing specific locales.
-      // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
-      // You can remove this if you don't use Moment.js:
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-      new HtmlWebpackPlugin({
-        // 以页面文件夹名作为模板名称
-        filename: `${entry}.html`,
-        // 生成各自的 html 模板
-        template: `${config.paths.page}/${entry}/index.html`,
-        inject: true,
-        // 每个html引用的js模块，也可以在这里加上vendor等公用模块
-        chunks: [entry]
-      })
+      new CaseSensitivePathsPlugin()
     ],
     // Turn off performance hints during development because we don't do any
     // splitting or minification in interest of speed. These warnings become

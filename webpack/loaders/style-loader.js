@@ -6,10 +6,10 @@ const config = require('../../config')
 const maraConf = require(config.paths.marauder)
 const isProd = process.env.NODE_ENV === 'production'
 const shouldUseRelativeAssetPaths = maraConf.publicPath === './'
-const shouldExtract = maraConf.extract !== false
+const shouldExtract = isProd && maraConf.extract !== false
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
 
-function getPostCSSPlugins(useSourceMap, needInline, preProcessor) {
+function getPostCSSPlugins(useSourceMap, needInlineMinification, preProcessor) {
   const basic = [
     require('postcss-flexbugs-fixes'),
     require('postcss-preset-env')(config.postcss)
@@ -38,7 +38,7 @@ function getPostCSSPlugins(useSourceMap, needInline, preProcessor) {
     cssnanoOptions.map = { inline: false }
   }
 
-  return needInline
+  return needInlineMinification
     ? plugins.concat(require('cssnano')(cssnanoOptions))
     : plugins
 }

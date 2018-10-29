@@ -1,11 +1,11 @@
 'use strict'
 
-const path = require('path')
 const fs = require('fs')
+const path = require('path')
 const webpack = require('webpack')
 const merge = require('webpack-merge')
 const chalk = require('chalk')
-const CopyWebpackPlugin = require('copy-webpack-plugin-hash')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
@@ -16,7 +16,6 @@ const marauderDebug = require('sinamfe-marauder-debug')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
 const { HybridCommonPlugin } = require('../libs/hybrid')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
-const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
 const { SinaHybridPlugin } = require('../libs/hybrid')
 
 const config = require('../config')
@@ -183,15 +182,6 @@ module.exports = function({ entry, cmd }) {
       // 确保在 copy Files 之前
       maraConf.hybrid && new SinaHybridPlugin({ entry }),
       // new moduleDependency(),
-      new DuplicatePackageCheckerPlugin({
-        // show details
-        verbose: true,
-        showHelp: false,
-        // throwt error
-        emitError: true,
-        // check major version
-        strict: true
-      }),
       new webpack.BannerPlugin({
         banner: banner(), // 其值为字符串，将作为注释存在
         entryOnly: true // 如果值为 true，将只在入口 chunks 文件中添加

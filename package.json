@@ -35,7 +35,7 @@
     "browserslist": "^4.2.1",
     "case-sensitive-paths-webpack-plugin": "^2.1.2",
     "chalk": "^2.4.1",
-    "copy-webpack-plugin-hash": "^5.1.4",
+    "copy-webpack-plugin": "^4.5.4",
     "css-loader": "^1.0.0",
     "cssnano": "^4.1.4",
     "dev-ip": "^1.0.1",

@@ -24,9 +24,9 @@ const progressHandler = require('../libs/buildProgress')
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || config.dev.port
 const PROTOCOL = maraConf.https === true ? 'https' : 'http'
 
-async function getCompiler(webpackConf, { entry, port } = {}) {
+async function getCompiler(webpackConf, devServerConf, { entry, port } = {}) {
   const openBrowser = require('react-dev-utils/openBrowser')
-  const hostUri = getServerHostUri(webpackConf.devServer.host, port)
+  const hostUri = getServerHostUri(devServerConf.host, port)
   const compiler = webpack(webpackConf)
   let isFirstCompile = true
 
@@ -78,7 +78,7 @@ async function createDevServer(webpackConf, opts) {
   const DevServer = require('webpack-dev-server')
   const proxyConfig = maraConf.proxy
   const serverConf = createDevServerConfig(opts.entry, proxyConfig, PROTOCOL)
-  const compiler = await getCompiler(webpackConf, opts)
+  const compiler = await getCompiler(webpackConf, serverConf, opts)
 
   return new DevServer(compiler, serverConf)
 }
