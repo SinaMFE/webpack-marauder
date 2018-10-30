@@ -36,8 +36,7 @@ function build({ entryInput, dist }) {
   webpackConfig = prehandleConfig('build', webpackConfig)
   const compiler = webpack(webpackConfig)
 
-  compiler.plugin('compilation', compilation => {
-    // genHybridVer(compilation)
+  compiler.hooks.compilation.tap('genBuildJson', compilation => {
     genBuildJson(compilation)
   })
 

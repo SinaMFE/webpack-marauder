@@ -1,30 +1,41 @@
 'use strict'
 
-const { cssLoaders, postcssPlugin } = require('./style-loader')
-const config = require('../../config')
-const maraConf = require(config.paths.marauder)
+const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier')
+const { rootPath } = require('../../libs/utils')
 const isProd = process.env.NODE_ENV === 'production'
 
-const options = {
-  preloaders: {},
-  compilerOptions: {
-    preserveWhitespace: false
-  },
-  transformAssetUrls: {
-    video: ['src', 'poster'],
-    source: 'src',
-    img: 'src',
-    image: 'xlink:href'
-  }
+const vueLoaderCacheConfig = {
+  cacheDirectory: rootPath('node_modules/.cache/vue-loader'),
+  cacheIdentifier: getCacheIdentifier(isProd ? 'production' : 'development', [
+    'vue-loader',
+    '@vue/component-compiler-utils',
+    'vue-template-compiler'
+  ])
 }
+
+const vueLoaderOptions = Object.assign(
+  {
+    preloaders: {},
+    compilerOptions: {
+      preserveWhitespace: false
+    },
+    transformAssetUrls: {
+      video: ['src', 'poster'],
+      source: 'src',
+      img: 'src',
+      image: 'xlink:href'
+    }
+  },
+  vueLoaderCacheConfig
+)
 
 // 超级页组件化，解析 data-source
 try {
   if (require.resolve('meta-loader')) {
-    options.preloaders = {
+    vueLoaderOptions.preloaders = {
       html: 'meta-loader'
     }
   }
 } catch (e) {}
 
-module.exports = options
+module.exports = { vueLoaderOptions, vueLoaderCacheConfig }

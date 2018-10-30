@@ -13,6 +13,7 @@ const { rootPath } = require('../../libs/utils')
 class SinaHybridPlugin {
   constructor(options) {
     this.options = options
+    this.name = 'sinaHybridPlugin'
     this.version = process.env.npm_package_version
     this.rewriteField = genRewriteFn([
       rootPath('public/manifest.json'),
@@ -32,14 +33,12 @@ class SinaHybridPlugin {
   apply(compiler) {
     // 确保在 emit 前调用
     // zip plugin 会在 emit 时打包
-    compiler.plugin('compilation', compilation => {
+    compiler.hooks.compilation.tap(this.name, compilation => {
       const maraCtx = compiler['maraContext'] || {}
 
       this.genVersionFile(compilation)
       this.updateManifestVersion()
       this.injectDataSource(compilation, maraCtx.dataSource)
-
-      // callback()
     })
   }
 
@@ -56,7 +55,6 @@ class SinaHybridPlugin {
   }
 
   injectDataSource(compilation, dataSource) {
-    var da = { a: 222, b: [{ aaa: 22 }] }
     if (!dataSource) return
 
     this.prependEntryCode(
@@ -72,19 +70,22 @@ class SinaHybridPlugin {
       assets[fileName] = new ConcatSource(code, assets[fileName])
     }
 
-    compilation.plugin('optimize-chunk-assets', (chunks, callback) => {
-      chunks.forEach(chunk => {
-        if (!chunk.isInitial() || !chunk.name) return
+    compilation.hooks.optimizeChunkAssets.tapAsync(
+      this.name,
+      (chunks, callback) => {
+        chunks.forEach(chunk => {
+          if (!chunk.isInitial() || !chunk.name) return
 
-        chunk.files
-          .filter(fileName => fileName.match(/\.js$/))
-          .forEach(fileName => {
-            concatSource(assets, fileName, code)
-          })
-      })
+          chunk.files
+            .filter(fileName => fileName.match(/\.js$/))
+            .forEach(fileName => {
+              concatSource(assets, fileName, code)
+            })
+        })
 
-      callback()
-    })
+        callback()
+      }
+    )
   }
 }
 
@@ -102,18 +103,5 @@ function genRewriteFn(manPath) {
     })
   }
 }
-
-// function rewriteVerField(manPath, version) {
-//   ;[].concat(manPath).forEach(path => {
-//     try {
-//       const manifest = require(path)
-
-//       if (manifest.version === version) return
-
-//       manifest.version = version
-//       fs.writeFileSync(path, JSON.stringify(manifest, null, 2))
-//     } catch (e) {}
-//   })
-// }
 
 module.exports = SinaHybridPlugin

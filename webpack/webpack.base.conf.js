@@ -2,7 +2,10 @@
 
 const path = require('path')
 const config = require('../config')
-const vueLoaderConfig = require('./loaders/vue-loader.conf')
+const {
+  vueLoaderOptions,
+  vueLoaderCacheConfig
+} = require('./loaders/vue-loader.conf')
 const { getEntries } = require('../libs/utils')
 const paths = config.paths
 
@@ -120,8 +123,16 @@ module.exports = function(entry) {
         },
         {
           test: /\.vue$/,
-          loader: 'vue-loader',
-          options: vueLoaderConfig
+          use: [
+            {
+              loader: 'cache-loader',
+              options: vueLoaderCacheConfig
+            },
+            {
+              loader: 'vue-loader',
+              options: vueLoaderOptions
+            }
+          ]
         },
         // Process JS with Babel.
         ...babelLoader(isProd),

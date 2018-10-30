@@ -30,21 +30,22 @@ async function getCompiler(webpackConf, devServerConf, { entry, port } = {}) {
   const compiler = webpack(webpackConf)
   let isFirstCompile = true
 
-  compiler.apply(
-    new webpack.ProgressPlugin((...args) => {
-      if (isFirstCompile) progressHandler.apply(null, args)
-    })
+  new webpack.ProgressPlugin((...args) => {
+    if (isFirstCompile) progressHandler.apply(null, args)
+  }).apply(compiler)
+
+  compiler.hooks.afterEmit.tapAsync(
+    'maraDevServer',
+    (compilation, callback) => {
+      if (isFirstCompile) {
+        // 交互模式下清除 console
+        isInteractive && clearConsole()
+      }
+      callback()
+    }
   )
 
-  compiler.plugin('after-emit', (compilation, callback) => {
-    if (isFirstCompile) {
-      // 交互模式下清除 console
-      isInteractive && clearConsole()
-    }
-    callback()
-  })
-
-  compiler.plugin('done', stats => {
+  compiler.hooks.done.tap('maraDevServer', stats => {
     const messages = stats.toJson({}, true)
 
     // If errors exist, only show errors.
