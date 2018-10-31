@@ -6,10 +6,11 @@ const cwd = process.cwd()
 
 const packageConfig = require(path.resolve(cwd, 'package.json'))
 const distPath = path.resolve(cwd, 'dist')
+const libsPath = path.resolve(cwd, 'lib')
 
 const glob = require('glob')
-const files = glob.sync(distPath + '/**')
-
+const files = glob.sync(libsPath + '/**')
+// const fileslib = glob.sync(libsPath+"/**");
 const http = require('http')
 const chalk = require('chalk')
 const ora = require('ora')
@@ -55,19 +56,14 @@ http
     console.log(chalk.cyan('静态资源上线cnpm-mjs通知成功\n,线上相对路径为：'))
     for (var i = 0; i < files.length; i++) {
       if (
-        path.relative(distPath, files[i]) == null ||
-        path.relative(distPath, files[i]) == ''
+        path.relative(libsPath, files[i]) == null ||
+        path.relative(libsPath, files[i]) == ''
       ) {
         continue
       }
       console.log(
         chalk.cyan(
-          'http://mjs.sinaimg.cn/umd/' +
-            packageConfig.name.replace('@mfelibs/', '') +
-            '/' +
-            packageConfig.version +
-            '/' +
-            path.relative(distPath, files[i])
+          path.join('http://mjs.sinaimg.cn/umd/',packageConfig.name.replace('@mfelibs/', '') ,"/", packageConfig.version,"/", path.relative(libsPath, files[i]))
         )
       )
     }
