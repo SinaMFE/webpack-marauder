@@ -1,6 +1,8 @@
 'use strict'
 
+const fs = require('fs')
 const path = require('path')
+const resolve = require('resolve')
 const config = require('../config')
 const {
   vueLoaderOptions,
@@ -12,6 +14,7 @@ const paths = config.paths
 const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
+const useTypeScript = fs.existsSync(paths.tsConfig)
 
 module.exports = function(entry) {
   const webpack = require('webpack')
@@ -19,6 +22,8 @@ module.exports = function(entry) {
   const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
   const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
   const getStyleLoaders = require('./loaders/style-loader')
+  const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin-alt')
+  const typescriptFormatter = require('react-dev-utils/typescriptFormatter')
   const VueLoaderPlugin = require('vue-loader/lib/plugin')
   const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
   const {
@@ -143,7 +148,8 @@ module.exports = function(entry) {
           loader: 'ts-loader',
           include: babelExternalMoudles,
           options: {
-            appendTsSuffixTo: [/\.vue$/]
+            appendTsSuffixTo: ['\\.vue$'],
+            transpileOnly: true
           }
         },
         {
@@ -183,7 +189,20 @@ module.exports = function(entry) {
         emitError: isProd,
         // check major version
         strict: true
-      })
+      }),
+      // TypeScript type checking
+      useTypeScript &&
+        new ForkTsCheckerWebpackPlugin({
+          typescript: resolve.sync('typescript', {
+            basedir: paths.appNodeModules
+          }),
+          async: false,
+          checkSyntacticErrors: true,
+          tsconfig: paths.tsConfig,
+          watch: paths.src,
+          silent: true,
+          formatter: typescriptFormatter
+        })
     ],
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.

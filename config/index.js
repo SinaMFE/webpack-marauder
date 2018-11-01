@@ -31,6 +31,7 @@ module.exports = {
     amd: pkgName,
     commonjs: pkgName
   },
+  parallel: false,
   assetsDir: 'static',
   // 压缩配置
   compress: {
