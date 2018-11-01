@@ -12,7 +12,6 @@ const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const safePostCssParser = require('postcss-safe-parser')
-const marauderDebug = require('sinamfe-marauder-debug')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
 const { HybridCommonPlugin } = require('../libs/hybrid')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
@@ -36,6 +35,7 @@ module.exports = function({ entry, cmd }) {
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
   const hasHtml = fs.existsSync(`${config.paths.page}/${entry}/index.html`)
   const entryPoints = getEntryPoints(`src/view/${entry}/index.*.js`)
+  const debugLabel = config.debug ? '.debug' : ''
 
   // https://github.com/survivejs/webpack-merge
   const webpackConfig = merge(baseWebpackConfig, {
@@ -48,18 +48,19 @@ module.exports = function({ entry, cmd }) {
       path: distPageDir,
       publicPath: config.build.assetsPublicPath,
       filename: maraConf.hash
-        ? 'static/js/[name].[chunkhash:8].min.js'
-        : 'static/js/[name].min.js',
+        ? `static/js/[name].[chunkhash:8]${debugLabel}.js`
+        : `static/js/[name]${debugLabel || '.min'}.js`,
       chunkFilename: maraConf.chunkHash
-        ? 'static/js/[name].[chunkhash:8].chunk.js'
-        : 'static/js/[name].chunk.js',
-      // Point sourcemap entries to original disk location (format as URL on Windows)
+        ? `static/js/[name].[chunkhash:8].chunk${debugLabel}.js`
+        : `static/js/[name].chunk${debugLabel}.js`,
+      // Point sourcemap entres to original disk location (format as URL on Windows)
       devtoolModuleFilenameTemplate: info =>
         path
           .relative(config.paths.src, info.absoluteResourcePath)
           .replace(/\\/g, '/')
     },
     optimization: {
+      minimize: config.debug !== true,
       minimizer: [
         new TerserPlugin({
           terserOptions: {
@@ -165,14 +166,13 @@ module.exports = function({ entry, cmd }) {
       hasHtml &&
         new InterpolateHtmlPlugin(HtmlWebpackPlugin, config.build.env.raw),
       new webpack.DefinePlugin(config.build.env.stringified),
-      config.debug && new marauderDebug(),
       new MiniCssExtractPlugin({
         filename: maraConf.hash
-          ? 'static/css/[name].[contenthash:8].css'
-          : 'static/css/[name].min.css',
+          ? `static/css/[name].[contenthash:8]${debugLabel}.css`
+          : `static/css/[name]${debugLabel || '.min'}.css`,
         chunkFilename: maraConf.hash
-          ? 'static/css/[name].[contenthash:8].chunk.css'
-          : 'static/css/[name].chunk.min.css'
+          ? `static/css/[name].[contenthash:8].chunk${debugLabel}.css`
+          : `static/css/[name].chunk${debugLabel}.css`
       }),
       // hybrid 共享包
       // 创建 maraContext

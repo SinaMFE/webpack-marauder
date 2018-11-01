@@ -13,7 +13,6 @@ const { rootPath } = require('../../libs/utils')
 class SinaHybridPlugin {
   constructor(options) {
     this.options = options
-    this.name = 'sinaHybridPlugin'
     this.version = process.env.npm_package_version
     this.rewriteField = genRewriteFn([
       rootPath('public/manifest.json'),
@@ -33,7 +32,7 @@ class SinaHybridPlugin {
   apply(compiler) {
     // 确保在 emit 前调用
     // zip plugin 会在 emit 时打包
-    compiler.hooks.compilation.tap(this.name, compilation => {
+    compiler.hooks.compilation.tap(this.constructor.name, compilation => {
       const maraCtx = compiler['maraContext'] || {}
 
       this.genVersionFile(compilation)
