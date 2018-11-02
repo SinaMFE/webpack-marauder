@@ -1,12 +1,11 @@
 'use strict'
 
-const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier')
+const getCacheIdentifier = require('../../libs/getCacheIdentifier')
 const { rootPath } = require('../../libs/utils')
-const isProd = process.env.NODE_ENV === 'production'
 
 const vueLoaderCacheConfig = {
   cacheDirectory: rootPath('node_modules/.cache/vue-loader'),
-  cacheIdentifier: getCacheIdentifier(isProd ? 'production' : 'development', [
+  cacheIdentifier: getCacheIdentifier([
     'vue-loader',
     '@vue/component-compiler-utils',
     'vue-template-compiler'

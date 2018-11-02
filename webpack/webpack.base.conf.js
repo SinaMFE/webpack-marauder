@@ -1,30 +1,28 @@
 'use strict'
 
-const fs = require('fs')
 const path = require('path')
-const resolve = require('resolve')
 const config = require('../config')
 const {
   vueLoaderOptions,
   vueLoaderCacheConfig
 } = require('./loaders/vue-loader.conf')
-const { getEntries } = require('../libs/utils')
+const { getEntries, rootPath } = require('../libs/utils')
 const paths = config.paths
 
 const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
-const useTypeScript = fs.existsSync(paths.tsConfig)
 
 module.exports = function(entry) {
   const webpack = require('webpack')
+  // PnpWebpackPlugin 即插即用，要使用 require.resolve 解析 loader 路径
   const PnpWebpackPlugin = require('pnp-webpack-plugin')
   const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
+  const getCacheIdentifier = require('../libs/getCacheIdentifier')
   const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
   const getStyleLoaders = require('./loaders/style-loader')
-  const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin-alt')
-  const typescriptFormatter = require('react-dev-utils/typescriptFormatter')
   const VueLoaderPlugin = require('vue-loader/lib/plugin')
+  const tsImportPluginFactory = require('ts-import-plugin')
   const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
   const {
     babelLoader,
@@ -33,6 +31,15 @@ module.exports = function(entry) {
   const isLib = entry === '__LIB__'
   const ASSETS = isLib ? '' : config.assetsDir
   const entryGlob = `src/view/${entry}/index.@(ts|js)`
+
+  let tsImportLibs = []
+  if (maraConf.tsImportLibs) {
+    if (Array.isArray(maraConf.tsImportLibs)) {
+      tsImportLibs = maraConf.tsImportLibs
+    } else {
+      throw Error('marauder.config.js 中的 tsImportLibs 必须是 Array 类型！')
+    }
+  }
 
   return {
     // dev, build 环境依赖 base.entry，务必提供
@@ -82,6 +89,7 @@ module.exports = function(entry) {
     },
     module: {
       strictExportPresence: true,
+      noParse: /^(vue|vue-router|vuex|vuex-router-sync)$/,
       rules: [
         // Disable require.ensure as it's not a standard language feature.
         // 为了兼容  bundle-loader 暂时不启用
@@ -112,7 +120,7 @@ module.exports = function(entry) {
         },
         {
           test: /\.(bmp|png|jpe?g|gif|svg)(\?.*)?$/,
-          loader: 'url-loader',
+          loader: require.resolve('url-loader'),
           options: {
             limit: 10000,
             name: path.posix.join(ASSETS, 'img/[name].[hash:8].[ext]')
@@ -120,41 +128,63 @@ module.exports = function(entry) {
         },
         {
           test: /\.ejs$/,
-          loader: 'marauder-ejs-loader'
+          loader: require.resolve('marauder-ejs-loader')
         },
         {
           test: /\.art$/,
-          loader: 'art-template-loader'
+          loader: require.resolve('art-template-loader')
         },
         {
           test: /\.vue$/,
           use: [
             {
-              loader: 'cache-loader',
+              loader: require.resolve('cache-loader'),
               options: vueLoaderCacheConfig
             },
             {
-              loader: 'vue-loader',
+              loader: require.resolve('vue-loader'),
               options: vueLoaderOptions
             }
           ]
         },
+        {
+          oneOf: babelLoader(isProd)
+        },
         // Process JS with Babel.
-        ...babelLoader(isProd),
+        // ...babelLoader(isProd),
         {
           test: /\.tsx?$/,
-          // require.resolve 将会检查模块是否存在
-          // ts-loader 为可选配置，所以这里不使用 require.resolve
-          loader: 'ts-loader',
           include: babelExternalMoudles,
-          options: {
-            appendTsSuffixTo: ['\\.vue$'],
-            transpileOnly: true
-          }
+          use: [
+            {
+              loader: require.resolve('cache-loader'),
+              options: {
+                cacheDirectory: rootPath('node_modules/.cache/ts-loader'),
+                cacheIdentifier: getCacheIdentifier(['ts-loader', 'typescript'])
+              }
+            },
+            {
+              loader: require.resolve('ts-loader'),
+              options: {
+                appendTsSuffixTo: [/\.vue$/],
+                transpileOnly: true,
+                getCustomTransformers: tsImportLibs.length
+                  ? () => ({
+                      before: [tsImportPluginFactory(tsImportLibs)]
+                    })
+                  : undefined,
+                compilerOptions: {
+                  module: 'ESNext'
+                }
+                // https://github.com/TypeStrong/ts-loader#happypackmode-boolean-defaultfalse
+                // happyPackMode: useThreads
+              }
+            }
+          ]
         },
         {
           test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-          loader: 'file-loader',
+          loader: require.resolve('file-loader'),
           options: {
             name: path.posix.join(ASSETS, 'fonts/[name].[hash:8].[ext]')
           }
@@ -162,7 +192,7 @@ module.exports = function(entry) {
         {
           test: /\.(html)$/,
           use: {
-            loader: 'html-loader',
+            loader: require.resolve('html-loader'),
             options: {
               attrs: [':src', ':data-src']
             }
@@ -189,20 +219,7 @@ module.exports = function(entry) {
         emitError: isProd,
         // check major version
         strict: true
-      }),
-      // TypeScript type checking
-      useTypeScript &&
-        new ForkTsCheckerWebpackPlugin({
-          typescript: resolve.sync('typescript', {
-            basedir: paths.appNodeModules
-          }),
-          async: false,
-          checkSyntacticErrors: true,
-          tsconfig: paths.tsConfig,
-          watch: paths.src,
-          silent: true,
-          formatter: typescriptFormatter
-        })
+      })
     ],
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.

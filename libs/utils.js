@@ -1,6 +1,6 @@
 'use strict'
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const glob = require('glob')
 const devIp = require('dev-ip')
@@ -148,15 +148,6 @@ function banner() {
   )
 }
 
-function nodeModulesRegExp(modules = '') {
-  // path.sep 指定平台特定的分隔符
-  // Windows: \   POSIX: /
-  // 参考：http://nodejs.cn/api/path.html#path_path_sep
-  return []
-    .concat(modules)
-    .map(mod => new RegExp(`node_modules\\${path.sep}${mod}?`))
-}
-
 function isNotEmptyArray(target) {
   return Array.isArray(target) && target.length
 }
@@ -185,24 +176,18 @@ function buffer2String(data) {
   return data.toString().replace(/[\n\r]/g, '')
 }
 
-function write(dest, code) {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(dest, code, err => {
-      if (err) return reject(err)
-      resolve()
-    })
-  })
-}
-
 function assetsPath(_path) {
   return path.posix.join('static', _path)
+}
+
+function readJson(file) {
+  return fs.readJsonSync(file, { throws: false })
 }
 
 module.exports = {
   assetsPath,
   isObject,
   execAsync,
-  write,
   getPageList,
   localIp,
   getFreePort,
@@ -213,8 +198,8 @@ module.exports = {
   pubDate,
   banner,
   isNotEmptyArray,
-  nodeModulesRegExp,
   ensureSlash,
   camelName,
-  buffer2String
+  buffer2String,
+  readJson
 }

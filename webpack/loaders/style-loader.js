@@ -81,7 +81,7 @@ function getStyleLoaders(cssOptions = {}, preProcessor) {
           )
         }
       : {
-          loader: 'vue-style-loader',
+          loader: require.resolve('vue-style-loader'),
           options: Object.assign(
             {
               sourceMap: shouldUseSourceMap
@@ -90,7 +90,7 @@ function getStyleLoaders(cssOptions = {}, preProcessor) {
           )
         },
     {
-      loader: 'css-loader',
+      loader: require.resolve('css-loader'),
       options: Object.assign(
         {
           sourceMap: shouldUseSourceMap
@@ -102,7 +102,7 @@ function getStyleLoaders(cssOptions = {}, preProcessor) {
       // Options for PostCSS as we reference these options twice
       // Adds vendor prefixing based on your specified browser support in
       // package.json
-      loader: 'postcss-loader',
+      loader: require.resolve('postcss-loader'),
       options: {
         // Necessary for external CSS imports to work
         // https://github.com/facebook/create-react-app/issues/2677

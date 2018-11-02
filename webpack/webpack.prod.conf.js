@@ -13,7 +13,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const safePostCssParser = require('postcss-safe-parser')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
-const { HybridCommonPlugin } = require('../libs/hybrid')
+// const { HybridCommonPlugin } = require('../libs/hybrid')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const { SinaHybridPlugin } = require('../libs/hybrid')
 
@@ -50,9 +50,7 @@ module.exports = function({ entry, cmd }) {
       filename: maraConf.hash
         ? `static/js/[name].[chunkhash:8]${debugLabel}.js`
         : `static/js/[name]${debugLabel || '.min'}.js`,
-      chunkFilename: maraConf.chunkHash
-        ? `static/js/[name].[chunkhash:8].chunk${debugLabel}.js`
-        : `static/js/[name].chunk${debugLabel}.js`,
+      chunkFilename: `static/js/[name].[chunkhash:8].chunk${debugLabel}.js`,
       // Point sourcemap entres to original disk location (format as URL on Windows)
       devtoolModuleFilenameTemplate: info =>
         path
@@ -170,13 +168,11 @@ module.exports = function({ entry, cmd }) {
         filename: maraConf.hash
           ? `static/css/[name].[contenthash:8]${debugLabel}.css`
           : `static/css/[name]${debugLabel || '.min'}.css`,
-        chunkFilename: maraConf.hash
-          ? `static/css/[name].[contenthash:8].chunk${debugLabel}.css`
-          : `static/css/[name].chunk${debugLabel}.css`
+        chunkFilename: `static/css/[name].[contenthash:8].chunk${debugLabel}.css`
       }),
       // hybrid 共享包
       // 创建 maraContext
-      new HybridCommonPlugin(),
+      // new HybridCommonPlugin(),
 
       // 【争议】：lib 模式禁用依赖分析?
       // 确保在 copy Files 之前

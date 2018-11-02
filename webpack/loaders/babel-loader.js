@@ -4,7 +4,7 @@ const path = require('path')
 const config = require('../../config')
 const paths = config.paths
 const maraConf = require(paths.marauder)
-const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier')
+const getCacheIdentifier = require('../../libs/getCacheIdentifier')
 const inlineJson = require.resolve('../../libs/babelInlineJson')
 
 const externalMoudles = [paths.src, paths.test].concat(
@@ -45,7 +45,7 @@ const plugins = []
 maraConf.babelPlugins && plugins.join(maraConf.babelPlugins)
 
 plugins.push([
-  '@babel/plugin-proposal-decorators',
+  require.resolve('@babel/plugin-proposal-decorators'),
   { decoratorsBeforeExport: true }
 ])
 // 加入了 inline-json，用于去除编译时的引入json（非全量引入）。
@@ -55,18 +55,18 @@ module.exports.babelLoader = isProd => [
   {
     test: /\.(js|jsx)$/,
     include: [paths.src, ...nodeModulesRegExp(config.esm)],
-    loader: 'babel-loader',
+    loader: require.resolve('babel-loader'),
     options: {
       customize: require.resolve('babel-preset-react-app/webpack-overrides'),
       babelrc: false,
       configFile: false,
-      presets: ['babel-preset-react-app'],
+      presets: [require.resolve('babel-preset-react-app')],
       // Make sure we have a unique cache identifier, erring on the
       // side of caution.
-      cacheIdentifier: getCacheIdentifier(
-        isProd ? 'production' : 'development',
-        ['babel-preset-react-app', 'react-dev-utils', 'webpack-marauder']
-      ),
+      cacheIdentifier: getCacheIdentifier([
+        'babel-preset-react-app',
+        'react-dev-utils'
+      ]),
       plugins: plugins,
       // `babel-loader` 特性
       // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
@@ -84,7 +84,7 @@ module.exports.babelLoader = isProd => [
       /@babel(?:\/|\\{1,2})runtime/,
       ...nodeModulesRegExp(['vue', 'react', 'react-dom'])
     ],
-    loader: 'babel-loader',
+    loader: require.resolve('babel-loader'),
     options: {
       babelrc: false,
       configFile: false,
@@ -96,10 +96,10 @@ module.exports.babelLoader = isProd => [
       ],
       // Make sure we have a unique cache identifier, erring on the
       // side of caution.
-      cacheIdentifier: getCacheIdentifier(
-        isProd ? 'production' : 'development',
-        ['babel-preset-react-app', 'react-dev-utils', 'webpack-marauder']
-      ),
+      cacheIdentifier: getCacheIdentifier([
+        'babel-preset-react-app',
+        'react-dev-utils'
+      ]),
       // `babel-loader` 特性
       // 在 ./node_modules/.cache/babel-loader/ 中缓存执行结果
       // 提升性能
