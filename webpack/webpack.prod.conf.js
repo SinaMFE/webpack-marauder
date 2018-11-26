@@ -10,6 +10,7 @@ const TerserPlugin = require('terser-webpack-plugin')
 const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlUmdPlugin = require('../libs/hybrid/HtmlUmdPlugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const safePostCssParser = require('postcss-safe-parser')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
@@ -163,6 +164,7 @@ module.exports = function({ entry, cmd }) {
         new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime~.+[.]js/]),
       hasHtml &&
         new InterpolateHtmlPlugin(HtmlWebpackPlugin, config.build.env.raw),
+      hasHtml && new HtmlUmdPlugin(),
       new webpack.DefinePlugin(config.build.env.stringified),
       new MiniCssExtractPlugin({
         filename: maraConf.hash

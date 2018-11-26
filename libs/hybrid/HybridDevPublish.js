@@ -6,12 +6,11 @@ const Vinyl = require('vinyl')
 const chalk = require('chalk')
 const axios = require('axios')
 const config = require('../../config')
-const { getFile, uploadVinylFile } = require('../ftp')
-const { rootPath, execAsync, buffer2String } = require('../utils')
+const { uploadVinylFile } = require('../ftp')
+const { rootPath, execAsync } = require('../utils')
 const maraConf = require(config.paths.marauder)
 const CONF_DIR = '/wap_front/hybrid/config/'
 const CONF_NAME = getHbConfName(maraConf)
-const CONF_PATH = `${CONF_DIR}/${CONF_NAME}`
 const CONF_URL = `http://wap_front.dev.sina.cn/hybrid/config/${CONF_NAME}`
 
 const publishStep = [

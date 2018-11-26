@@ -24,7 +24,7 @@ module.exports = class HybridCommonPlugin {
   apply(compiler) {
     if (!this.assets) return
 
-    compiler.plugin('compilation', (compilation, data) => {
+    compiler.hooks.compilation(this.constructor.name, (compilation, data) => {
       data.normalModuleFactory.plugin('parser', (parser, options) => {
         this.resolveImport(parser)
         this.resolveRequire(parser)
@@ -36,8 +36,8 @@ module.exports = class HybridCommonPlugin {
   }
 
   injectCommonAssets2Html(compilation) {
-    compilation.plugin(
-      'html-webpack-plugin-before-html-generation',
+    compilation.hooks.htmlWebpackPluginBeforeHtmlGeneration(
+      this.constructor.name,
       (htmlData, callback) => {
         // assets props [ 'publicPath', 'chunks', 'js', 'css', 'manifest' ]
         const assets = htmlData.assets
