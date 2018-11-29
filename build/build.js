@@ -20,7 +20,7 @@ const paths = config.paths
 const getWebpackConfig = require('../webpack/webpack.prod.conf')
 const maraConf = require(paths.marauder)
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const { hybridDevPublish } = require('../libs/hybrid')
+const { hybridDevPublish, hybridTestPublish } = require('../libs/hybrid')
 const printBuildError = require('../libs/printBuildError')
 const buildReporter = require('../libs/buildReporter')
 const prehandleConfig = require('../libs/prehandleConfig')
@@ -124,10 +124,12 @@ function success({ entryInput, stats, publicPath, outputPath }) {
   return entryInput
 }
 
-async function hybrid({ entry, ftpBranch, remotePath }) {
-  if (!maraConf.hybrid || !remotePath) return
-
-  await hybridDevPublish(entry, remotePath)
+async function deploy({ entry, ftpBranch, entryArgs, remotePath }) {
+  if (maraConf.hybrid && remotePath) {
+    await hybridDevPublish(entry, remotePath)
+  } else if (entryArgs.test !== null) {
+    await hybridTestPublish(entry, entryArgs.test)
+  }
 }
 
 function error(err) {
@@ -148,16 +150,18 @@ function genBuildJson(compilation) {
   }
 }
 
-function ftp({ entry, ftpBranch }) {
+function ftp({ entry, entryArgs, ftpBranch }) {
   if (ftpBranch === null)
     return {
       entry,
+      entryArgs,
       ftpBranch
     }
 
   return uploadDir(entry, ftpBranch).then(remotePath => ({
     entry,
     ftpBranch,
+    entryArgs,
     remotePath
   }))
 }
@@ -183,7 +187,7 @@ module.exports = args => {
     .then(build)
     .then(success)
     .then(ftp)
-    .then(hybrid)
+    .then(deploy)
     .then(done)
     .catch(error)
 }

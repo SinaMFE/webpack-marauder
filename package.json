@@ -48,7 +48,7 @@
         "eslint-config-sinamfe": "^1.0.3",
         "eslint-friendly-formatter": "^3.0.0",
         "eslint-loader": "^1.9.0",
-        "ts-import-plugin": "^1.5.5",
+        "execa": "^1.0.0",
         "extract-text-webpack-plugin": "^3.0.2",
         "file-loader": "^1.1.6",
         "filesize": "^3.6.1",
@@ -90,6 +90,7 @@
         "strip-ansi": "^4.0.0",
         "sw-precache-webpack-plugin": "^0.11.4",
         "tinify": "^1.5.0",
+        "ts-import-plugin": "^1.5.5",
         "ts-loader": "^3.3.1",
         "uglifyjs-webpack-plugin": "^1.3.0",
         "url-loader": "^0.6.2",
@@ -115,7 +116,10 @@
         "prettier": "^1.10.2"
     },
     "lint-staged": {
-        "**/*.{js,json}": ["prettier", "git add"]
+        "**/*.{js,json}": [
+            "prettier",
+            "git add"
+        ]
     },
     "config": {
         "commitizen": {

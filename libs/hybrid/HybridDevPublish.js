@@ -5,9 +5,11 @@ const md5 = require('md5')
 const Vinyl = require('vinyl')
 const chalk = require('chalk')
 const axios = require('axios')
+const path = require('path')
+const execa = require('execa')
 const config = require('../../config')
 const { getFile, uploadVinylFile } = require('../ftp')
-const { rootPath, execAsync, buffer2String } = require('../utils')
+const { rootPath, buffer2String } = require('../utils')
 const maraConf = require(config.paths.marauder)
 const CONF_DIR = '/wap_front/hybrid/config/'
 const CONF_NAME = getHbConfName(maraConf)
@@ -29,39 +31,6 @@ function getHbConfName(config) {
   return `${confName}.json`
 }
 
-async function hybridDevPublish(entry, remotePath) {
-  console.log('----------- Hybrid Publish Dev -----------\n')
-  console.log(publishStep[0])
-
-  const hbConf = await getHbConf(CONF_URL)
-  const repoName = await getGitRepoName()
-  const moduleName = `${repoName}/${entry}`
-  const localPkgPath = rootPath(`dist/${entry}/${entry}.php`)
-  const moduleIdx = hbConf.data.modules.findIndex(
-    item => item.name === moduleName
-  )
-  const hbMod = {
-    name: moduleName,
-    version: process.env.npm_package_version,
-    pkg_url: `${remotePath + entry}.php`,
-    hybrid: true,
-    md5: md5(fs.readFileSync(localPkgPath))
-  }
-
-  console.log(publishStep[1])
-  if (moduleIdx > -1) {
-    hbConf.data.modules[moduleIdx] = hbMod
-  } else {
-    hbConf.data.modules.push(hbMod)
-  }
-
-  console.log(publishStep[2])
-  await updateRemoteHbConf(hbConf)
-  console.log(publishStep[3])
-
-  logResult(hbMod)
-}
-
 async function updateRemoteHbConf(hbConf) {
   // 创建虚拟文件
   const confFile = new Vinyl({
@@ -79,16 +48,13 @@ async function updateRemoteHbConf(hbConf) {
 
 async function getGitRepoName() {
   try {
-    const { stdout, stderr } = await execAsync('git remote -v')
+    const { stdout: remoteUrl } = await execa('git', [
+      'config',
+      '--get',
+      'remote.origin.url'
+    ])
 
-    if (stdout && !stderr) {
-      // @FIXME 对 http 协议地址不可用
-      const [fullname, name] = stdout.match(/([\w-]*)\.git/)
-
-      return name.toLowerCase()
-    } else {
-      error(stderr)
-    }
+    return path.basename(remoteUrl, '.git')
   } catch (e) {
     error(e)
   }
@@ -122,4 +88,35 @@ function logResult(hbMod) {
   console.log(`\n${chalk.bgYellow(' CONF ')} ${chalk.yellow(CONF_URL)}\n`)
 }
 
-module.exports = hybridDevPublish
+module.exports = async function(entry, remotePath) {
+  console.log('----------- Hybrid Publish Dev -----------\n')
+  console.log(publishStep[0])
+
+  const hbConf = await getHbConf(CONF_URL)
+  const repoName = await getGitRepoName()
+  const moduleName = `${repoName}/${entry}`
+  const localPkgPath = rootPath(`dist/${entry}/${entry}.php`)
+  const moduleIdx = hbConf.data.modules.findIndex(
+    item => item.name === moduleName
+  )
+  const hbMod = {
+    name: moduleName,
+    version: process.env.npm_package_version,
+    pkg_url: `${remotePath + entry}.php`,
+    hybrid: true,
+    md5: md5(fs.readFileSync(localPkgPath))
+  }
+
+  console.log(publishStep[1])
+  if (moduleIdx > -1) {
+    hbConf.data.modules[moduleIdx] = hbMod
+  } else {
+    hbConf.data.modules.push(hbMod)
+  }
+
+  console.log(publishStep[2])
+  await updateRemoteHbConf(hbConf)
+  console.log(publishStep[3])
+
+  logResult(hbMod)
+}
