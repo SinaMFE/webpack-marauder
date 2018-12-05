@@ -84,7 +84,7 @@ async function getHbConf(confPath) {
 }
 
 function logResult(hbMod) {
-  console.table(hbMod)
+  console.log(hbMod)
   console.log(`\n${chalk.bgYellow(' CONF ')} ${chalk.yellow(CONF_URL)}\n`)
 }
 
