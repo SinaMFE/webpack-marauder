@@ -54,13 +54,15 @@ dotenvFiles.forEach(dotenvFile => {
 
 // hybrid 两端统一用，特别优待 jsbridgeBuildType 装载到 node 环境
 function loadHybridEnv() {
-  const HYBRID_ENV = 'jsbridgeBuildType'
+  const envField = 'jsbridgeBuildType'
 
   // 确保通过命令参数 --app 或 --wap 设置的 env 优先级最高
-  if (process.env[HYBRID_ENV] || !maraConf.globalEnv) return
+  if (process.env[envField] || !maraConf.globalEnv) return
 
-  if (HYBRID_ENV in maraConf.globalEnv) {
-    process.env[HYBRID_ENV] = maraConf.globalEnv[HYBRID_ENV]
+  if (envField in maraConf.globalEnv) {
+    const buildEnv = maraConf.globalEnv[envField]
+
+    process.env[envField] = buildEnv === 'wap' ? 'web' : buildEnv
   }
 }
 

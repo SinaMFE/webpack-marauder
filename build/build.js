@@ -141,6 +141,7 @@ function error(err) {
 function genBuildJson(compilation) {
   const source = JSON.stringify({
     debug: maraConf.debug || process.env.MARA_compileModel == 'dev',
+    // 指定缺省场景(undefined)为 web
     target: process.env.jsbridgeBuildType === 'app' ? 'app' : 'web'
   })
 
