@@ -129,7 +129,10 @@ function pubDate(dt) {
 function banner() {
   return (
     `@version ${process.env.npm_package_version}\n` +
-    `@date ${pubDate(new Date())}`
+    `@date ${pubDate(new Date())}\n` +
+    // 对 bundle 文件添加 @generated 标识
+    // 在 code review 面板忽略相关 diff
+    `@generated`
   )
 }
 

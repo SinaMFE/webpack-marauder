@@ -193,7 +193,7 @@ module.exports = function({ entry, cmd }) {
       }),
       new webpack.BannerPlugin({
         banner: banner(), // 其值为字符串，将作为注释存在
-        entryOnly: true // 如果值为 true，将只在入口 chunks 文件中添加
+        entryOnly: false // 如果值为 true，将只在入口 chunks 文件中添加
       }),
       ...copyPublicFiles(entry, distPageDir)
     ].filter(Boolean)
