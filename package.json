@@ -48,6 +48,7 @@
     "eslint-config-sinamfe": "^1.0.3",
     "eslint-friendly-formatter": "^3.0.0",
     "eslint-loader": "^2.1.1",
+    "execa": "^1.0.0",
     "file-loader": "^2.0.0",
     "filesize": "^3.6.1",
     "fork-ts-checker-webpack-plugin-alt": "^0.4.14",
@@ -112,10 +113,7 @@
     "prettier": "^1.10.2"
   },
   "lint-staged": {
-    "**/*.{js,json}": [
-      "prettier",
-      "git add"
-    ]
+    "**/*.{js,json}": ["prettier", "git add"]
   },
   "config": {
     "commitizen": {

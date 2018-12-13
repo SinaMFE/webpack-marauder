@@ -17,6 +17,7 @@ module.exports = {
     // 移除 console
     drop_console: false
   },
+  ciConfig: {},
   entry: 'src/view/*/index.js',
   // 通知 babel 编译 node_module 里额外的模块
   esm: ['@mfelibs'],

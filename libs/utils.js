@@ -5,7 +5,6 @@ const path = require('path')
 const glob = require('glob')
 const devIp = require('dev-ip')
 const portscanner = require('portscanner')
-const { exec } = require('child_process')
 
 // 【注意】utils.js 为纯工具库，请不要依赖 config/index.js
 
@@ -16,21 +15,6 @@ const appDirectory = fs.realpathSync(process.cwd())
 
 function rootPath(relativePath) {
   return path.resolve(appDirectory, relativePath)
-}
-
-const execAsync = command => {
-  return new Promise((resolve, reject) => {
-    exec(command, (err, stdout, stderr) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      resolve({
-        stdout,
-        stderr
-      })
-    })
-  })
 }
 
 /**
@@ -144,7 +128,10 @@ function pubDate(dt) {
 function banner() {
   return (
     `@version ${process.env.npm_package_version}\n` +
-    `@date ${pubDate(new Date())}`
+    `@date ${pubDate(new Date())}\n` +
+    // 对 bundle 文件添加 @generated 标识
+    // 在 code review 面板忽略相关 diff
+    `@generated`
   )
 }
 
@@ -187,7 +174,6 @@ function readJson(file) {
 module.exports = {
   assetsPath,
   isObject,
-  execAsync,
   getPageList,
   localIp,
   getFreePort,

@@ -44,6 +44,9 @@ function getRemotePath(page, namespace) {
     projName,
     ftpConf.remotePath.version ? projVer : '',
     namespace,
+    // 添加构建类型标识，隔离环境
+    // jsbridgeBuildType: web | app | undefined
+    process.env.jsbridgeBuildType || '',
     page
   )
 }

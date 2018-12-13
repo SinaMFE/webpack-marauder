@@ -5,9 +5,11 @@ const md5 = require('md5')
 const Vinyl = require('vinyl')
 const chalk = require('chalk')
 const axios = require('axios')
+const path = require('path')
+const execa = require('execa')
 const config = require('../../config')
 const { uploadVinylFile } = require('../ftp')
-const { rootPath, execAsync } = require('../utils')
+const { rootPath } = require('../utils')
 const maraConf = require(config.paths.marauder)
 const CONF_DIR = '/wap_front/hybrid/config/'
 const CONF_NAME = getHbConfName(maraConf)
@@ -28,7 +30,64 @@ function getHbConfName(config) {
   return `${confName}.json`
 }
 
-async function hybridDevPublish(entry, remotePath) {
+async function updateRemoteHbConf(hbConf) {
+  // 创建虚拟文件
+  const confFile = new Vinyl({
+    path: rootPath(CONF_NAME),
+    contents: Buffer.from(JSON.stringify(hbConf))
+  })
+
+  try {
+    await uploadVinylFile(confFile, CONF_DIR)
+  } catch (e) {
+    console.log('Hybrid config 上传失败')
+    throw new Error(e)
+  }
+}
+
+async function getGitRepoName() {
+  try {
+    const { stdout: remoteUrl } = await execa('git', [
+      'config',
+      '--get',
+      'remote.origin.url'
+    ])
+
+    return path.basename(remoteUrl, '.git')
+  } catch (e) {
+    error(e)
+  }
+
+  function error(e) {
+    console.log('获取git工程名失败，请检查是否设置远程git仓库')
+    throw new Error(e)
+  }
+}
+
+async function getHbConf(confPath) {
+  try {
+    const hbConf = await axios(confPath)
+    const initConf = {
+      status: 0,
+      reqTime: Date.now(),
+      data: {
+        modules: []
+      }
+    }
+
+    return hbConf.data || initConf
+  } catch (e) {
+    console.log(`请检查网络或联系管理员`)
+    throw new Error(e)
+  }
+}
+
+function logResult(hbMod) {
+  console.log(hbMod)
+  console.log(`\n${chalk.bgYellow(' CONF ')} ${chalk.yellow(CONF_URL)}\n`)
+}
+
+module.exports = async function(entry, remotePath) {
   console.log('----------- Hybrid Publish Dev -----------\n')
   console.log(publishStep[0])
 
@@ -60,65 +119,3 @@ async function hybridDevPublish(entry, remotePath) {
 
   logResult(hbMod)
 }
-
-async function updateRemoteHbConf(hbConf) {
-  // 创建虚拟文件
-  const confFile = new Vinyl({
-    path: rootPath(CONF_NAME),
-    contents: Buffer.from(JSON.stringify(hbConf))
-  })
-
-  try {
-    await uploadVinylFile(confFile, CONF_DIR)
-  } catch (e) {
-    console.log('Hybrid config 上传失败')
-    throw new Error(e)
-  }
-}
-
-async function getGitRepoName() {
-  try {
-    const { stdout, stderr } = await execAsync('git remote -v')
-
-    if (stdout && !stderr) {
-      // @FIXME 对 http 协议地址不可用
-      const [fullname, name] = stdout.match(/([\w-]*)\.git/)
-
-      return name.toLowerCase()
-    } else {
-      error(stderr)
-    }
-  } catch (e) {
-    error(e)
-  }
-
-  function error(e) {
-    console.log('获取git工程名失败，请检查是否设置远程git仓库')
-    throw new Error(e)
-  }
-}
-
-async function getHbConf(confPath) {
-  try {
-    const hbConf = await axios(confPath)
-    const initConf = {
-      status: 0,
-      reqTime: Date.now(),
-      data: {
-        modules: []
-      }
-    }
-
-    return hbConf.data || initConf
-  } catch (e) {
-    console.log(`请检查网络或联系管理员`)
-    throw new Error(e)
-  }
-}
-
-function logResult(hbMod) {
-  console.table(hbMod)
-  console.log(`\n${chalk.bgYellow(' CONF ')} ${chalk.yellow(CONF_URL)}\n`)
-}
-
-module.exports = hybridDevPublish
