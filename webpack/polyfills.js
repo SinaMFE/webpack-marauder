@@ -1,8 +1,6 @@
 'use strict'
 
-if (typeof Promise === 'undefined') {
-  window.Promise = require('promise-polyfill')
-}
+import 'promise-polyfill/src/polyfill'
 
 // Object.assign() is commonly used with React.
 // It will use the native implementation if it's present and isn't buggy.

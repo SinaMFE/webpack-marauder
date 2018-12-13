@@ -29,10 +29,12 @@ const options = {
 }
 
 // 超级页组件化，解析 data-source
-if (require('meta-loader')) {
-  options.preloaders = {
-    html: 'meta-loader'
+try {
+  if (require.resolve('meta-loader')) {
+    options.preloaders = {
+      html: 'meta-loader'
+    }
   }
-}
+} catch (e) {}
 
 module.exports = options

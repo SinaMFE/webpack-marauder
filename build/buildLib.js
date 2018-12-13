@@ -27,7 +27,6 @@ const prehandleConfig = require('../libs/prehandleConfig')
 const Stopwatch = require('../libs/Stopwatch')
 
 const spinner = ora('Biuld library (commonjs + umd)...')
-spinner.start()
 
 const pages = getPageList(config.paths.entries)
 const libs = [
@@ -150,11 +149,32 @@ function error(err) {
   process.exit(1)
 }
 
-module.exports = args => {
+function setup(distDir, libDir) {
+  if (!glob.sync(paths.libEntry).length) {
+    console.log(`😶 ${chalk.red('请按如下结构创建入口文件')}`)
+    console.log(
+      `
+    src
+    ├── ${chalk.green('index.(js|ts)')} ${chalk.cyan('-- lib 入口文件')}
+    └── view ${chalk.cyan('-- 视图文件夹，存放 demo 页面')}
+        └── demo ${chalk.cyan('-- demo 页面，可选')}
+            ├── ${chalk.green('index.html')}
+            └── ${chalk.green('index.(js|ts)')}`,
+      '\n'
+    )
+    process.exit(0)
+  }
+
+  spinner.start()
+
   return clean({
-    distDir: paths.dist,
-    libDir: paths.lib
+    distDir,
+    libDir
   })
+}
+
+module.exports = args => {
+  return setup(paths.dist, paths.lib)
     .then(build)
     .then(success)
     .then(backwards)

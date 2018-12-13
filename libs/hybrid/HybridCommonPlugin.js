@@ -9,7 +9,10 @@ module.exports = class HybridCommonPlugin {
   constructor(options = {}) {
     this.options = options
     this.debug = options.debug
-    this.mod = new Map()
+    this.mod = {
+      style: [],
+      script: []
+    }
 
     try {
       this.assets = require('@mfelibs/hybrid-common/assets')
@@ -21,14 +24,11 @@ module.exports = class HybridCommonPlugin {
   apply(compiler) {
     if (!this.assets) return
 
-    // const maraCtx = compiler['maraContext'] || {}
-
     compiler.plugin('compilation', (compilation, data) => {
       data.normalModuleFactory.plugin('parser', (parser, options) => {
         this.resolveImport(parser)
         this.resolveRequire(parser)
         this.resolveMemberRequire(parser)
-        // this.writeMaraContext(compiler, maraCtx)
       })
 
       this.injectCommonAssets2Html(compilation)
@@ -39,22 +39,29 @@ module.exports = class HybridCommonPlugin {
     compilation.plugin(
       'html-webpack-plugin-before-html-generation',
       (htmlData, callback) => {
+        // assets props [ 'publicPath', 'chunks', 'js', 'css', 'manifest' ]
         const assets = htmlData.assets
+        const scripts = this.getAssetsUrlWithSort('script')
+        const styles = this.getAssetsUrlWithSort('style')
 
-        // @TODO 支持 css, image, font...
-        assets.js = [...this.mod.values(), ...assets.js]
+        // @TODO 支持 image
+        assets.js = [...scripts, ...assets.js]
+        assets.css = [...styles, ...assets.css]
+
+        this.debug && console.log('common assets script', scripts)
+        this.debug && console.log('common assets style', styles)
+
         callback(null, htmlData)
       }
     )
   }
 
-  writeMaraContext(compiler, maraCtx) {
-    maraCtx.common = {
-      style: [],
-      script: [...this.mod.values()]
-    }
-
-    compiler['maraContext'] = maraCtx
+  getAssetsUrlWithSort(type) {
+    return this.mod[type]
+      .sort((a, b) => {
+        return a.sort - b.sort
+      })
+      .map(asset => asset.url)
   }
 
   // e.g. const all = require('@mfelibs/hybrid-common')
@@ -62,7 +69,8 @@ module.exports = class HybridCommonPlugin {
     parser.plugin('evaluate CallExpression', node => {
       if (!this.isMatchedRequireCall(node)) return
 
-      Object.keys(this.assets).forEach(v => this.addMod(v))
+      // 默认引入全部
+      Object.keys(this.assets).forEach(a => this.addMod(a))
 
       this.debug && console.log('CallExpression', this.mod)
     })
@@ -76,7 +84,7 @@ module.exports = class HybridCommonPlugin {
       if (this.assets[node.property.name]) {
         this.addMod(node.property.name)
 
-        this.debug && console.log('MemberExpression', this.mod)
+        this.debug && console.log('MemberExpression', node.property.name)
       }
     })
   }
@@ -87,7 +95,7 @@ module.exports = class HybridCommonPlugin {
       if (node.source.value !== '@mfelibs/hybrid-common') return
 
       this.addMod(exportName)
-      this.debug && console.log('mod', this.mod)
+      this.debug && console.log('Import', exportName)
     })
   }
 
@@ -102,7 +110,11 @@ module.exports = class HybridCommonPlugin {
     )
   }
 
-  addMod(name, url) {
-    this.mod.set(name, this.assets[name])
+  addMod(name) {
+    const { type, url, sort } = this.assets[name]
+
+    if (this.mod[type]) {
+      this.mod[type].push({ url, sort })
+    }
   }
 }

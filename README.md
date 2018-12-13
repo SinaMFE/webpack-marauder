@@ -14,8 +14,8 @@
 
 推荐使用本工具配套的脚手架生成项目，`webpack-marauder` 及相关配置已包含在项目模板中。
 
-* [组件脚手架 - spkg](https://github.com/SinaMFE/generator-spkg)
-* [项目脚手架 - mcli](https://github.com/SinaMFE/generator-mcli)
+- [组件脚手架 - spkg](https://github.com/SinaMFE/generator-spkg)
+- [项目脚手架 - mcli](https://github.com/SinaMFE/generator-mcli)
 
 ### 生成项目结构
 
@@ -76,8 +76,6 @@ npm run build [page_name]
 npm run build [page_name] --ftp [branch]
 ```
 
-**注意：由于 `yarn` 无法获取自定义参数，请使用 `npm run` 运行本命令**
-
 示例：
 
 ```bash
@@ -86,6 +84,16 @@ npm run build index --ftp
 
 #  打包 index 页面，并通过上传至测试地址下的 feed_feature 文件夹中
 npm run build index --ftp feed_feature
+```
+
+#### Test 发布
+
+使用 Test 发布功能，需在 `marauder.config.js` 中注册 gitlab privateToken 信息。
+
+在 `build` 命令基础上，可通过添加 `--test` 参数发布到测试环境。
+
+```bash
+npm run build [page_name] --test [tag_message]
 ```
 
 ### 打包 dll 文件
@@ -113,7 +121,6 @@ npm run dll --ftp
 
 npm-script 中配置
 
-
 ```json
 "build": "marax lib"
 ```
@@ -126,9 +133,9 @@ npm run build
 
 打包后文件将在 `lib` 目录中输出
 
-### 启动微信小程序mpvue开发环境
+### 启动微信小程序 mpvue 开发环境
 
-`webpack-marauder` 除了可以做普通web开发，也支持小程序mpvue的开发环境，详情mpvue的使用方法见：`http://mpvue.com/`
+`webpack-marauder` 除了可以做普通 web 开发，也支持小程序 mpvue 的开发环境，详情 mpvue 的使用方法见：`http://mpvue.com/`
 
 ```json
 "wx-dev": "marax wx-dev"
@@ -138,15 +145,13 @@ npm run build
 npm run wx-dev
 ```
 
-在项目 `src` 中会创建wx目录装载基本的mpvue的初始脚本，然后会在根目录生成`wx-dist`目录，使用微信开发者工具直接调试此目录即可。
+在项目 `src` 中会创建 wx 目录装载基本的 mpvue 的初始脚本，然后会在根目录生成`wx-dist`目录，使用微信开发者工具直接调试此目录即可。
 
-### 微信小程序mpvue打包
+### 微信小程序 mpvue 打包
 
-``json
-"wx-build": "marax wx-build"
-``
+`json "wx-build": "marax wx-build"`
 
-功能同`wx-dev`，会一次性在`wx-dist`下打包好mpvue构建的小程序代码。
+功能同`wx-dev`，会一次性在`wx-dist`下打包好 mpvue 构建的小程序代码。
 
 ## 教程
 

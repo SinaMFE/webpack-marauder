@@ -14,13 +14,13 @@ const path = require('path')
 const ora = require('ora')
 const webpack = require('webpack')
 const getEntry = require('../libs/entry')
-const ftpUpload = require('../libs/ftp')
+const { uploadDir } = require('../libs/ftp')
 const config = require('../config')
 const paths = config.paths
 const getWebpackConfig = require('../webpack/webpack.prod.conf')
 const maraConf = require(paths.marauder)
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const { HybridDevPublish } = require('../libs/hybrid')
+const { hybridDevPublish, hybridTestPublish } = require('../libs/hybrid')
 const printBuildError = require('../libs/printBuildError')
 const buildReporter = require('../libs/buildReporter')
 const prehandleConfig = require('../libs/prehandleConfig')
@@ -124,16 +124,16 @@ function success({ entryInput, stats, publicPath, outputPath }) {
   return entryInput
 }
 
-async function hybrid({ entry, ftpBranch, remotePath }) {
-  if (!maraConf.hybrid || !remotePath) return
-
-  const hyPublish = new HybridDevPublish({ entry, ftpBranch, remotePath })
-
-  return hyPublish.changeHybridConfig()
+async function deploy({ entry, ftpBranch, entryArgs, remotePath }) {
+  if (maraConf.hybrid && remotePath) {
+    await hybridDevPublish(entry, remotePath)
+  } else if (entryArgs.test !== null) {
+    await hybridTestPublish(entry, entryArgs.test)
+  }
 }
 
 function error(err) {
-  console.log(chalk.red('Failed to compile.\n'))
+  console.log(chalk.red('\n🕳   Failed to compile.\n'))
   printBuildError(err)
   process.exit(1)
 }
@@ -141,6 +141,7 @@ function error(err) {
 function genBuildJson(compilation) {
   const source = JSON.stringify({
     debug: maraConf.debug || process.env.MARA_compileModel == 'dev',
+    // 指定缺省场景(undefined)为 web
     target: process.env.jsbridgeBuildType === 'app' ? 'app' : 'web'
   })
 
@@ -150,16 +151,18 @@ function genBuildJson(compilation) {
   }
 }
 
-function ftp({ entry, ftpBranch }) {
+function ftp({ entry, entryArgs, ftpBranch }) {
   if (ftpBranch === null)
     return {
       entry,
+      entryArgs,
       ftpBranch
     }
 
-  return ftpUpload(entry, ftpBranch).then(remotePath => ({
+  return uploadDir(entry, ftpBranch).then(remotePath => ({
     entry,
     ftpBranch,
+    entryArgs,
     remotePath
   }))
 }
@@ -170,6 +173,14 @@ function setup(entryInput) {
   return entryInput
 }
 
+// finally fn
+function done() {
+  const date = new Date()
+  const hour = date.getHours()
+
+  hour > 21 && console.log(chalk.magenta('🚜  marauder loves you'))
+}
+
 module.exports = args => {
   return getEntry(args)
     .then(setup)
@@ -177,6 +188,7 @@ module.exports = args => {
     .then(build)
     .then(success)
     .then(ftp)
-    .then(hybrid)
+    .then(deploy)
+    .then(done)
     .catch(error)
 }

@@ -46,9 +46,30 @@ async function getEntry(args) {
   }
 }
 
+function getEntryArgs(args, field) {
+  let val = null
+
+  config.build[`arg_${field}`] = process.env[`npm_config_${field}`]
+
+  // npx marax build --ftp
+  // yarn run build --ftp
+  if (args[field]) {
+    val = args[field] === true ? '' : args[field]
+    config.build[`arg_${field}`] = true
+  } else if (config.build[`arg_${field}`]) {
+    // 兼容 npm run build --ftp xxx
+    // 默认的 config.build.uploadFtp 为 process.env.npm_config_ftp
+    // 当无分支名时，返回 ''
+    val = args._[2] || ''
+  }
+
+  return { [field]: val }
+}
+
 function result(entry = '', args) {
   // 未启用 ftp 上传时，返回 null
   let ftpBranch = null
+  let entryArgs = {}
 
   // npx marax build --ftp
   // yarn run build --ftp
@@ -62,7 +83,13 @@ function result(entry = '', args) {
     ftpBranch = args._[2] || ''
   }
 
-  return Promise.resolve({ entry, ftpBranch })
+  entryArgs = Object.assign(
+    {},
+    getEntryArgs(args, 'ftp'),
+    getEntryArgs(args, 'test')
+  )
+
+  return Promise.resolve({ entry, ftpBranch, entryArgs })
 }
 
 function chooseOne(args) {

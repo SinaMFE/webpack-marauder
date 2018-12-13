@@ -54,7 +54,8 @@ module.exports = {
     // upload bundle use ftp
     // `npm run build <page> --ftp [namespace]`
     // Set to `true` or `false` to always turn it on or off
-    uploadFtp: process.env.npm_config_ftp
+    uploadFtp: process.env.npm_config_ftp,
+    testDeploy: process.env.npm_config_test
   },
   dev: {
     env: getEnv(publicDevPath.slice(0, -1)),
@@ -69,6 +70,7 @@ module.exports = {
     cssSourceMap: false
   },
   ftp: Object.assign({}, defConf.ftp, maraConf.ftp),
+  ciConfig: Object.assign({}, defConf.ciConfig, maraConf.ciConfig),
   // hybrid 项目配置，存在此属性时，将会生成 zip 包
   hybrid: defConf.hybrid,
   postcss: defConf.postcss

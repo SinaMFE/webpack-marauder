@@ -1,9 +1,13 @@
 'use strict'
 
-const HybridDevPublish = require('./HybridDevPublish')
+const hybridDevPublish = require('./HybridDevPublish')
+const hybridTestPublish = require('./hybridTestPublish')
 const SinaHybridPlugin = require('./SinaHybridPlugin')
+const HybridCommonPlugin = require('./HybridCommonPlugin')
 
 module.exports = {
-  HybridDevPublish,
-  SinaHybridPlugin
+  hybridDevPublish,
+  hybridTestPublish,
+  SinaHybridPlugin,
+  HybridCommonPlugin
 }

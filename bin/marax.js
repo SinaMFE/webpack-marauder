@@ -41,8 +41,10 @@ const cmdMap = {
 }
 const cmd = cmdMap[args._[0]]
 
+// load build type from cli
+// 保留缺省场景(undefined)，方便识别
 if (args.wap || args.web) {
-  process.env.jsbridgeBuildType = 'wap'
+  process.env.jsbridgeBuildType = 'web'
 } else if (args.app) {
   process.env.jsbridgeBuildType = 'app'
 }

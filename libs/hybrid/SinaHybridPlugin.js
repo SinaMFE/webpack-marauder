@@ -1,6 +1,9 @@
 'use strict'
 
 const fs = require('fs')
+const devalue = require('devalue')
+const chalk = require('chalk')
+const ConcatSource = require('webpack-sources/lib/ConcatSource')
 const { rootPath } = require('../../libs/utils')
 
 /**
@@ -15,19 +18,28 @@ class SinaHybridPlugin {
       rootPath('public/manifest.json'),
       rootPath(`src/view/${this.options.entry}/public/manifest.json`)
     ])
+    const pkgVersion = require(rootPath('package.json')).version
+
+    if (pkgVersion !== this.version) {
+      throw new Error(
+        chalk.red(
+          `package.json 版本号不合法，期望值：${chalk.yellow(this.version)}`
+        )
+      )
+    }
   }
 
   apply(compiler) {
     // 确保在 emit 前调用
     // zip plugin 会在 emit 时打包
-    compiler.plugin('emit', (compilation, callback) => {
+    compiler.plugin('compilation', compilation => {
       const maraCtx = compiler['maraContext'] || {}
 
       this.genVersionFile(compilation)
       this.updateManifestVersion()
-      this.injectDataSource(maraCtx.dataSource)
+      this.injectDataSource(compilation, maraCtx.dataSource)
 
-      callback()
+      // callback()
     })
   }
 
@@ -43,10 +55,36 @@ class SinaHybridPlugin {
     this.rewriteField('version', this.version)
   }
 
-  injectDataSource(dataSource) {
+  injectDataSource(compilation, dataSource) {
+    var da = { a: 222, b: [{ aaa: 22 }] }
     if (!dataSource) return
 
+    this.prependEntryCode(
+      compilation,
+      `var __SP_DATA_SOURCE = ${devalue(dataSource)};`
+    )
     this.rewriteField('dataSource', dataSource)
+  }
+
+  prependEntryCode(compilation, code) {
+    const assets = compilation.assets
+    const concatSource = (assets, fileName, code) => {
+      assets[fileName] = new ConcatSource(code, assets[fileName])
+    }
+
+    compilation.plugin('optimize-chunk-assets', (chunks, callback) => {
+      chunks.forEach(chunk => {
+        if (!chunk.isInitial() || !chunk.name) return
+
+        chunk.files
+          .filter(fileName => fileName.match(/\.js$/))
+          .forEach(fileName => {
+            concatSource(assets, fileName, code)
+          })
+      })
+
+      callback()
+    })
   }
 }
 
@@ -65,17 +103,17 @@ function genRewriteFn(manPath) {
   }
 }
 
-function rewriteVerField(manPath, version) {
-  ;[].concat(manPath).forEach(path => {
-    try {
-      const manifest = require(path)
+// function rewriteVerField(manPath, version) {
+//   ;[].concat(manPath).forEach(path => {
+//     try {
+//       const manifest = require(path)
 
-      if (manifest.version === version) return
+//       if (manifest.version === version) return
 
-      manifest.version = version
-      fs.writeFileSync(path, JSON.stringify(manifest, null, 2))
-    } catch (e) {}
-  })
-}
+//       manifest.version = version
+//       fs.writeFileSync(path, JSON.stringify(manifest, null, 2))
+//     } catch (e) {}
+//   })
+// }
 
 module.exports = SinaHybridPlugin
