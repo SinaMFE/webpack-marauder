@@ -10,7 +10,7 @@ const TerserPlugin = require('terser-webpack-plugin')
 const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const HtmlUmdPlugin = require('../libs/hybrid/HtmlUmdPlugin')
+const InlineUmdHtmlPlugin = require('../libs/InlineUmdHtmlPlugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const safePostCssParser = require('postcss-safe-parser')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
@@ -149,7 +149,6 @@ module.exports = function({ entry, cmd }) {
             return order.indexOf(a.names[0]) - order.indexOf(b.names[0])
           },
           minify: {
-            collapseWhitespace: true,
             removeRedundantAttributes: true,
             useShortDoctype: true,
             removeEmptyAttributes: true,
@@ -160,11 +159,11 @@ module.exports = function({ entry, cmd }) {
             minifyURLs: true
           }
         }),
+      hasHtml && new InlineUmdHtmlPlugin(HtmlWebpackPlugin),
       hasHtml &&
         new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime~.+[.]js/]),
       hasHtml &&
         new InterpolateHtmlPlugin(HtmlWebpackPlugin, config.build.env.raw),
-      hasHtml && new HtmlUmdPlugin(),
       new webpack.DefinePlugin(config.build.env.stringified),
       new MiniCssExtractPlugin({
         filename: maraConf.hash
@@ -187,11 +186,6 @@ module.exports = function({ entry, cmd }) {
       ...copyPublicFiles(entry, distPageDir)
     ].filter(Boolean)
   })
-
-  if (maraConf.ensurels) {
-    const ensure_ls = require('sinamfe-marauder-ensure-ls')
-    webpackConfig.plugins.push(new ensure_ls())
-  }
 
   // 预加载
   if (maraConf.prerender) {
