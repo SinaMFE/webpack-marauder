@@ -1,6 +1,6 @@
 {
     "name": "webpack-marauder",
-    "version": "1.14.2",
+    "version": "1.14.3",
     "description": "marauder 脚本库，支持打包 React，Vue 及 Vanilla JS ",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -84,7 +84,7 @@
         "react-dev-utils": "^5.0.0",
         "semver": "^5.5.1",
         "sina-html-webpack-plugin": "^0.0.7",
-        "sinamfe-marauder-debug": "^1.1.0",
+        "sinamfe-marauder-debug": "^1.2.0",
         "sinamfe-marauder-ensure-ls": "0.0.10",
         "sinamfe-webpack-module_dependency": "^1.3.3",
         "strip-ansi": "^4.0.0",
