@@ -25,8 +25,6 @@ const { banner, rootPath, getChunks, isObject } = require('../libs/utils')
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
-// 压缩配置
-const compress = Object.assign(config.compress, maraConf.compress)
 
 /**
  * 生成生产配置
@@ -74,8 +72,7 @@ module.exports = function({ entry, cmd }) {
             // https://github.com/facebook/create-react-app/issues/2376
             // Pending further investigation:
             // https://github.com/mishoo/UglifyJS2/issues/2011
-            comparisons: false,
-            drop_console: compress.drop_console
+            comparisons: false
           },
           mangle: {
             safari10: true

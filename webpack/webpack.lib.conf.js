@@ -11,8 +11,6 @@ const { banner, getEntries } = require('../libs/utils')
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
-// 压缩配置
-const compress = Object.assign(config.compress, maraConf.compress)
 
 function getLibraryConf() {
   const pkgName = require(config.paths.packageJson).name
@@ -47,8 +45,7 @@ module.exports = function(options) {
               // https://github.com/facebook/create-react-app/issues/2376
               // Pending further investigation:
               // https://github.com/mishoo/UglifyJS2/issues/2011
-              comparisons: false,
-              drop_console: compress.drop_console
+              comparisons: false
             },
             mangle: {
               safari10: true

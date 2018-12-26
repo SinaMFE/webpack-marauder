@@ -18,8 +18,6 @@ const vendor = isObject(maraConf.vendor)
   : maraConf.vendor
 // 为多页面准备，生成 xxx_vender 文件夹
 const namespace = maraConf.vendor.name ? `${maraConf.vendor.name}_` : ''
-// 压缩配置
-const compress = Object.assign(config.compress, maraConf.compress)
 
 module.exports = function() {
   return {
@@ -55,8 +53,7 @@ module.exports = function() {
             // https://github.com/facebook/create-react-app/issues/2376
             // Pending further investigation:
             // https://github.com/mishoo/UglifyJS2/issues/2011
-            comparisons: false,
-            drop_console: compress.drop_console
+            comparisons: false
           },
           mangle: {
             safari10: true

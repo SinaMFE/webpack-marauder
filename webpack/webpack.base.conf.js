@@ -11,15 +11,15 @@ const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
 const shouldUseSourceMap = isProd && !!maraConf.sourceMap
 
-let tsImportLibs= [];
-if(maraConf.tsImportLibs){
-  if(Array.isArray(maraConf.tsImportLibs)){
-    tsImportLibs=tsImportLibs.concat(maraConf.tsImportLibs);
-  }
-  else{
-    throw Error("marauder.config.js中的tsImportLibs必须是Array类型！")
+let tsImportLibs = []
+if (maraConf.tsImportLibs) {
+  if (Array.isArray(maraConf.tsImportLibs)) {
+    tsImportLibs = tsImportLibs.concat(maraConf.tsImportLibs)
+  } else {
+    throw Error('marauder.config.js中的tsImportLibs必须是Array类型！')
   }
 }
+
 module.exports = function(entry) {
   const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
   const { styleLoaders } = require('./loaders/style-loader')
@@ -30,6 +30,7 @@ module.exports = function(entry) {
   const isLib = entry == '__LIB__'
   const ASSETS = isLib ? '' : config.assetsDir
   const entryGlob = `src/view/${entry}/index.@(ts|js)`
+  const { vueRuntimeOnly } = config.compiler
 
   return {
     // dev, build 环境依赖 base.entry，务必提供
@@ -65,7 +66,7 @@ module.exports = function(entry) {
         // 使用特殊符号防止与 npm 包冲突
         // import '~/css/style.css'
         '~': paths.src,
-        vue$: 'vue/dist/vue.esm.js',
+        vue$: `vue/dist/vue${vueRuntimeOnly ? '.runtime' : ''}.esm.js`,
         'babel-runtime': path.dirname(
           require.resolve('babel-runtime/package.json')
         ),
@@ -136,9 +137,7 @@ module.exports = function(entry) {
                 appendTsSuffixTo: [/\.vue$/],
                 transpileOnly: true,
                 getCustomTransformers: () => ({
-                  before: [ tsImportPluginFactory(
-                    tsImportLibs
-                  ) ]
+                  before: [tsImportPluginFactory(tsImportLibs)]
                 }),
                 compilerOptions: {
                   module: 'ESNext'

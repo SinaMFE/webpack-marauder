@@ -32,11 +32,8 @@ module.exports = {
     commonjs: pkgName
   },
   assetsDir: 'static',
-  // 压缩配置
-  compress: {
-    // 移除 console
-    drop_console: false
-  },
+  // 编译配置
+  compiler: Object.assign({}, defConf.compiler, maraConf.compiler),
   entry: defConf.esm.entry,
   // 通知 babel 编译 node_module 里额外的模块
   esm: defConf.esm,

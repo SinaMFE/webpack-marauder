@@ -12,10 +12,12 @@ module.exports = {
     amd: '',
     commonjs: ''
   },
-  // 压缩配置
-  compress: {
-    // 移除 console
-    drop_console: false
+  // 编译配置
+  compiler: {
+    // 默认启用 runtime，仅允许 vue 文件内的模板
+    vueRuntimeOnly: true,
+    // @TODO 移除 console
+    dropConsole: false
   },
   ciConfig: {},
   entry: 'src/view/*/index.js',
