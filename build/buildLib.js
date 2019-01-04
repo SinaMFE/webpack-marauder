@@ -60,12 +60,25 @@ function build(dists) {
   return new Promise((resolve, reject) => {
     ticker.start()
     compiler.run((err, stats) => {
+      let messages
       const time = ticker.check()
+
       spinner.stop()
 
-      if (err) return reject(err)
+      if (err) {
+        if (!err.message) {
+          return reject(err)
+        }
+        messages = formatWebpackMessages({
+          errors: [err.message],
+          warnings: []
+        })
+      } else {
+        messages = formatWebpackMessages(
+          stats.toJson({ all: false, warnings: true, errors: true })
+        )
+      }
 
-      const messages = formatWebpackMessages(stats.toJson({}, true))
       if (messages.errors.length) {
         // Only keep the first error. Others are often indicative
         // of the same problem, but confuse the reader with noise.
@@ -92,6 +105,11 @@ function clean(dists) {
 }
 
 function success(output) {
+  if (output.warnings.length) {
+    console.log(chalk.yellow('Compiled with warnings:\n'))
+    console.log(output.warnings.join('\n\n'))
+  }
+
   console.log(chalk.green(`Build complete in ${output.time}ms\n`))
   console.log('File sizes after gzip:\n')
 

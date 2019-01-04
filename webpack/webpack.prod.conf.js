@@ -14,7 +14,7 @@ const marauderDebug = require('sinamfe-marauder-debug')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
 const { HybridCommonPlugin } = require('../libs/hybrid')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
-const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
+// const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
 const { SinaHybridPlugin } = require('../libs/hybrid')
 
 const PrerenderSPAPlugin = require('prerender-html-plugin')
@@ -178,16 +178,18 @@ module.exports = function({ entry, cmd }) {
       // 【争议】：lib 模式禁用依赖分析?
       // 确保在 copy Files 之前
       maraConf.hybrid && new SinaHybridPlugin({ entry }),
-      new moduleDependency(),
-      new DuplicatePackageCheckerPlugin({
-        // show details
-        verbose: true,
-        showHelp: false,
-        // throwt error
-        emitError: true,
-        // check major version
-        strict: true
+      new moduleDependency({
+        emitError: config.compiler.checkDuplicatePackage
       }),
+      // new DuplicatePackageCheckerPlugin({
+      //   // show details
+      //   verbose: true,
+      //   showHelp: false,
+      //   // throwt error
+      //   emitError: config.compiler.checkDuplicatePackage,
+      //   // check major version
+      //   strict: true
+      // }),
       new webpack.BannerPlugin({
         banner: banner(), // 其值为字符串，将作为注释存在
         entryOnly: false // 如果值为 true，将只在入口 chunks 文件中添加
