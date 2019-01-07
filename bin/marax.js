@@ -33,6 +33,7 @@ const args = require('minimist')(rawArgv)
 const cmdMap = {
   dev: 'serve',
   test: 'test',
+  mf: 'buildMF',
   build: 'build',
   lib: 'buildLib',
   'wx-dev': 'wx-dev-server',
