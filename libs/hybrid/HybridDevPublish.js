@@ -96,15 +96,28 @@ module.exports = async function(entry, remotePath) {
   const repoName = await getGitRepoName()
   const moduleName = `${repoName}/${entry}`
   const localPkgPath = rootPath(`dist/${entry}/${entry}.php`)
+  const manifest = rootPath(`dist/${entry}/${entry}.php`)
   const moduleIdx = hbConf.data.modules.findIndex(
     item => item.name === moduleName
   )
+  let gkList = []
+  let qeList = []
+
+  try {
+    const manifest = require(rootPath(`src/view/${entry}/public/manifest.json`))
+
+    gkList = manifest.display.gkTestIds || []
+    qeList = manifest.display.qeTestIds || []
+  } catch (e) {}
+
   const hbMod = {
     name: moduleName,
     version: process.env.npm_package_version,
     pkg_url: `${remotePath + entry}.php`,
     hybrid: true,
-    md5: md5(fs.readFileSync(localPkgPath))
+    md5: md5(fs.readFileSync(localPkgPath)),
+    gkList,
+    qeList
   }
 
   console.log(publishStep[1])
