@@ -102,12 +102,14 @@ module.exports = async function(entry, remotePath) {
   )
   let gkList = []
   let qeList = []
+  let rank = 5
 
   try {
     const manifest = require(rootPath(`src/view/${entry}/public/manifest.json`))
 
     gkList = manifest.display.gkTestIds || []
     qeList = manifest.display.qeTestIds || []
+    rank = manifest.rank || 5
   } catch (e) {}
 
   const hbMod = {
@@ -117,7 +119,8 @@ module.exports = async function(entry, remotePath) {
     hybrid: true,
     md5: md5(fs.readFileSync(localPkgPath)),
     gkList,
-    qeList
+    qeList,
+    rank
   }
 
   console.log(publishStep[1])
