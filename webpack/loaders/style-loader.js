@@ -28,7 +28,15 @@ const postcssPluginAdvanced = [
 // (which is the case during production build)
 function wrapLoader(options, loaders) {
   if (!options.extract) {
-    return ['vue-style-loader'].concat(loaders)
+    return [
+      {
+        loader: 'vue-style-loader',
+        options: {
+          // 启用 sourceMap
+          sourceMap: options.sourceMap
+        }
+      }
+    ].concat(loaders)
   }
 
   const assets = options.library ? '' : `${config.assetsDir}/css`
@@ -63,17 +71,18 @@ function wrapLoader(options, loaders) {
  * @return {Object}         结果对象
  */
 function cssLoaders(options = {}) {
-  const cssLoader = {
-    loader: 'css-loader',
-    options: {
-      // 启用 sourceMap
-      sourceMap: options.sourceMap
-    }
-  }
-
   // generate loader string to be used with extract text plugin
   function generateLoaders(loader, loaderOptions) {
-    let loaders = [cssLoader]
+    let loaders = [
+      {
+        loader: 'css-loader',
+        options: {
+          importLoaders: loader ? 2 : 1,
+          // 启用 sourceMap
+          sourceMap: options.sourceMap
+        }
+      }
+    ]
     const postcssLoader = {
       loader: 'postcss-loader',
       options: {
@@ -82,6 +91,15 @@ function cssLoaders(options = {}) {
       }
     }
 
+    // css 默认使用 postcss-loader 处理
+    // 由于 vue-loader 自带 postcss，略过
+    if (!options.vue) {
+      loaders.push(postcssLoader)
+    }
+
+    // loader 数组反向加载
+    // 确保预处理 loader 在 postcss 之后
+    // 以保证实际优先处理
     if (loader) {
       loaders.push({
         loader: loader + '-loader',
@@ -89,12 +107,6 @@ function cssLoaders(options = {}) {
           sourceMap: options.sourceMap
         })
       })
-    }
-
-    // css 默认使用 postcss-loader 处理
-    // 由于 vue-loader 自带 postcss，略过
-    if (!options.vue) {
-      loaders.push(postcssLoader)
     }
 
     return wrapLoader(options, loaders)
