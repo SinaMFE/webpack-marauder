@@ -101,6 +101,8 @@ function success({ entryInput, stats, publicPath, outputPath, warnings }) {
   if (warnings.length) {
     console.log(chalk.yellow('Compiled with warnings:\n'))
     console.log(warnings.join('\n\n'))
+    // add new line
+    console.log()
   }
 
   console.log(chalk.green(`Build complete in ${result.time}ms\n`))

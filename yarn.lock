@@ -9525,10 +9525,10 @@ sinamfe-marauder-ensure-ls@0.0.10:
   resolved "http://registry.npm.taobao.org/sinamfe-marauder-ensure-ls/download/sinamfe-marauder-ensure-ls-0.0.10.tgz#fe22b3a63cc4bba9e76ea32b9957e64c9b0efc92"
   integrity sha1-/iKzpjzEu6nnbqMrmVfmTJsO/JI=
 
-sinamfe-webpack-module_dependency@^1.3.3:
-  version "1.3.4"
-  resolved "http://registry.npm.taobao.org/sinamfe-webpack-module_dependency/download/sinamfe-webpack-module_dependency-1.3.4.tgz#52465392a4b118da928da03a342aeb337fed43f1"
-  integrity sha1-UkZTkqSxGNqSjaA6NCrrM3/tQ/E=
+sinamfe-webpack-module_dependency@^1.3.5:
+  version "1.3.5"
+  resolved "http://registry.npm.taobao.org/sinamfe-webpack-module_dependency/download/sinamfe-webpack-module_dependency-1.3.5.tgz#ce171adcee6f442c0b7926e767f1e715220140ba"
+  integrity sha1-zhca3O5vRCwLeSbnZ/HnFSIBQLo=
 
 slash@^1.0.0:
   version "1.0.0"

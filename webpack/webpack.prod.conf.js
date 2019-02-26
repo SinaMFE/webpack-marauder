@@ -152,7 +152,7 @@ module.exports = function({ entry, cmd }) {
       // 确保在 copy Files 之前
       maraConf.hybrid && new SinaHybridPlugin({ entry }),
       new moduleDependency({
-        emitError: config.compiler.checkDuplicatePackage
+        emitError: config.compiler.checkDuplicatePackage !== false
       }),
       // new DuplicatePackageCheckerPlugin({
       //   // show details
