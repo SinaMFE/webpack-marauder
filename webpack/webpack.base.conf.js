@@ -20,7 +20,7 @@ if (maraConf.tsImportLibs) {
   }
 }
 
-module.exports = function(entry) {
+module.exports = function(entry, type) {
   const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
   const { styleLoaders } = require('./loaders/style-loader')
   const {
@@ -97,7 +97,7 @@ module.exports = function(entry) {
           oneOf: [
             ...styleLoaders({
               sourceMap: shouldUseSourceMap,
-              extract: isProd,
+              extract: isProd && type !== 'mc',
               library: isLib
             }),
             {
