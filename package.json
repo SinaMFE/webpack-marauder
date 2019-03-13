@@ -84,7 +84,6 @@
     "react-dev-utils": "^5.0.0",
     "semver": "^5.5.1",
     "sina-html-webpack-plugin": "^0.0.7",
-    "sinamfe-marauder-debug": "^1.2.0",
     "sinamfe-marauder-ensure-ls": "0.0.10",
     "sinamfe-webpack-module_dependency": "^1.3.5",
     "strip-ansi": "^4.0.0",

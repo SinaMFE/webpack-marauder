@@ -10,7 +10,6 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const HtmlWebpackPlugin = require('sina-html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
-const marauderDebug = require('sinamfe-marauder-debug')
 const moduleDependency = require('sinamfe-webpack-module_dependency')
 const { HybridCommonPlugin } = require('../libs/hybrid')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
@@ -34,6 +33,7 @@ module.exports = function({ entry, cmd }) {
   const baseWebpackConfig = require('./webpack.base.conf')(entry)
   const hasHtml = fs.existsSync(`${config.paths.page}/${entry}/index.html`)
   const chunksEntry = getChunks(`src/view/${entry}/index.*.js`)
+  const debugLabel = config.debug ? '.debug' : ''
 
   // https://github.com/survivejs/webpack-merge
   const webpackConfig = merge(baseWebpackConfig, {
@@ -45,11 +45,11 @@ module.exports = function({ entry, cmd }) {
       path: distPageDir,
       publicPath: config.build.assetsPublicPath,
       filename: maraConf.hash
-        ? 'static/js/[name].[chunkhash:8].min.js'
-        : 'static/js/[name].min.js',
+        ? `static/js/[name].[chunkhash:8]${debugLabel}.js`
+        : `static/js/[name]${debugLabel || '.min'}.js`,
       chunkFilename: maraConf.chunkHash
-        ? 'static/js/[name].[chunkhash:8].async.js'
-        : 'static/js/[name].async.js'
+        ? `static/js/[name].[chunkhash:8].async${debugLabel}.js`
+        : `static/js/[name].async${debugLabel}.js`
     },
     plugins: [
       new InterpolateHtmlPlugin(config.build.env.raw),
@@ -57,7 +57,7 @@ module.exports = function({ entry, cmd }) {
       // 使作作用域提升(scope hoisting)
       // https://medium.com/webpack/brief-introduction-to-scope-hoisting-in-webpack-8435084c171f
       new webpack.optimize.ModuleConcatenationPlugin(),
-      config.debug && new marauderDebug(),
+      config.debug && new webpack.NamedModulesPlugin(),
       // Minify the code.
       new UglifyJsPlugin({
         uglifyOptions: {
@@ -69,16 +69,23 @@ module.exports = function({ entry, cmd }) {
             // https://github.com/facebook/create-react-app/issues/2376
             // Pending further investigation:
             // https://github.com/mishoo/UglifyJS2/issues/2011
-            comparisons: false
+            comparisons: false,
+            drop_console: !config.debug && config.compiler.dropConsole,
+            join_vars: !config.debug
           },
-          mangle: {
-            safari10: true
-          },
+          mangle: config.debug
+            ? false
+            : {
+                safari10: true
+              },
+          keep_fnames: config.debug,
           output: {
             comments: false,
             // Turned on because emoji and regex is not minified properly using default
             // https://github.com/facebook/create-react-app/issues/2488
-            ascii_only: true
+            ascii_only: true,
+            comments: config.debug && /(\sMODULE)|(^\s\d+\s$)/,
+            beautify: config.debug
           }
         },
         // Use multi-process parallel running to improve the build speed

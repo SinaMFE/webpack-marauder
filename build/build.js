@@ -162,7 +162,8 @@ function genBuildJson(compilation) {
   const source = JSON.stringify({
     debug: maraConf.debug || process.env.MARA_compileModel == 'dev',
     // 指定缺省场景(undefined)为 web
-    target: process.env.jsbridgeBuildType === 'app' ? 'app' : 'web'
+    target: process.env.jsbridgeBuildType === 'app' ? 'app' : 'web',
+    marax: require(paths.ownPackageJson).version
   })
 
   compilation.assets['build.json'] = {

@@ -9515,11 +9515,6 @@ sina-html-webpack-plugin@^0.0.7:
     toposort "^1.0.0"
     util.promisify "1.0.0"
 
-sinamfe-marauder-debug@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.npmjs.org/sinamfe-marauder-debug/-/sinamfe-marauder-debug-1.2.0.tgz#b445dda8bc1090316824872d9cc708f01c1171b8"
-  integrity sha512-Q+FsBuIIJkctk7AeFIfgExCWh9FhJBQBGWLdOa8nEtQBVbtxdht65JUVsOSqsmk8NowUFEOeBDihEUPY0prM+w==
-
 sinamfe-marauder-ensure-ls@0.0.10:
   version "0.0.10"
   resolved "http://registry.npm.taobao.org/sinamfe-marauder-ensure-ls/download/sinamfe-marauder-ensure-ls-0.0.10.tgz#fe22b3a63cc4bba9e76ea32b9957e64c9b0efc92"
