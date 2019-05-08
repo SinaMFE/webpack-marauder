@@ -42,6 +42,8 @@ module.exports = function({ entry }) {
       pathinfo: true
     },
     devServer: {
+      // 允许修改 host 模拟跨域
+      disableHostCheck: true,
       headers: { 'Access-Control-Allow-Origin': '*' },
       // 开启 gzip 压缩
       compress: true,
