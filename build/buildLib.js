@@ -26,7 +26,7 @@ const buildReporter = require('../libs/buildReporter')
 const prehandleConfig = require('../libs/prehandleConfig')
 const Stopwatch = require('../libs/Stopwatch')
 
-const spinner = ora('Biuld library (commonjs + umd)...')
+const spinner = ora('Build library (commonjs + umd)...')
 
 const pages = getPageList(config.paths.entries)
 const libs = [
