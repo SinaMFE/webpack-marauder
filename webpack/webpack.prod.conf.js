@@ -14,13 +14,14 @@ const moduleDependency = require('sinamfe-webpack-module_dependency')
 const { HybridCommonPlugin } = require('../libs/hybrid')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
-// const { SinaHybridPlugin } = require('../libs/hybrid')
+const ZenJsPlugin = require('../libs/ZenJsPlugin')
 
 const config = require('../config')
 const { banner, rootPath, getChunks, isObject } = require('../libs/utils')
 
 const maraConf = require(config.paths.marauder)
 const shouldUseSourceMap = !!maraConf.sourceMap
+const isHybridMode = config.build.env.raw['jsbridgeBuildType'] === 'app'
 
 /**
  * 生成生产配置
@@ -34,6 +35,7 @@ module.exports = function({ entry, cmd }) {
   const hasHtml = fs.existsSync(`${config.paths.page}/${entry}/index.html`)
   const chunksEntry = getChunks(`src/view/${entry}/index.*.js`)
   const debugLabel = config.debug ? '.debug' : ''
+  const shouldUseZenJs = config.compiler.zenJs && !isHybridMode
 
   // https://github.com/survivejs/webpack-merge
   const webpackConfig = merge(baseWebpackConfig, {
@@ -95,13 +97,6 @@ module.exports = function({ entry, cmd }) {
         cache: true,
         sourceMap: shouldUseSourceMap
       }),
-      // new webpack.ProvidePlugin({
-      //   $: 'zepto',
-      //   Zepto: 'zepto',
-      //   'window.Zepto': 'zepto',
-      //   'window.$': 'zepto'
-      // }),
-
       new ExtractTextPlugin({
         filename: maraConf.hash
           ? 'static/css/[name].[contenthash:8].css'
@@ -154,10 +149,8 @@ module.exports = function({ entry, cmd }) {
           removeStyleLinkTypeAttributes: true,
           keepClosingSlash: true
         }),
-
+      hasHtml && shouldUseZenJs && new ZenJsPlugin(),
       // 【争议】：lib 模式禁用依赖分析?
-      // 确保在 copy Files 之前
-      // maraConf.hybrid && new SinaHybridPlugin({ entry }),
       new moduleDependency({
         emitError: config.compiler.checkDuplicatePackage !== false
       }),
