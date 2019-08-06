@@ -262,6 +262,15 @@ function styleLoaders(options) {
   return output
 }
 
+function isInstalled(name) {
+  try {
+    require.resolve(name)
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
 module.exports = {
   styleLoaders,
   cssLoaders,
@@ -278,6 +287,7 @@ module.exports = {
   pubDate,
   banner,
   isNotEmptyArray,
+  isInstalled,
   nodeModulesRegExp,
   ensureSlash,
   camelName,

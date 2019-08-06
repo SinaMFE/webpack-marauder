@@ -14,7 +14,7 @@ const moduleDependency = require('sinamfe-webpack-module_dependency')
 const { HybridCommonPlugin } = require('../libs/hybrid')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin')
-const { SinaHybridPlugin } = require('../libs/hybrid')
+// const { SinaHybridPlugin } = require('../libs/hybrid')
 
 const config = require('../config')
 const { banner, rootPath, getChunks, isObject } = require('../libs/utils')
@@ -30,7 +30,7 @@ const shouldUseSourceMap = !!maraConf.sourceMap
  */
 module.exports = function({ entry, cmd }) {
   const distPageDir = `${config.paths.dist}/${entry}`
-  const baseWebpackConfig = require('./webpack.base.conf')(entry)
+  const baseWebpackConfig = require('./webpack.base.conf')(entry, 'build')
   const hasHtml = fs.existsSync(`${config.paths.page}/${entry}/index.html`)
   const chunksEntry = getChunks(`src/view/${entry}/index.*.js`)
   const debugLabel = config.debug ? '.debug' : ''
@@ -157,7 +157,7 @@ module.exports = function({ entry, cmd }) {
 
       // 【争议】：lib 模式禁用依赖分析?
       // 确保在 copy Files 之前
-      maraConf.hybrid && new SinaHybridPlugin({ entry }),
+      // maraConf.hybrid && new SinaHybridPlugin({ entry }),
       new moduleDependency({
         emitError: config.compiler.checkDuplicatePackage !== false
       }),

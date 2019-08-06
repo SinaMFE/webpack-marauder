@@ -3,7 +3,8 @@
 const path = require('path')
 const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
-const { getEntries } = require('../libs/utils')
+const { getEntries, isInstalled } = require('../libs/utils')
+const { splitSNC } = require('../libs/hybrid')
 const paths = config.paths
 const tsImportPluginFactory = require('ts-import-plugin')
 
@@ -31,10 +32,31 @@ module.exports = function(entry, type) {
   const ASSETS = isLib ? '' : config.assetsDir
   const entryGlob = `src/view/${entry}/index.@(ts|js)`
   const { vueRuntimeOnly } = config.compiler
+  const isHybridMode = config.build.env.raw['jsbridgeBuildType'] === 'app'
+  const isDevOrBuildCmd = type === 'dev' || type === 'build'
+  let entryConf = {}
+  let externals = []
 
-  return {
+  const shouldSNCHoisting =
+    isDevOrBuildCmd &&
+    isHybridMode &&
+    config.compiler.splitSNC &&
+    isInstalled('@mfelibs/universal-framework')
+
+  // hybrid SDK 提升，以尽快建立 jsbridge
+  if (shouldSNCHoisting) {
+    const sncConf = splitSNC(entryGlob)
+
+    // 使用拆分后的 entry 配置
+    entryConf = sncConf.entry
+    externals.push(...sncConf.externals)
+  } else {
+    entryConf = getEntries(entryGlob, require.resolve('./polyfills'))
+  }
+
+  const baseConfig = {
     // dev, build 环境依赖 base.entry，务必提供
-    entry: getEntries(entryGlob, require.resolve('./polyfills')),
+    entry: entryConf,
     output: {
       path: paths.dist,
       // 统一使用 POSIX 风格拼接路径
@@ -175,6 +197,8 @@ module.exports = function(entry, type) {
         }
       ]
     },
+    plugins: [],
+    externals: externals,
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.
     node: {
@@ -188,4 +212,18 @@ module.exports = function(entry, type) {
       child_process: 'empty'
     }
   }
+
+  if (isHybridMode) {
+    const { SinaHybridPlugin } = require('../libs/hybrid')
+
+    // 确保在 copy Files 之前
+    baseConfig.plugins.push(
+      new SinaHybridPlugin({
+        entry: entry,
+        splitSNC: shouldSNCHoisting
+      })
+    )
+  }
+
+  return baseConfig
 }

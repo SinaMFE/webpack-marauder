@@ -23,7 +23,7 @@ function parseChunks(entry) {
 }
 
 module.exports = function({ entry }) {
-  const baseWebpackConfig = require('./webpack.base.conf')(entry)
+  const baseWebpackConfig = require('./webpack.base.conf')(entry, 'dev')
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
   const chunksEntry = parseChunks(entry)
   const { transformer, formatter } = require('../libs/resolveLoaderError')

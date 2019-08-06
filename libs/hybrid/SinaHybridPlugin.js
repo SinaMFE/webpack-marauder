@@ -4,7 +4,7 @@ const fs = require('fs')
 const devalue = require('devalue')
 const chalk = require('chalk')
 const ConcatSource = require('webpack-sources/lib/ConcatSource')
-const { rootPath } = require('../../libs/utils')
+const { rootPath, isInstalled } = require('../../libs/utils')
 
 /**
  * 生成版本文件
@@ -14,6 +14,7 @@ class SinaHybridPlugin {
   constructor(options) {
     this.options = options
     this.version = process.env.npm_package_version
+    this.shouldSNCHoisting = options.splitSNC
     this.rewriteField = genRewriteFn([
       rootPath('public/manifest.json'),
       rootPath(`src/view/${this.options.entry}/public/manifest.json`)
@@ -35,6 +36,7 @@ class SinaHybridPlugin {
     compiler.plugin('compilation', compilation => {
       const maraCtx = compiler['maraContext'] || {}
 
+      this.splitSNC(compilation)
       this.genVersionFile(compilation)
       this.updateManifestVersion()
       this.injectDataSource(compilation, maraCtx.dataSource)
@@ -64,6 +66,31 @@ class SinaHybridPlugin {
       `var __SP_DATA_SOURCE = ${devalue(dataSource)};`
     )
     this.rewriteField('dataSource', dataSource)
+  }
+
+  splitSNC(compilation) {
+    if (!this.shouldSNCHoisting) return
+
+    compilation.plugin(
+      'html-webpack-plugin-alter-asset-tags',
+      (assets, callback) => {
+        const idx = assets.body.findIndex(tag => {
+          return tag.attributes.src.indexOf('__UNI_SNC__.') > -1
+        })
+
+        if (idx < 0) return callback(null, assets)
+
+        assets.head.push({
+          tagName: 'script',
+          attributes: { src: assets.body[idx].attributes.src },
+          closeTag: true
+        })
+
+        assets.body.splice(idx, 1)
+
+        callback(null, assets)
+      }
+    )
   }
 
   prependEntryCode(compilation, code) {
