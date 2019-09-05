@@ -4,7 +4,7 @@ const path = require('path')
 const config = require('../config')
 const vueLoaderConfig = require('./loaders/vue-loader.conf')
 const { getEntries, isInstalled } = require('../libs/utils')
-const { splitSNC } = require('../libs/hybrid')
+const { getCommonPkgConf } = require('../libs/hybrid')
 const paths = config.paths
 const tsImportPluginFactory = require('ts-import-plugin')
 
@@ -36,19 +36,21 @@ module.exports = function(entry, type) {
   const isDevOrBuildCmd = type === 'dev' || type === 'build'
   let entryConf = {}
   let externals = []
+  let commonPkgPath = ''
 
-  const shouldSNCHoisting =
+  const useCommonPkg =
     isDevOrBuildCmd &&
     isHybridMode &&
     config.compiler.splitSNC &&
-    isInstalled('@mfelibs/universal-framework')
+    isInstalled('@mfelibs/hybridcontainer')
 
   // hybrid SDK 提升，以尽快建立 jsbridge
-  if (shouldSNCHoisting) {
-    const sncConf = splitSNC(entryGlob)
+  if (useCommonPkg) {
+    const sncConf = getCommonPkgConf(entryGlob)
 
     // 使用拆分后的 entry 配置
     entryConf = sncConf.entry
+    commonPkgPath = sncConf.commonPkgPath
     externals.push(...sncConf.externals)
   } else {
     entryConf = getEntries(entryGlob, require.resolve('./polyfills'))
@@ -220,7 +222,8 @@ module.exports = function(entry, type) {
     baseConfig.plugins.push(
       new SinaHybridPlugin({
         entry: entry,
-        splitSNC: shouldSNCHoisting
+        commonPkgPath: commonPkgPath,
+        useCommonPkg: useCommonPkg
       })
     )
   }

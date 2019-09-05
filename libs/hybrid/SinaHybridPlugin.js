@@ -14,7 +14,8 @@ class SinaHybridPlugin {
   constructor(options) {
     this.options = options
     this.version = process.env.npm_package_version
-    this.shouldSNCHoisting = options.splitSNC
+    this.useCommonPkg = options.useCommonPkg
+    this.commonPkgPath = options.commonPkgPath
     this.rewriteField = genRewriteFn([
       rootPath('public/manifest.json'),
       rootPath(`src/view/${this.options.entry}/public/manifest.json`)
@@ -35,14 +36,25 @@ class SinaHybridPlugin {
     // zip plugin 会在 emit 时打包
     compiler.plugin('compilation', compilation => {
       const maraCtx = compiler['maraContext'] || {}
+      const { publicPath } = compiler.options.output
 
-      this.splitSNC(compilation)
+      this.injectCommonAssets(compilation, publicPath)
+      // this.splitSNC(compilation)
       this.genVersionFile(compilation)
       this.updateManifestVersion()
       this.injectDataSource(compilation, maraCtx.dataSource)
 
       // callback()
     })
+  }
+
+  genCommonAssets() {
+    const source = fs.readFileSync(this.commonPkgPath, 'utf8')
+
+    return {
+      source: () => source,
+      size: () => source.length
+    }
   }
 
   genVersionFile(compilation) {
@@ -68,8 +80,31 @@ class SinaHybridPlugin {
     this.rewriteField('dataSource', dataSource)
   }
 
+  injectCommonAssets(compilation, publicPath) {
+    if (!this.useCommonPkg) return
+
+    const filePath = 'static/js/__SINA_COMMON_PKG__.js'
+
+    compilation.assets[filePath] = this.genCommonAssets()
+
+    compilation.plugin(
+      'html-webpack-plugin-alter-asset-tags',
+      (assets, callback) => {
+        assets.head.push({
+          tagName: 'script',
+          attributes: {
+            src: publicPath + filePath
+          },
+          closeTag: true
+        })
+
+        callback(null, assets)
+      }
+    )
+  }
+
   splitSNC(compilation) {
-    if (!this.shouldSNCHoisting) return
+    if (!this.useCommonPkg) return
 
     compilation.plugin(
       'html-webpack-plugin-alter-asset-tags',

@@ -15,24 +15,16 @@ const ignoredFiles = require('react-dev-utils/ignoredFiles')
 const { localIp, getChunks, rootPath } = require('../libs/utils')
 const config = require('../config')
 
-function parseChunks(entry) {
-  const chunkObj = getChunks(`src/view/${entry}/index.*.js`)
-  const chunks = [].concat(...Object.values(chunkObj))
-
-  return { [entry]: chunks }
-}
-
 module.exports = function({ entry }) {
   const baseWebpackConfig = require('./webpack.base.conf')(entry, 'dev')
   const pagePublicDir = rootPath(`${config.paths.page}/${entry}/public`)
-  const chunksEntry = parseChunks(entry)
   const { transformer, formatter } = require('../libs/resolveLoaderError')
 
   // https://github.com/survivejs/webpack-merge
   // 当 entry 为数组时，webpack-merge 默认执行 append
   const webpackConfig = merge(baseWebpackConfig, {
     devtool: 'cheap-module-source-map',
-    entry: chunksEntry,
+    entry: getChunks(`src/view/${entry}/index.*.js`),
     output: {
       publicPath: config.dev.assetsPublicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)

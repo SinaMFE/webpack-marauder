@@ -100,6 +100,7 @@ module.exports = async function(entry, remotePath) {
   const moduleIdx = hbConf.data.modules.findIndex(
     item => item.name === moduleName
   )
+  let dependencies = {}
   let gkList = []
   let qeList = []
   let rank = 5
@@ -110,6 +111,7 @@ module.exports = async function(entry, remotePath) {
     gkList = manifest.display.gkTestIds || []
     qeList = manifest.display.qeTestIds || []
     rank = manifest.rank || 5
+    dependencies = manifest.dependencies || {}
   } catch (e) {}
 
   const hbMod = {

@@ -27,11 +27,15 @@ const PROTOCOL = maraConf.https === true ? 'https' : 'http'
 // https://github.com/chimurai/http-proxy-middleware
 const proxyTable = config.dev.proxyTable
 
-async function getCompiler(webpackConf, { entry, port } = {}) {
+function getCompiler(webpackConf, { entry, port } = {}) {
   const openBrowser = require('react-dev-utils/openBrowser')
   const hostUri = getServerHostUri(webpackConf.devServer.host, port)
-  const compiler = webpack(webpackConf)
   let isFirstCompile = true
+
+  // 为每一个入口文件添加 webpack-dev-server 客户端
+  addHotDevClient(webpackConf.entry)
+
+  const compiler = webpack(webpackConf)
 
   compiler.apply(
     new webpack.ProgressPlugin((...args) => {
@@ -60,25 +64,22 @@ async function getCompiler(webpackConf, { entry, port } = {}) {
     }
   })
 
-  // 为每一个入口文件添加 webpack-dev-server 客户端
-  Object.values(webpackConf.entry).forEach(addHotDevClient)
-
   return compiler
 }
 
-function addHotDevClient(entry) {
-  // client 在业务模块之前引入，以捕获初始化错误
-  ;[].unshift.apply(entry, [
-    require.resolve('react-dev-utils/webpackHotDevClient')
-    // require.resolve('webpack-dev-server/client') + '?/',
-    // require.resolve('webpack/hot/dev-server')
-  ])
+function addHotDevClient(entryConf) {
+  Object.keys(entryConf).forEach(entry => {
+    // client 在业务模块之前引入，以捕获初始化错误
+    entryConf[entry] = [
+      require.resolve('react-dev-utils/webpackHotDevClient')
+    ].concat(entryConf[entry])
+  })
 }
 
-async function createDevServer(webpackConf, opt) {
+function createDevServer(webpackConf, opt) {
   const DevServer = require('webpack-dev-server')
   const serverConf = webpackConf.devServer
-  const compiler = await getCompiler(webpackConf, opt)
+  const compiler = getCompiler(webpackConf, opt)
 
   serverConf.https = PROTOCOL === 'https'
   // 安全原因，一般禁用 HostCheck
@@ -107,7 +108,7 @@ async function server(entryInput) {
 
   const webpackConf = prehandleConfig('dev', getWebpackConfig(entryInput))
   const port = await getFreePort(DEFAULT_PORT)
-  const devServer = await createDevServer(webpackConf, {
+  const devServer = createDevServer(webpackConf, {
     entry: entryInput.entry,
     port
   })
