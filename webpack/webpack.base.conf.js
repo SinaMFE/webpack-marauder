@@ -215,7 +215,7 @@ module.exports = function(entry, type) {
     }
   }
 
-  if (isHybridMode) {
+  if (isDevOrBuildCmd && isHybridMode) {
     const { SinaHybridPlugin } = require('../libs/hybrid')
 
     // 确保在 copy Files 之前
