@@ -194,6 +194,10 @@ module.exports = function(entry, type) {
                   attrs: [':src', ':data-src']
                 }
               }
+            },
+            {
+              test: /\.txt$/,
+              loader: 'raw-loader'
             }
           ]
         }
