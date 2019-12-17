@@ -6,6 +6,18 @@ const chalk = require('chalk')
 const ConcatSource = require('webpack-sources/lib/ConcatSource')
 const { rootPath, isInstalled } = require('../../libs/utils')
 
+function readJsonFile(filePath) {
+  if (typeof filePath !== 'string') throw new Error('manifest 路径错误')
+
+  const fileText = fs.readFileSync(filePath, 'utf8')
+
+  try {
+    return JSON.parse(fileText)
+  } catch (e) {
+    throw new Error('manifest json 解析错误')
+  }
+}
+
 /**
  * 生成版本文件
  * 未来会通过 manifest 中 version 替代
@@ -17,8 +29,8 @@ class SinaHybridPlugin {
     this.useCommonPkg = options.useCommonPkg
     this.commonPkgPath = options.commonPkgPath
     this.rewriteField = genRewriteFn([
-      rootPath('public/manifest.json'),
-      rootPath(`src/view/${this.options.entry}/public/manifest.json`)
+      // rootPath('public/manifest.json'),
+      rootPath(`dist/${this.options.entry}/manifest.json`)
     ])
     const pkgVersion = require(rootPath('package.json')).version
 
@@ -41,9 +53,15 @@ class SinaHybridPlugin {
       this.injectCommonAssets(compilation, publicPath)
       // this.splitSNC(compilation)
       this.genVersionFile(compilation)
-      this.updateManifestVersion()
       this.injectDataSource(compilation, maraCtx.dataSource)
 
+      // callback()
+    })
+
+    compiler.plugin('afterEmit', compilation => {
+      const maraCtx = compiler['maraContext'] || {}
+
+      this.updateManifest(maraCtx.dataSource)
       // callback()
     })
   }
@@ -65,19 +83,18 @@ class SinaHybridPlugin {
     }
   }
 
-  updateManifestVersion() {
+  updateManifest(dataSource) {
     this.rewriteField('version', this.version)
+    this.rewriteField('dataSource', dataSource)
   }
 
   injectDataSource(compilation, dataSource) {
-    var da = { a: 222, b: [{ aaa: 22 }] }
     if (!dataSource) return
 
     this.prependEntryCode(
       compilation,
       `var __SP_DATA_SOURCE = ${devalue(dataSource)};`
     )
-    this.rewriteField('dataSource', dataSource)
   }
 
   injectCommonAssets(compilation, publicPath) {
