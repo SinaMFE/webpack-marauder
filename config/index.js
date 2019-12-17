@@ -1,5 +1,6 @@
 'use strict'
 
+const fs = require('fs')
 const paths = require('./paths')
 const getEnv = require('./env')
 const { ensureSlash, camelName } = require('../libs/utils')
@@ -7,6 +8,7 @@ const defConf = require('./default')
 const maraConf = require(paths.marauder)
 const pkgName = require(paths.packageJson).name
 const maraVersion = require(paths.ownPackageJson).version
+const useTypeScript = fs.existsSync(paths.tsConfig)
 
 function getServedPath(publicUrl) {
   // 强制以 / 结尾，为了兼容 publicPath: '.'
@@ -40,6 +42,7 @@ module.exports = {
   // 打包 dll
   vendor: [],
   paths: paths,
+  useTypeScript,
   build: {
     env: getEnv(publicPath.slice(0, -1)),
     assetsPublicPath: publicPath,

@@ -7,6 +7,7 @@ const { getEntries, isInstalled } = require('../libs/utils')
 const { getCommonPkgConf } = require('../libs/hybrid')
 const paths = config.paths
 const tsImportPluginFactory = require('ts-import-plugin')
+const useTypeScript = config.useTypeScript
 
 const isProd = process.env.NODE_ENV === 'production'
 const maraConf = require(paths.marauder)
