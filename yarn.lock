@@ -3150,10 +3150,10 @@ duplexify@^3.4.2, duplexify@^3.6.0:
     readable-stream "^2.0.0"
     stream-shift "^1.0.0"
 
-duplicate-package-checker-webpack-plugin@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.npm.taobao.org/duplicate-package-checker-webpack-plugin/download/duplicate-package-checker-webpack-plugin-3.0.0.tgz#78bb89e625fa7cf8c2a59c53f62b495fda9ba287"
-  integrity sha1-eLuJ5iX6fPjCpZxT9itJX9qbooc=
+duplicate-package-checker-webpack-plugin@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/duplicate-package-checker-webpack-plugin/-/duplicate-package-checker-webpack-plugin-2.1.0.tgz#6723ee32d89947997470778973c10788cb69e496"
+  integrity sha512-Blok+Cb8zDavYQyeTtSkmNp/aiyRn5+JV/4EhDDH5VJChnyIzPhq+S5MyWnFpqpv8jNKmD3cXmXFEVU509pzXQ==
   dependencies:
     chalk "^2.3.0"
     find-root "^1.0.0"
