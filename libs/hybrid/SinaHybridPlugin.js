@@ -58,11 +58,12 @@ class SinaHybridPlugin {
       // callback()
     })
 
-    compiler.plugin('afterEmit', compilation => {
+    compiler.plugin('after-emit', (compilation, callback) => {
       const maraCtx = compiler['maraContext'] || {}
 
       this.updateManifest(maraCtx.dataSource)
-      // callback()
+
+      callback()
     })
   }
 
