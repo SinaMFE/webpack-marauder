@@ -28,10 +28,9 @@ class SinaHybridPlugin {
     this.version = process.env.npm_package_version
     this.useCommonPkg = options.useCommonPkg
     this.commonPkgPath = options.commonPkgPath
-    this.rewriteField = genRewriteFn([
-      // rootPath('public/manifest.json'),
-      rootPath(`dist/${this.options.entry}/manifest.json`)
-    ])
+    this.manifestPath = rootPath(
+      `src/view/${this.options.entry}/public/manifest.json`
+    )
     const pkgVersion = require(rootPath('package.json')).version
 
     if (pkgVersion !== this.version) {
@@ -58,13 +57,18 @@ class SinaHybridPlugin {
       // callback()
     })
 
-    compiler.plugin('after-emit', (compilation, callback) => {
-      const maraCtx = compiler['maraContext'] || {}
+    if (fs.existsSync(this.manifestPath)) {
+      compiler.plugin('this-compilation', compilation => {
+        const maraCtx = compiler['maraContext'] || {}
 
-      this.updateManifest(maraCtx.dataSource)
-
-      callback()
-    })
+        compilation.plugin('additional-chunk-assets', () => {
+          compilation.assets['manifest.json'] = this.genManifest(
+            compilation,
+            maraCtx.dataSource
+          )
+        })
+      })
+    }
   }
 
   genCommonAssets() {
@@ -82,11 +86,6 @@ class SinaHybridPlugin {
       source: () => '',
       size: () => 0
     }
-  }
-
-  updateManifest(dataSource) {
-    this.rewriteField('version', this.version)
-    this.rewriteField('dataSource', dataSource)
   }
 
   injectDataSource(compilation, dataSource) {
@@ -166,6 +165,40 @@ class SinaHybridPlugin {
       callback()
     })
   }
+
+  resolveManifest() {
+    let manifest
+
+    try {
+      manifest = this.manifestPath ? readJsonFile(this.manifestPath) : {}
+    } catch (e) {
+      // 未设置 manifest 时，设置缺省配置
+      manifest = {}
+    }
+
+    return manifest
+  }
+
+  genManifest(compilation, dataSource) {
+    let manifest = this.resolveManifest()
+    const version = { version: this.version }
+
+    // 确保将 version 排序至第一位
+    // 第一个 version 是为了将字段提升至第一位
+    // 最后一个 version 是为了覆盖原有值
+    manifest = Object.assign({}, version, manifest, version)
+
+    if (dataSource) {
+      manifest.dataSource = dataSource
+    }
+
+    const source = JSON.stringify(manifest, null, 2)
+
+    return {
+      source: () => source,
+      size: () => source.length
+    }
+  }
 }
 
 function genRewriteFn(manPath) {
@@ -182,18 +215,5 @@ function genRewriteFn(manPath) {
     })
   }
 }
-
-// function rewriteVerField(manPath, version) {
-//   ;[].concat(manPath).forEach(path => {
-//     try {
-//       const manifest = require(path)
-
-//       if (manifest.version === version) return
-
-//       manifest.version = version
-//       fs.writeFileSync(path, JSON.stringify(manifest, null, 2))
-//     } catch (e) {}
-//   })
-// }
 
 module.exports = SinaHybridPlugin
