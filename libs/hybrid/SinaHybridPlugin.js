@@ -5,6 +5,7 @@ const devalue = require('devalue')
 const chalk = require('chalk')
 const ConcatSource = require('webpack-sources/lib/ConcatSource')
 const { rootPath, isInstalled } = require('../../libs/utils')
+const HYBRID_MANIFEST_INJECT_NAME = '__HB_MANIFEST'
 
 function readJsonFile(filePath) {
   if (typeof filePath !== 'string') throw new Error('manifest 路径错误')
@@ -43,6 +44,8 @@ class SinaHybridPlugin {
   }
 
   apply(compiler) {
+    let manifestAsset = ''
+
     // 确保在 emit 前调用
     // zip plugin 会在 emit 时打包
     compiler.plugin('compilation', compilation => {
@@ -61,12 +64,16 @@ class SinaHybridPlugin {
       compiler.plugin('this-compilation', compilation => {
         const maraCtx = compiler['maraContext'] || {}
 
+        manifestAsset = this.genManifest(maraCtx.dataSource)
+
         compilation.plugin('additional-chunk-assets', () => {
-          compilation.assets['manifest.json'] = this.genManifest(
-            compilation,
-            maraCtx.dataSource
-          )
+          compilation.assets['manifest.json'] = manifestAsset
         })
+
+        this.prependEntryCode(
+          compilation,
+          `window["${HYBRID_MANIFEST_INJECT_NAME}"] = ${manifestAsset.source()};`
+        )
       })
     }
   }
@@ -179,7 +186,7 @@ class SinaHybridPlugin {
     return manifest
   }
 
-  genManifest(compilation, dataSource) {
+  genManifest(dataSource) {
     let manifest = this.resolveManifest()
     const version = { version: this.version }
 
