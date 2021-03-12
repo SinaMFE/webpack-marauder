@@ -81,7 +81,7 @@
     "promise-polyfill": "^8.1.0",
     "px2rpx-loader": "^0.1.8",
     "raf": "^3.4.0",
-    "react-dev-utils": "^5.0.0",
+    "react-dev-utils": "^11.0.4",
     "semver": "^5.5.1",
     "sina-html-webpack-plugin": "^1.0.1",
     "sinamfe-marauder-ensure-ls": "0.0.10",
