@@ -7,6 +7,7 @@ const path = require('path')
 const chalk = require('chalk')
 const config = require('../config')
 const { rootPath } = require('./utils')
+const basePath = '/data0/ftproot/wap_front'
 
 const isInteractive = process.stdout.isTTY
 const ftpConf = config.ftp
@@ -40,7 +41,8 @@ function getRemotePath(page, namespace) {
   namespace = namespace ? `branch_${namespace}` : ''
 
   return path.posix.join(
-    '/wap_front/marauder',
+    basePath,
+    'marauder',
     projName,
     ftpConf.remotePath.version ? projVer : '',
     namespace,
@@ -82,7 +84,7 @@ module.exports.uploadDir = async function(page, namespace) {
     await upload(localPath, remotePath)
     console.log(uploadStep[2])
 
-    const url = HOST + remotePath.replace('/wap_front', '')
+    const url = HOST + remotePath.replace(basePath, '')
     console.log(`${chalk.bgYellow(' URL ')} ${chalk.yellow(url)}\n`)
 
     ftpConf.openBrowser && isInteractive && openBrowser(url)
@@ -108,3 +110,5 @@ module.exports.getFile = async function(remotePath) {
       .on('error', reject)
   })
 }
+
+module.exports.basePath = basePath
