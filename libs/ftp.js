@@ -76,12 +76,12 @@ module.exports.uploadDir = async function(page, namespace) {
 
   page = `${page}/` || ''
 
-  // /wap_front/marauder/hdphoto/1.1.0/wensen/index
+  // /data0/ftproot/wap_front/marauder/snal_v2/7.1.21/app/index
   const remotePath = getRemotePath(page, namespace)
   const localPath = rootPath(`dist/${page}`) + '/**'
 
   try {
-    await upload(localPath, remotePath)
+    await upload(localPath, remotePath.slice(0, -1))
     console.log(uploadStep[2])
 
     const url = HOST + remotePath.replace(basePath, '')
